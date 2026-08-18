@@ -116,7 +116,7 @@
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
-.container{max-width:1280px;margin:0 auto;padding:0 24px}
+.container{max-width:100%;margin:0 auto;padding:0 8px}
 .mono{font-family:'JetBrains Mono',monospace}
 
 /* países */
@@ -190,8 +190,8 @@ a{text-decoration:none;color:inherit}
 
 /* ============ HEADER ============ */
 header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.96);border-bottom:1px solid rgba(233,233,239,.7);transition:background .3s,box-shadow .3s,border-color .3s}
-.header-inner{display:flex;align-items:center;justify-content:space-between;height:78px;max-width:1600px;margin:0 auto;padding:0 44px}
-@media(max-width:640px){.header-inner{padding:0 20px}}
+.header-inner{position:relative;display:flex;align-items:center;justify-content:space-between;height:78px;max-width:100%;margin:0 auto;padding:0 clamp(32px,-141.78px + 15.111vw,100px)}
+@media(max-width:640px){.header-inner{padding:0 16px}}
 .logo{display:flex;align-items:center;gap:10px;color:var(--white)}
 .logo-img{height:30px;width:auto;display:block}
 .brand-logo{position:relative;display:inline-flex;align-items:center}
@@ -202,19 +202,20 @@ footer .brand-img{height:44px}
 .logo-mark svg{width:22px;height:22px}
 .logo-text{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.04em;line-height:1}
 .logo-text span{color:var(--sky)}
-nav{display:flex;gap:34px;margin:0 auto}
-nav a{position:relative;color:#3E3E48;font-size:1rem;font-weight:600;padding:8px 2px;transition:color .25s}
+nav{--nav-gap:clamp(22px,-8.67px + 2.667vw,34px);display:flex;gap:var(--nav-gap);margin:0 auto}
+nav a{position:relative;color:#3E3E48;font-size:clamp(.8rem,.4933rem + .4267vw,.92rem);font-weight:400;letter-spacing:.04em;text-transform:uppercase;padding:8px 2px;transition:color .25s}
+nav a:not(:first-child)::before{content:'';position:absolute;left:calc(var(--nav-gap) / -2);top:50%;transform:translateY(-50%);width:1px;height:12px;background:rgba(62,62,72,.22)}
 nav a::after{content:'';position:absolute;left:0;bottom:2px;width:100%;height:2px;background:linear-gradient(90deg,var(--pink),var(--green));transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.16,1,.3,1)}
 nav a:hover::after,nav a:focus-visible::after{transform:scaleX(1)}
 nav a:hover,nav a:focus-visible{color:var(--navy)}
-.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:50px;font-weight:700;font-size:.95rem;transition:transform .2s,box-shadow .2s;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:50px;font-weight:700;font-size:.95rem;transition:transform .2s,box-shadow .2s;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;white-space:nowrap}
 .btn:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
 .btn-green{background:linear-gradient(135deg,var(--green),var(--green-light));color:var(--white);box-shadow:0 6px 24px rgba(0,194,129,.35)}
 .btn-green:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,194,129,.5)}
 .btn-outline{border:2px solid rgba(255,255,255,.35);color:var(--ice);background:transparent}
 .btn-outline:hover{border-color:var(--pink);background:rgba(255,255,255,.07)}
 .btn-header{padding:10px 20px;font-size:.88rem}
-.btn-meupedido{display:inline-flex;align-items:center;gap:7px;color:var(--navy);background:#fff;border:1.5px solid #E3E3EA;padding:10px 18px;border-radius:50px;font-size:.86rem;font-weight:700;text-decoration:none;transition:all .22s cubic-bezier(.16,1,.3,1)}
+.btn-meupedido{display:inline-flex;align-items:center;gap:7px;color:var(--navy);background:#fff;border:1.5px solid #E3E3EA;padding:10px 18px;border-radius:50px;font-size:.86rem;font-weight:700;text-decoration:none;transition:all .22s cubic-bezier(.16,1,.3,1);white-space:nowrap}
 .btn-meupedido svg{color:var(--pink)}
 .btn-meupedido:hover{border-color:var(--pink);color:var(--pink);box-shadow:0 4px 16px rgba(236,0,140,.18);transform:translateY(-1px)}
 .menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px}
@@ -232,6 +233,7 @@ nav a:hover,nav a:focus-visible{color:var(--navy)}
 .hero p.lead{font-size:1.15rem;color:rgba(240,247,255,.82);max-width:520px;margin-bottom:36px;font-weight:300}
 .hero-ctas{display:flex;gap:16px;flex-wrap:wrap}
 .hero-trust{display:flex;gap:28px;margin-top:44px;flex-wrap:wrap}
+.hero-logo-img{width:100%;max-width:800px;height:auto;display:block}
 .trust-item{display:flex;align-items:center;gap:10px;font-size:.88rem;color:rgba(240,247,255,.75)}
 .trust-item svg{width:18px;height:18px;flex-shrink:0}
 
@@ -445,6 +447,14 @@ footer{background:var(--navy);color:rgba(240,247,255,.6);padding:56px 0 32px;mar
   .acomp-grid a{margin:0 auto}
   .flags-grid{grid-template-columns:repeat(3,1fr)}
   .security-badge{gap:12px}
+}
+/* menu hambúrguer: breakpoint próprio, mais largo que o resto do responsivo.
+   Com o padding do header e a fonte/gap do menu agora fluidos (clamp/vw,
+   ver .header-inner e nav aí em cima), a barra só passa a estourar a tela
+   abaixo de ~950px (medido via iframe de teste) — por isso o hambúrguer
+   entra em 1000px, com folga, e não em 1400px como antes. Isso deixa o
+   menu completo visível na maioria dos notebooks, não só em monitor largo. */
+@media (max-width:1000px){
   nav{position:fixed;top:72px;left:0;right:0;background:var(--white);flex-direction:column;gap:0;padding:12px 24px 24px;border-bottom:1px solid #E9E9EF;box-shadow:0 16px 34px rgba(20,20,22,.12);transform:translateY(-130%);transition:transform .3s;z-index:-1}
   nav.open{transform:translateY(0)}
   nav a{padding:14px 0;border-bottom:1px solid rgba(20,20,22,.07)}
@@ -644,7 +654,7 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
    transparente. Aqui só ajustamos o cabeçalho p/ texto claro sobre o preto. */
 .traducoes .section-head h2{color:#fff}
 .traducoes .section-head p{color:rgba(240,247,255,.72)}
-.trad-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;margin-bottom:40px}
+.trad-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;max-width:1232px;margin:0 auto 40px}
 .trad-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px 26px;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden}
 .trad-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--pink),#FF7AC4)}
 .trad-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(236,0,140,.13)}
@@ -668,7 +678,7 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
 <header>
   <div class="header-inner">
     <a href="#" class="logo brand-logo" aria-label="izidoc">
-      <img src="logo-izidoc-dark.png" alt="izidoc" class="brand-img" id="brandImgHeader" width="488" height="176" decoding="async">
+      <img src="logo-izi.png" alt="izidoc" class="brand-img" id="brandImgHeader" width="1366" height="768" decoding="async">
       <span class="bounce-dot" aria-hidden="true"></span>
     </a>
     <nav id="nav">
@@ -698,33 +708,7 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
   </div>
   <div class="container hero-stage">
     <div class="hero-copy">
-      <h1>Apostilamento de Haia <em>sem sair de casa</em></h1>
-      <p class="lead">Você envia seu documento assinado digitalmente, a gente apostila em cartório credenciado e devolve o PDF pronto em até 24 horas, válido em mais de 120 países. Simples assim.</p>
-      <div class="hero-ctas">
-        <a href="https://wa.me/5511999999999?text=Oi!%20Quero%20apostilar%20um%20documento%20digital." class="btn btn-green" target="_blank" rel="noopener">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.3 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2.01-1.42.25-.7.25-1.29.17-1.42-.07-.12-.27-.2-.57-.35z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.05-1.32A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3 .79.8-2.92-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
-          Apostilar pelo WhatsApp
-        </a>
-        <a href="#preco" class="btn btn-outline">Ver preços</a>
-      </div>
-      <div class="hero-trust">
-        <div class="trust-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#00C281" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          Cartórios credenciados pelo CNJ
-        </div>
-        <div class="trust-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#00C281" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          Entrega digital em PDF
-        </div>
-        <div class="trust-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#00C281" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          Taxas de cartório incluídas
-        </div>
-        <div class="trust-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#00C281" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          Tradução juramentada no mesmo pedido
-        </div>
-      </div>
+      <img src="logo-izitrad-hero.png" alt="iziTrad" class="hero-logo-img" width="1366" height="768" decoding="async">
     </div>
   </div>
 </section>

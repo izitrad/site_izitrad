@@ -6,15 +6,14 @@ gsap.registerPlugin(ScrollTrigger);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fineHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-// Plasma da Hero. Guardas mais frouxas que as do selo 3D: aqui não há geometria
-// nem texturas, é um único quad com shader de fragmento — roda bem inclusive em
-// celular, então a única exclusão real é reduced-motion (é movimento contínuo),
-// save-data e ausência de WebGL. Sem ele, o gradiente CSS da .hero-atmosphere
-// continua sendo o fundo, e nada de conteúdo se perde.
+// Ondas interativas da Hero (Canvas 2D). Guardas mais frouxas que as do selo
+// 3D: não há WebGL nem texturas, então a única exclusão real é reduced-motion
+// (é movimento contínuo) e save-data. Sem ele, o gradiente CSS da
+// .hero-atmosphere continua sendo o fundo, e nada de conteúdo se perde.
 function bootHeroShader() {
   const canvas = document.getElementById('heroShader');
   const hero = document.querySelector('.hero');
-  if (!canvas || !hero || reduceMotion || !window.WebGLRenderingContext) return;
+  if (!canvas || !hero || reduceMotion) return;
   const conn = navigator.connection;
   if (conn && (conn.saveData || /^(slow-2g|2g)$/.test(conn.effectiveType || ''))) return;
   import('./hero-shader.js')

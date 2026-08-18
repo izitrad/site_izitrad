@@ -90,21 +90,12 @@ footer{background:var(--navy)}
    antigo (.reveal.in), deixando todo o conteúdo revelado 28px fora de posição. */
 .cine-on .reveal{opacity:1;transform:none;transition:none}
 
-/* ---------- header: faixa intermediária (921–1150px) ----------
-   o menu hambúrguer só entra abaixo de 920px, mas a barra completa
-   (logo + 6 links + "Meu pedido" + CTA) precisa de ~1180px. Entre os dois
-   os links eram espremidos abaixo da largura do próprio texto e quebravam
-   no meio da palavra, e o CTA vazava da viewport. `nowrap` vale em qualquer
-   largura; o resto só aperta o ritmo nessa faixa, sem tocar no breakpoint
-   de 920px (a Hero depende dele e já está calibrada). */
+/* ---------- header: espaço apertado ----------
+   textos não quebram linha em nenhuma largura — o padding do header, o gap
+   e a fonte do menu (definidos no <style> inline) encolhem fluidamente com
+   clamp()/vw conforme a tela estreita, então não precisa de um degrau fixo
+   de squeeze aqui como antes. */
 nav a{white-space:nowrap;flex-shrink:0}
-
-@media (min-width:921px) and (max-width:1150px){
-  .header-inner{padding:0 16px;gap:12px}
-  nav{gap:14px}
-  nav a{font-size:.88rem}
-  .header-inner .btn{padding-left:16px;padding-right:16px;font-size:.86rem}
-}
 
 /* contraste: #9AA9BA sobre o card branco dava 2.4:1, abaixo do mínimo legível.
    --muted (#6E6E78) é o token que o resto do site já usa para texto secundário
@@ -164,7 +155,7 @@ nav a{white-space:nowrap;flex-shrink:0}
      lead, CTAs e o documento contra a borda da viewport. */
   padding-top:10px;padding-bottom:12px;
 }
-.hero-copy{position:relative;z-index:6;grid-row:1;max-width:640px;padding-top:4px}
+.hero-copy{position:relative;z-index:6;grid-row:1;max-width:800px;padding-top:4px}
 /* espaçamento vertical mais compacto — reserva altura real pro documento
    (prioridade 1) sem depender de fonte menor nem cortar conteúdo */
 .hero .eyebrow{margin-bottom:8px}
@@ -250,14 +241,11 @@ nav a{white-space:nowrap;flex-shrink:0}
   background:rgba(236,0,140,.06);
   color:var(--pink);
 }
-/* véu de legibilidade: a fita passa por cima do texto. Um branco suave atrás
-   da coluna de texto, dissolvendo para a direita, mantém a leitura limpa e
-   deixa a fita respirar do lado direito da Hero. */
+/* véu de legibilidade: existia para o texto antigo, que dava lugar à fita de
+   fundo. Com o hero-copy virando só a logo, o véu ficava um retângulo branco
+   visível atrás da imagem — desligado por ora. */
 .hero-on-light .hero-copy::before{
-  content:'';position:absolute;z-index:-1;
-  top:-6%;bottom:-10%;left:-8%;right:-14%;
-  background:radial-gradient(75% 70% at 28% 45%, rgba(255,255,255,.94) 0%, rgba(255,255,255,.86) 42%, rgba(255,255,255,0) 78%);
-  pointer-events:none;
+  display:none;
 }
 @media (max-width:920px){
   /* em coluna única o texto é centralizado e ocupa a largura toda —
