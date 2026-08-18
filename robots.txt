@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /portal.html
+Disallow: /protocolos.html
+
+Sitemap: https://apostilasimples.com.br/sitemap.xml

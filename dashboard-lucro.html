@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucro · izidoc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --graf:#141416;
+  --graf-2:#1E1E22;
+  --pink:#EC008C;
+  --pink-soft:#FF7AC4;
+  --green:#00C281;
+  --green-deep:#00875A;
+  --amber:#F5A524;
+  --ice:#F6F6F8;
+  --line:#E9E9EF;
+  --muted:#8A8A94;
+  --text:#232329;
+  --white:#fff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--ice);color:var(--text);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:36px 28px 60px}
+
+/* ---------- cabeçalho ---------- */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:26px;flex-wrap:wrap}
+.title h1{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:.02em;color:var(--graf);line-height:1;font-weight:400}
+.title p{color:var(--muted);font-size:.92rem;margin-top:6px}
+.periodo{display:flex;gap:6px;background:var(--white);border:1px solid var(--line);border-radius:50px;padding:5px}
+.per-btn{border:none;background:transparent;font-family:inherit;font-size:.84rem;font-weight:600;color:var(--muted);padding:9px 18px;border-radius:50px;cursor:pointer;transition:.18s}
+.per-btn:hover{color:var(--graf)}
+.per-btn.on{background:var(--graf);color:#fff}
+
+/* ---------- SIGNATURE: fluxo do dinheiro ---------- */
+.fluxo{background:var(--graf);border-radius:22px;padding:34px 36px 30px;color:#fff;margin-bottom:22px;position:relative;overflow:hidden}
+.fluxo::after{content:'';position:absolute;inset:0;background:radial-gradient(900px 300px at 88% -10%,rgba(236,0,140,.20),transparent 70%);pointer-events:none}
+.fluxo-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:26px;position:relative;z-index:1;flex-wrap:wrap}
+.fluxo-lbl{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.42)}
+.fluxo-total{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;line-height:.95;letter-spacing:.01em;margin-top:4px;font-weight:400}
+.fluxo-total small{font-size:1.5rem;color:rgba(255,255,255,.5);margin-right:6px}
+.delta{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;font-weight:700;padding:6px 12px;border-radius:50px;background:rgba(0,194,129,.16);color:var(--green)}
+.delta.neg{background:rgba(245,165,36,.16);color:var(--amber)}
+
+/* barra proporcional */
+.barra{display:flex;height:64px;border-radius:12px;overflow:hidden;position:relative;z-index:1;gap:3px}
+.seg{position:relative;display:flex;align-items:center;justify-content:center;transition:flex-grow .7s cubic-bezier(.2,.9,.25,1);cursor:default;min-width:2px}
+.seg-custo{background:linear-gradient(180deg,#3A3A42,#2A2A31)}
+.seg-mkt{background:linear-gradient(180deg,#5C4A2E,#463823)}
+.seg-lucro{background:linear-gradient(180deg,var(--green),var(--green-deep))}
+.seg span{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;padding:0 8px}
+.seg:hover{filter:brightness(1.15)}
+.legenda{display:flex;gap:22px;margin-top:18px;position:relative;z-index:1;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:9px}
+.leg i{width:11px;height:11px;border-radius:3px;display:block}
+.leg-txt small{display:block;font-size:.7rem;color:rgba(255,255,255,.42);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.leg-txt b{font-size:1.02rem;font-family:'JetBrains Mono',monospace;font-weight:600}
+
+/* ---------- grid inferior ---------- */
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:22px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:26px 28px}
+.card h2{font-size:.95rem;font-weight:700;color:var(--graf);margin-bottom:3px}
+.card .sub{font-size:.8rem;color:var(--muted);margin-bottom:22px}
+
+/* gráfico de linha */
+.chart{width:100%;height:190px;display:block}
+.chart .grid-l{stroke:var(--line);stroke-width:1}
+.chart .area{fill:url(#gradLucro)}
+.chart .line{fill:none;stroke:var(--green-deep);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.chart .line-fat{fill:none;stroke:var(--pink);stroke-width:2;stroke-dasharray:5 4;opacity:.75}
+.chart .dot{fill:var(--white);stroke:var(--green-deep);stroke-width:2.5}
+.chart text{font-family:'DM Sans',sans-serif;font-size:10px;fill:var(--muted)}
+.chart-leg{display:flex;gap:18px;margin-top:14px;font-size:.76rem;color:var(--muted)}
+.chart-leg i{display:inline-block;width:14px;height:2.5px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* margem por serviço */
+.serv{margin-bottom:16px}
+.serv:last-child{margin-bottom:0}
+.serv-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.serv-nome{font-size:.86rem;font-weight:600;color:var(--text)}
+.serv-marg{font-family:'JetBrains Mono',monospace;font-size:.86rem;font-weight:600;color:var(--green-deep)}
+.serv-bar{height:8px;background:var(--ice);border-radius:50px;overflow:hidden}
+.serv-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--pink),var(--pink-soft));transition:width .8s cubic-bezier(.2,.9,.25,1)}
+.serv-fill.alto{background:linear-gradient(90deg,var(--green-deep),var(--green))}
+.serv-det{font-size:.72rem;color:var(--muted);margin-top:5px}
+
+/* lançar marketing */
+.mkt-form{display:flex;gap:8px;margin-bottom:16px}
+.mkt-form input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:.86rem;color:var(--text);background:var(--ice)}
+.mkt-form input:focus{outline:none;border-color:var(--pink);background:#fff}
+.mkt-form button{background:var(--graf);color:#fff;border:none;border-radius:10px;padding:0 18px;font-family:inherit;font-weight:700;font-size:.84rem;cursor:pointer;white-space:nowrap}
+.mkt-form button:hover{background:var(--pink)}
+.mkt-lista{max-height:150px;overflow-y:auto}
+.mkt-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--ice);font-size:.84rem}
+.mkt-item:last-child{border-bottom:none}
+.mkt-data{color:var(--muted);font-size:.78rem}
+.mkt-val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--amber)}
+
+.aviso{display:flex;align-items:center;gap:9px;background:#FFF9EC;border:1px solid #F3E2B8;border-radius:10px;padding:11px 14px;font-size:.8rem;color:#8A6A1F;margin-top:16px}
+
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .fluxo-total{font-size:2.6rem}
+  .barra{height:54px}
+  .seg span{font-size:.68rem}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="title">
+      <h1>LUCRO</h1>
+      <p>O que entrou, o que custou e o que sobrou.</p>
+    </div>
+    <div class="periodo" id="periodo">
+      <button class="per-btn" data-p="hoje">Hoje</button>
+      <button class="per-btn" data-p="semana">Semana</button>
+      <button class="per-btn on" data-p="mes">Mês</button>
+      <button class="per-btn" data-p="ano">Ano</button>
+    </div>
+  </div>
+
+  <!-- SIGNATURE: o fluxo do dinheiro -->
+  <div class="fluxo">
+    <div class="fluxo-head">
+      <div>
+        <div class="fluxo-lbl">Faturamento · <span id="periodoLbl">Julho 2026</span></div>
+        <div class="fluxo-total"><small>R$</small><span id="fatTotal">18.430</span><small style="margin-left:2px">,00</small></div>
+      </div>
+      <div class="delta" id="deltaBox">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15" transform="rotate(180 12 12)"/></svg>
+        <span id="deltaTxt">18% vs. junho</span>
+      </div>
+    </div>
+
+    <div class="barra" id="barra">
+      <div class="seg seg-custo" id="segCusto" style="flex-grow:41"><span id="segCustoTxt">Custos 41%</span></div>
+      <div class="seg seg-mkt" id="segMkt" style="flex-grow:13"><span id="segMktTxt">Mkt 13%</span></div>
+      <div class="seg seg-lucro" id="segLucro" style="flex-grow:46"><span id="segLucroTxt">Lucro 46%</span></div>
+    </div>
+
+    <div class="legenda">
+      <div class="leg">
+        <i style="background:#3A3A42"></i>
+        <div class="leg-txt"><small>Custo dos serviços</small><b id="legCusto">R$ 7.556</b></div>
+      </div>
+      <div class="leg">
+        <i style="background:#5C4A2E"></i>
+        <div class="leg-txt"><small>Tráfego e marketing</small><b id="legMkt">R$ 2.400</b></div>
+      </div>
+      <div class="leg">
+        <i style="background:var(--green)"></i>
+        <div class="leg-txt"><small>Lucro líquido</small><b id="legLucro" style="color:var(--green)">R$ 8.474</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- evolução -->
+    <div class="card">
+      <h2>Como o lucro se comportou</h2>
+      <p class="sub">Faturamento e lucro ao longo do período</p>
+      <svg class="chart" viewBox="0 0 640 190" preserveAspectRatio="none" id="chartLucro">
+        <defs>
+          <linearGradient id="gradLucro" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00C281" stop-opacity=".22"/>
+            <stop offset="100%" stop-color="#00C281" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <line class="grid-l" x1="0" y1="40" x2="640" y2="40"/>
+        <line class="grid-l" x1="0" y1="90" x2="640" y2="90"/>
+        <line class="grid-l" x1="0" y1="140" x2="640" y2="140"/>
+        <path class="area" id="areaPath" d=""/>
+        <path class="line-fat" id="fatPath" d=""/>
+        <path class="line" id="lucroPath" d=""/>
+        <g id="dots"></g>
+        <g id="labels"></g>
+      </svg>
+      <div class="chart-leg">
+        <span><i style="background:var(--green-deep)"></i>Lucro</span>
+        <span><i style="background:var(--pink);opacity:.75"></i>Faturamento</span>
+      </div>
+    </div>
+
+    <!-- margem por serviço -->
+    <div class="card">
+      <h2>Onde está a margem</h2>
+      <p class="sub">Quanto sobra em cada serviço</p>
+      <div id="servicos"></div>
+      <div class="aviso">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span><b>3 protocolos</b> sem custo definido (idioma sob consulta)</span>
+      </div>
+    </div>
+
+    <!-- lançar marketing -->
+    <div class="card" style="grid-column:1/-1">
+      <h2>Gasto com tráfego</h2>
+      <p class="sub">Lance o quanto investiu por dia. Entra direto na conta do lucro.</p>
+      <div class="mkt-form">
+        <input type="date" id="mktData" value="2026-07-14">
+        <input type="text" id="mktDesc" placeholder="Google Ads, Instagram, impulsionamento...">
+        <input type="number" id="mktValor" placeholder="R$ 0,00" step="0.01" style="max-width:130px">
+        <button id="mktAdd">Lançar</button>
+      </div>
+      <div class="mkt-lista" id="mktLista"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const brl = n => 'R$ ' + n.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+// ---- dados de exemplo (trocar pelos reais depois) ----
+const DADOS = {
+  hoje:   {fat:640,  custo:265, mkt:80,   label:'14 de julho', delta:+8,
+           serie:[[0,0],[120,180],[210,240],[340,300],[450,290],[560,380],[640,375]]},
+  semana: {fat:4280, custo:1750,mkt:560,  label:'esta semana', delta:+12,
+           serie:[[380,520],[610,900],[540,780],[720,1100],[830,1250],[690,980],[510,740]]},
+  mes:    {fat:18430,custo:7556,mkt:2400, label:'julho 2026',  delta:+18,
+           serie:[[2100,850],[2600,1150],[3100,1420],[2800,1200],[3400,1650],[4430,2204]]},
+  ano:    {fat:96500,custo:39600,mkt:12800,label:'2026',       delta:+34,
+           serie:[[4200,1500],[5800,2100],[7400,2900],[9200,3800],[11400,4900],[14800,6400],[18430,8474]]}
+};
+
+const SERVICOS = [
+  {nome:'Apostilamento',        preco:109.90, custo:59.00, qtd:74},
+  {nome:'Tradução Juramentada', preco:169.99, custo:62.00, qtd:41},
+  {nome:'Tradução Certificada', preco:139.99, custo:55.00, qtd:12},
+  {nome:'Tradução Técnica',     preco:189.99, custo:88.00, qtd:6},
+  {nome:'Tradução Simples',     preco:89.99,  custo:28.00, qtd:9}
+];
+
+const MKT = [
+  {data:'13/07', desc:'Google Ads', valor:120},
+  {data:'12/07', desc:'Instagram impulsionado', valor:80},
+  {data:'11/07', desc:'Google Ads', valor:120},
+  {data:'10/07', desc:'Google Ads', valor:100}
+];
+
+let periodo = 'mes';
+
+function render(){
+  const d = DADOS[periodo];
+  const lucro = d.fat - d.custo - d.mkt;
+  const pc = x => Math.max(1, Math.round(x / d.fat * 100));
+
+  // total
+  const inteiro = Math.floor(d.fat).toLocaleString('pt-BR');
+  document.getElementById('fatTotal').textContent = inteiro;
+  document.getElementById('periodoLbl').textContent = d.label;
+
+  // delta
+  const dbox = document.getElementById('deltaBox');
+  dbox.classList.toggle('neg', d.delta < 0);
+  document.getElementById('deltaTxt').textContent =
+    (d.delta>0?'+':'') + d.delta + '% vs. período anterior';
+
+  // barra proporcional
+  document.getElementById('segCusto').style.flexGrow = pc(d.custo);
+  document.getElementById('segMkt').style.flexGrow   = pc(d.mkt);
+  document.getElementById('segLucro').style.flexGrow = pc(lucro);
+  document.getElementById('segCustoTxt').textContent = 'Custos ' + pc(d.custo) + '%';
+  document.getElementById('segMktTxt').textContent   = pc(d.mkt) >= 8 ? 'Mkt ' + pc(d.mkt) + '%' : '';
+  document.getElementById('segLucroTxt').textContent = 'Lucro ' + pc(lucro) + '%';
+
+  document.getElementById('legCusto').textContent = brl(d.custo);
+  document.getElementById('legMkt').textContent   = brl(d.mkt);
+  document.getElementById('legLucro').textContent = brl(lucro);
+
+  desenharGrafico(d.serie);
+}
+
+function desenharGrafico(serie){
+  const W=640,H=190,pad=14;
+  const maxFat = Math.max(...serie.map(s=>s[0]));
+  const x = i => (i/(serie.length-1))*(W-8)+4;
+  const y = v => H-pad - (v/maxFat)*(H-pad*2.4);
+
+  const pLucro = serie.map((s,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(s[1]).toFixed(1)}`).join(' ');
+  const pFat   = serie.map((s,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(s[0]).toFixed(1)}`).join(' ');
+  const pArea  = pLucro + ` L${x(serie.length-1).toFixed(1)},${H-pad} L${x(0).toFixed(1)},${H-pad} Z`;
+
+  document.getElementById('lucroPath').setAttribute('d', pLucro);
+  document.getElementById('fatPath').setAttribute('d', pFat);
+  document.getElementById('areaPath').setAttribute('d', pArea);
+
+  const dots = serie.map((s,i)=>
+    `<circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(s[1]).toFixed(1)}" r="3.5"/>`).join('');
+  document.getElementById('dots').innerHTML = dots;
+}
+
+function renderServicos(){
+  const box = document.getElementById('servicos');
+  const comMargem = SERVICOS.map(s=>{
+    const margem = (s.preco - s.custo) / s.preco * 100;
+    return {...s, margem, receita:s.preco*s.qtd, lucro:(s.preco-s.custo)*s.qtd};
+  }).sort((a,b)=>b.lucro-a.lucro);
+
+  box.innerHTML = comMargem.map(s=>`
+    <div class="serv">
+      <div class="serv-top">
+        <span class="serv-nome">${s.nome}</span>
+        <span class="serv-marg">${s.margem.toFixed(0)}%</span>
+      </div>
+      <div class="serv-bar">
+        <div class="serv-fill ${s.margem>=55?'alto':''}" style="width:${s.margem}%"></div>
+      </div>
+      <div class="serv-det">${s.qtd} pedidos · gerou ${brl(s.lucro)} de lucro</div>
+    </div>
+  `).join('');
+}
+
+function renderMkt(){
+  document.getElementById('mktLista').innerHTML = MKT.map(m=>`
+    <div class="mkt-item">
+      <div>
+        <div>${m.desc}</div>
+        <div class="mkt-data">${m.data}</div>
+      </div>
+      <span class="mkt-val">− ${brl(m.valor)}</span>
+    </div>
+  `).join('');
+}
+
+// filtros
+document.getElementById('periodo').addEventListener('click', e=>{
+  const b = e.target.closest('.per-btn');
+  if(!b) return;
+  document.querySelectorAll('.per-btn').forEach(x=>x.classList.toggle('on', x===b));
+  periodo = b.dataset.p;
+  render();
+});
+
+// lançar gasto
+document.getElementById('mktAdd').addEventListener('click', ()=>{
+  const dt = document.getElementById('mktData').value;
+  const ds = document.getElementById('mktDesc').value.trim();
+  const vl = parseFloat(document.getElementById('mktValor').value||0);
+  if(!vl || !ds){ alert('Preencha a descrição e o valor.'); return; }
+  const [a,m,d] = dt.split('-');
+  MKT.unshift({data:`${d}/${m}`, desc:ds, valor:vl});
+  DADOS[periodo].mkt += vl;
+  document.getElementById('mktDesc').value='';
+  document.getElementById('mktValor').value='';
+  renderMkt(); render();
+});
+
+render();
+renderServicos();
+renderMkt();
+</script>
+</body>
+</html>

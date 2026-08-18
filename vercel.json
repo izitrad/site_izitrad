@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    { "src": "/protocolos", "dest": "/protocolos.html" },
+    { "src": "/acompanhar", "dest": "/acompanhar.html" }
+  ]
+}

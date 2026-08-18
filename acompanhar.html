@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<!-- izidoc acompanhar v20260716-1200 | animacao de cascata nas etapas do timeline (entrada sequencial + check surgindo) -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>Acompanhar Pedido | izidoc</title>
+<meta name="description" content="Acompanhe o status do seu pedido de apostilamento em tempo real.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://apostilasimples.com.br/acompanhar.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --navy:#141416;--navy-2:#1C1C1F;--navy-3:#202023;
+  --blue:#EC008C;--sky:#FF7AC4;--pink:#EC008C;--green:#00875A;--green-light:#00C281;
+  --ice:#F6F6F8;--white:#fff;--text:#232329;--muted:#6E6E78;
+  --line:#E9E9EF;--amber:#B7791F;--red:#C2502E;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--ice);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* HEADER */
+header{background:#fff;padding:0 24px;border-bottom:1px solid #E9E9EF}
+.header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:66px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--sky));display:grid;place-items:center}
+.logo-mark svg{width:20px;height:20px}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;letter-spacing:.04em}
+.logo-text span{color:var(--sky)}
+.back-link{display:inline-flex;align-items:center;gap:7px;color:#6E6E78;text-decoration:none;font-size:.9rem;font-weight:600;transition:color .15s}
+.back-link:hover{color:#fff}
+.back-link svg{width:16px;height:16px}
+
+/* MAIN */
+.wrap{max-width:640px;margin:0 auto;padding:48px 24px 80px}
+
+/* BUSCA */
+.search-card{background:var(--white);border:1px solid var(--line);border-radius:20px;padding:36px 36px 32px;box-shadow:0 10px 40px rgba(20,20,22,.08);margin-bottom:28px}
+.search-card h1{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--navy);letter-spacing:.03em;font-weight:400;margin-bottom:6px}
+.search-card p{color:var(--muted);font-size:.92rem;margin-bottom:24px}
+.input-row{display:flex;gap:10px}
+.input-row input{flex:1;border:2px solid var(--line);border-radius:12px;padding:13px 16px;font-size:1rem;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);transition:border-color .2s}
+.input-row input:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 3px rgba(255,122,196,.15)}
+.input-row input::placeholder{font-family:'DM Sans',sans-serif;letter-spacing:0;font-weight:400;font-size:.9rem;color:#B0BFCC;text-transform:none}
+.btn-buscar{background:linear-gradient(135deg,var(--green),var(--green-light));color:#fff;border:none;border-radius:12px;padding:13px 22px;font-weight:700;font-size:.95rem;font-family:'DM Sans',sans-serif;cursor:pointer;transition:transform .15s,box-shadow .15s;white-space:nowrap;box-shadow:0 6px 18px rgba(0,194,129,.3)}
+.btn-buscar:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(0,194,129,.4)}
+.erro-msg{background:#FEE2D5;border:1px solid #FBCBB8;border-radius:10px;padding:12px 16px;font-size:.88rem;color:var(--red);margin-top:14px;display:none}
+
+/* RESULTADO */
+.result{display:none;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* INFO CARD */
+.info-card{background:var(--white);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(20,20,22,.08);margin-bottom:20px}
+.info-top{padding:24px 28px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.info-num{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:700;color:var(--blue)}
+.info-nome{font-size:1.1rem;font-weight:700;color:var(--navy);margin-top:2px}
+.info-docs{font-size:.88rem;color:var(--muted);margin-top:4px}
+.status-badge{font-size:.75rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:7px 16px;border-radius:50px;white-space:nowrap}
+.sb-aberto{background:rgba(255,122,196,.18);color:#1F66A8}
+.sb-em_andamento{background:rgba(46,126,198,.14);color:var(--blue)}
+.sb-concluido{background:rgba(0,135,90,.12);color:var(--green)}
+.sb-perdido{background:rgba(194,80,46,.12);color:var(--red)}
+
+/* TIMELINE */
+.timeline-wrap{padding:28px 28px 8px}
+.tl-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+.tl{display:flex;flex-direction:column;gap:0;position:relative}
+.tl::before{content:'';position:absolute;left:17px;top:20px;bottom:20px;width:2px;background:var(--line)}
+.tl-step{display:flex;gap:20px;padding-bottom:24px;position:relative}
+.tl-step:last-child{padding-bottom:0}
+/* entrada em cascata: cada etapa surge deslizando, uma após a outra */
+@keyframes tl-entra{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tl-check{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.25) rotate(0)}100%{transform:scale(1) rotate(0)}}
+.tl-anim{opacity:0;animation:tl-entra .45s cubic-bezier(.34,1.56,.64,1) both}
+.tl-anim.done .tl-dot svg,.tl-anim.current .tl-dot svg{animation:tl-check .4s ease both;animation-delay:inherit}
+.tl-dot{width:36px;height:36px;border-radius:50%;border:2px solid var(--line);background:var(--white);display:grid;place-items:center;flex-shrink:0;position:relative;z-index:1;transition:all .3s}
+.tl-dot svg{width:17px;height:17px;color:var(--muted)}
+.tl-step.done .tl-dot{border-color:var(--green);background:rgba(0,135,90,.08)}
+.tl-step.done .tl-dot svg{color:var(--green)}
+.tl-step.current .tl-dot{border-color:var(--blue);background:rgba(46,126,198,.1);box-shadow:0 0 0 5px rgba(46,126,198,.1);animation:pulse-dot 2s infinite}
+.tl-step.current .tl-dot svg{color:var(--blue)}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 5px rgba(46,126,198,.1)}50%{box-shadow:0 0 0 9px rgba(46,126,198,.04)}}
+.tl-body{padding-top:7px;flex:1}
+.tl-body strong{display:block;font-size:.96rem;color:var(--navy)}
+.tl-step:not(.done):not(.current) .tl-body strong{color:var(--muted)}
+.tl-body p{font-size:.84rem;color:var(--muted);margin-top:3px;line-height:1.5}
+.tl-step.current .tl-body strong{color:var(--blue)}
+.tl-step.current .tl-body p{color:var(--blue);opacity:.8}
+
+/* PDF CARD */
+.pdf-card{background:linear-gradient(135deg,var(--navy),var(--navy-3));border-radius:16px;padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 28px 28px}
+.pdf-info{display:flex;align-items:center;gap:14px}
+.pdf-ico{width:42px;height:42px;border-radius:10px;background:#C2502E;display:grid;place-items:center;flex-shrink:0}
+.pdf-ico span{color:#fff;font-size:.58rem;font-weight:800;letter-spacing:.05em}
+.pdf-info strong{color:#fff;display:block;font-size:.92rem}
+.pdf-info em{font-style:normal;font-size:.75rem;color:rgba(240,247,255,.55)}
+.btn-pdf{background:linear-gradient(135deg,var(--green),var(--green-light));color:#fff;border:none;border-radius:50px;padding:10px 20px;font-weight:700;font-size:.88rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;box-shadow:0 6px 16px rgba(0,194,129,.35)}
+.btn-pdf:hover{transform:translateY(-1px)}
+.btn-pdf svg{width:16px;height:16px}
+
+/* MSG ETAPA */
+.etapa-msg{background:var(--ice);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:0 12px 12px 0;margin:0 28px 28px;padding:14px 16px;font-size:.88rem;color:var(--text);line-height:1.55}
+.etapa-msg.concluida{border-left-color:var(--green);background:rgba(0,135,90,.04)}
+
+/* SUPORTE */
+.suporte-card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.suporte-card p{font-size:.9rem;color:var(--muted)}
+.suporte-card strong{display:block;color:var(--navy);font-size:.96rem;margin-bottom:3px}
+.btn-wpp{background:rgba(0,135,90,.08);border:1px solid rgba(0,135,90,.25);color:var(--green);border-radius:50px;padding:10px 18px;font-weight:700;font-size:.85rem;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+.btn-wpp:hover{background:rgba(0,135,90,.15);border-color:var(--green)}
+.btn-wpp svg{width:18px;height:18px}
+
+/* LOADING */
+.loading{text-align:center;padding:48px 0;display:none}
+.spinner{width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:var(--muted);font-size:.9rem}
+
+@media (max-width:540px){
+  .wrap{padding:28px 16px 60px}
+  .search-card{padding:24px 20px}
+  .input-row{flex-direction:column}
+  .btn-buscar{width:100%}
+  .info-top{flex-direction:column;align-items:flex-start}
+  .timeline-wrap,.pdf-card,.etapa-msg{padding-left:20px;padding-right:20px;margin-left:0;margin-right:0}
+  .pdf-card{flex-direction:column}
+}
+.brand-txt{color:#EC008C;font-weight:700}
+
+.arq-linha-cli{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid #E9E9EF;border-radius:10px;padding:11px 14px}
+.arq-nome-cli{font-size:.86rem;color:#232329;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arq-acoes-cli{display:flex;gap:7px;flex-shrink:0}
+.arq-btn-cli{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #E9E9EF;border-radius:8px;padding:7px 14px;font-size:.8rem;font-weight:600;color:#141416;text-decoration:none;cursor:pointer}
+.arq-btn-cli:hover{border-color:#EC008C;color:#EC008C}
+.arq-btn-cli.principal{background:#00875A;border-color:#00875A;color:#fff}
+.arq-btn-cli.principal:hover{background:#00734C;border-color:#00734C;color:#fff}
+
+.arq-zip-cli{display:inline-flex;align-items:center;gap:8px;background:#00875A;color:#fff;border:none;border-radius:10px;padding:11px 18px;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;margin-top:4px;align-self:flex-start}
+.arq-zip-cli:hover{background:#00734C}
+.arq-zip-cli:disabled{opacity:.6;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <img src="logo-izidoc-dark.png" alt="izidoc" style="height:30px;width:auto;display:block">
+    </a>
+    <a href="/" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Voltar ao site
+    </a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="search-card">
+    <h1>Acompanhar pedido</h1>
+    <p>Digite o número do seu protocolo para ver o status em tempo real. Ele foi enviado pra você no WhatsApp quando o pedido foi criado.</p>
+    <div class="input-row">
+      <input type="text" id="inputNumero" placeholder="Ex: 1200" maxlength="10" autocomplete="off" spellcheck="false">
+      <button class="btn-buscar" id="btnBuscar">Consultar</button>
+    </div>
+    <div class="erro-msg" id="erroMsg"></div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Consultando seu pedido...</p>
+  </div>
+
+  <div class="result" id="result">
+    <div class="info-card">
+      <div class="info-top">
+        <div>
+          <div class="info-num" id="rNumero"></div>
+          <div class="info-nome" id="rNome"></div>
+          <div class="info-docs" id="rDocs"></div>
+        </div>
+        <span class="status-badge" id="rBadge"></span>
+      </div>
+
+      <div class="timeline-wrap">
+        <div class="tl-title">Progresso do pedido</div>
+        <div class="tl" id="timeline"></div>
+      </div>
+
+      <div class="etapa-msg" id="etapaMsg"></div>
+      <div class="pdf-card" id="pdfCard" style="display:none">
+        <div class="pdf-info" style="width:100%">
+          <div class="pdf-ico"><span>OK</span></div>
+          <div style="flex:1">
+            <strong>Seu serviço está pronto</strong>
+            <em id="pdfCount">Documentos disponíveis para download</em>
+          </div>
+        </div>
+        <div id="pdfLista" style="width:100%;margin-top:14px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+    <div class="suporte-card">
+      <div>
+        <strong>Ficou com dúvida?</strong>
+        <p>Nossa equipe responde rapidinho no WhatsApp.</p>
+      </div>
+      <a id="btnWpp" href="https://wa.me/5511999999999" target="_blank" rel="noopener" class="btn-wpp">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.3 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2.01-1.42.25-.7.25-1.29.17-1.42-.07-.12-.27-.2-.57-.35z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.05-1.32A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3 .79.8-2.92-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
+        Falar no WhatsApp
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://kclbawvrvmiiyngkzibi.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtjbGJhd3Zydm1paXluZ2t6aWJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMjExNjEsImV4cCI6MjA5NDY5NzE2MX0.BHzAGVSWxAeX2lXLWpva6MCupc4wKcUeTMA_dkkqu_w';
+const db=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+
+// ===== FLUXOS POR TIPO DE SERVIÇO (espelho do portal e da Edge Function) =====
+const TIPOS_TRAD=['trad_juramentada','trad_certificada','trad_tecnica','trad_simples'];
+
+function temApostOrig(p){ return (parseFloat(p.val_apost_original)||0)>0 || (parseInt(p.apost_orig_qtd)||0)>0; }
+function temApostTrad(p){ return (parseFloat(p.val_apost_traducao)||0)>0 || (parseInt(p.apost_trad_qtd)||0)>0; }
+
+function detectarFluxo(p){
+  const tipo=p.tipo_servico||'apostila_original';
+  const ehTrad=TIPOS_TRAD.includes(tipo);
+  const ehApostOrig=tipo==='apostila_original';
+  const oOrig=temApostOrig(p), oTrad=temApostTrad(p);
+  if(ehApostOrig && !oTrad) return 'apost_orig';
+  if(ehTrad && oOrig && oTrad) return 'completo';
+  if(ehTrad && oOrig) return 'orig_trad';
+  if(ehTrad && oTrad) return 'trad_apost';
+  if(ehTrad) return 'trad';
+  return 'apost_orig';
+}
+
+// cada etapa: rótulo + descrição + ícone
+const FLUXOS={
+  trad:[
+    {label:'Pedido recebido',       desc:'Recebemos seus documentos e já estamos organizando tudo.', ico:'recebido'},
+    {label:'Tradução em andamento', desc:'Seu documento está sendo traduzido pelo tradutor.',        ico:'traducao'},
+    {label:'Tradução entregue',     desc:'Sua tradução está pronta e disponível.',                    ico:'entregue'}
+  ],
+  orig_trad:[
+    {label:'Pedido recebido',          desc:'Recebemos seus documentos e já estamos organizando tudo.', ico:'recebido'},
+    {label:'Apostilamento do original',desc:'Seu documento original está em apostilamento.',            ico:'apostila'},
+    {label:'Tradução em andamento',    desc:'Com o original apostilado, a tradução começou.',           ico:'traducao'},
+    {label:'Tradução entregue',        desc:'Tudo pronto e disponível para você.',                      ico:'entregue'}
+  ],
+  trad_apost:[
+    {label:'Pedido recebido',            desc:'Recebemos seus documentos e já estamos organizando tudo.', ico:'recebido'},
+    {label:'Tradução em andamento',      desc:'Seu documento está sendo traduzido.',                      ico:'traducao'},
+    {label:'Em apostilamento',           desc:'A tradução está sendo apostilada.',                        ico:'apostila'},
+    {label:'Tradução apostilada entregue',desc:'Tudo pronto e disponível para você.',                     ico:'entregue'}
+  ],
+  apost_orig:[
+    {label:'Pedido recebido',            desc:'Recebemos seu documento e já estamos organizando tudo.', ico:'recebido'},
+    {label:'Em apostilamento',           desc:'Seu documento está em apostilamento.',                    ico:'apostila'},
+    {label:'Documento apostilado entregue',desc:'Apostila emitida e disponível para download.',          ico:'entregue'}
+  ],
+  completo:[
+    {label:'Pedido recebido',               desc:'Recebemos seus documentos e já estamos organizando tudo.', ico:'recebido'},
+    {label:'Em apostilamento do original',  desc:'Seu documento original está em apostilamento.',            ico:'apostila'},
+    {label:'Tradução em andamento',         desc:'Com o original apostilado, a tradução começou.',           ico:'traducao'},
+    {label:'Em apostilamento da tradução',  desc:'Agora a tradução está sendo apostilada.',                  ico:'apostila'},
+    {label:'Serviço entregue',              desc:'Tudo pronto e disponível para você.',                      ico:'entregue'}
+  ]
+};
+
+// rótulo do status (badge)
+const STATUS_LABEL={
+  aberto:{label:'Aberto',badge:'sb-aberto'},
+  em_andamento:{label:'Em andamento',badge:'sb-em_andamento'},
+  concluido:{label:'Concluído',badge:'sb-concluido'},
+  perdido:{label:'Cancelado',badge:'sb-perdido'}
+};
+
+// monta as etapas do pedido marcando o progresso
+function etapasDoPedido(p){
+  const etapas=FLUXOS[detectarFluxo(p)]||FLUXOS.apost_orig;
+  const total=etapas.length;
+  // a etapa ativa vem de etapa_cliente (avisada pelo operador); se concluído, tudo feito
+  let ativa = (typeof p.etapa_cliente==='number' && p.etapa_cliente>=0) ? p.etapa_cliente : 0;
+  if(p.status==='concluido') ativa=total-1;
+  return etapas.map((e,i)=>({
+    ...e,
+    done: p.status==='concluido' ? true : i<ativa,
+    current: p.status!=='concluido' && i===ativa
+  }));
+}
+
+// mensagem contextual conforme o andamento
+function mensagemDoPedido(p,etapas){
+  if(p.status==='perdido') return 'Este pedido foi cancelado. Se precisar, pode abrir um novo pedido pelo WhatsApp. Será um prazer te atender!';
+  if(p.status==='concluido') return 'Tudo pronto! Seu serviço foi concluído e está disponível para download.';
+  const atual=etapas.find(e=>e.current);
+  if(atual && atual.desc) return atual.desc;
+  return 'Recebemos seu pedido! Em breve você recebe novidades por aqui e no WhatsApp.';
+}
+
+const ICONS={
+  recebido:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  apostila:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  traducao:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>',
+  entregue:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg>'
+};
+
+const $=id=>document.getElementById(id);
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+async function buscar(){
+  const num=$('inputNumero').value.trim().toUpperCase();
+  if(!num){mostrarErro('Digite o número do protocolo.');return;}
+  $('erroMsg').style.display='none';
+  $('result').style.display='none';
+  $('loading').style.display='block';
+
+  // busca robusta: a coluna "numero" pode ser texto ou inteiro no banco.
+  // 1) tenta casar como texto (ilike, aceita maiúsc/minúsc); se nada, tenta como número puro.
+  const soDigitos=num.replace(/\D/g,'');
+  let data=null, erroReal=null;
+
+  // tentativa por texto
+  let r1=await db.from('protocolos').select('*').ilike('numero',num).maybeSingle();
+  if(r1.data) data=r1.data; else erroReal=r1.error;
+
+  // tentativa por número (coluna integer)
+  if(!data && soDigitos){
+    let r2=await db.from('protocolos').select('*').eq('numero',Number(soDigitos)).maybeSingle();
+    if(r2.data) data=r2.data; else erroReal=erroReal||r2.error;
+  }
+
+  // tentativa por texto exato só com dígitos (ex.: banco guarda "1206" como texto)
+  if(!data && soDigitos && soDigitos!==num){
+    let r3=await db.from('protocolos').select('*').eq('numero',soDigitos).maybeSingle();
+    if(r3.data) data=r3.data; else erroReal=erroReal||r3.error;
+  }
+
+  $('loading').style.display='none';
+
+  if(!data){
+    if(erroReal) console.error('[izidoc acompanhar] erro na consulta:', erroReal.message||erroReal, erroReal.code||'');
+    mostrarErro('Pedido não encontrado. Verifique o número e tente novamente.');
+    return;
+  }
+  mostrarResultado(data);
+}
+
+function mostrarErro(msg){
+  const el=$('erroMsg');
+  el.textContent=msg;
+  el.style.display='block';
+}
+
+
+// gera link assinado temporário para um arquivo do storage
+async function linkAssinadoCliente(path, segundos){
+  try{
+    const{data,error}=await db.storage.from('documentos').createSignedUrl(path, segundos||3600);
+    if(error){ console.warn('assinar:',error); return null; }
+    return data.signedUrl;
+  }catch(e){ console.warn(e); return null; }
+}
+function nomeArquivoCliente(url){
+  try{
+    let base=decodeURIComponent(url.split('?')[0].split('/').pop())||'documento';
+    base=base.replace(/^\d{10,}-/,'');
+    base=base.replace(/^novo-\d+-\d+-[a-f0-9-]{20,}-/i,'');
+    base=base.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i,'');
+    return base||'documento';
+  }catch(e){ return 'documento'; }
+}
+function podeVerCliente(url){
+  const n=nomeArquivoCliente(url).toLowerCase();
+  return n.endsWith('.pdf')||n.endsWith('.jpg')||n.endsWith('.jpeg')||n.endsWith('.png');
+}
+async function montarArquivosProntos(linkPdf){
+  const box=$('pdfLista');
+  const paths=(linkPdf||'').split(',').map(s=>s.trim()).filter(Boolean);
+  $('pdfCount').textContent = paths.length>1 ? paths.length+' documentos disponíveis' : 'Documento disponível para download';
+  box.innerHTML='<p style="color:#8A8A94;font-size:.85rem">Carregando...</p>';
+  const linhas=[];
+  for(const path of paths){
+    const ehUrl=/^https?:\/\//i.test(path);
+    const url=ehUrl?path:await linkAssinadoCliente(path, 60*60*24*7);
+    const nome=nomeArquivoCliente(path);
+    if(!url){ continue; }
+    const ver=podeVerCliente(path)
+      ? `<a href="${url}" target="_blank" rel="noopener" class="arq-btn-cli">Ver</a>` : '';
+    linhas.push(`<div class="arq-linha-cli">
+      <span class="arq-nome-cli">${nome}</span>
+      <span class="arq-acoes-cli">${ver}<a href="${url}" download="${nome}" target="_blank" rel="noopener" class="arq-btn-cli principal">Baixar</a></span>
+    </div>`);
+  }
+  // botão "baixar todos em zip" quando há mais de um arquivo
+  const btnTodos = paths.length>1
+    ? `<button type="button" id="btnZipCliente" class="arq-zip-cli">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Baixar todos (${paths.length}) em .zip
+      </button>` : '';
+  box.innerHTML = linhas.length ? (linhas.join('')+btnTodos) : '<p style="color:#8A8A94;font-size:.85rem">Os arquivos estarão disponíveis em instantes.</p>';
+  box.dataset.paths = paths.join(',');
+  box.dataset.numero = window.__protoNumero || '';
+  const bz=$('btnZipCliente');
+  if(bz) bz.addEventListener('click',()=>baixarTodosZipCliente(paths));
+}
+
+async function baixarTodosZipCliente(paths){
+  if(typeof JSZip==='undefined'){ alert('Não foi possível preparar o zip. Baixe os arquivos um a um.'); return; }
+  const btn=$('btnZipCliente');
+  if(btn){ btn.disabled=true; btn.textContent='Preparando zip...'; }
+  try{
+    const zip=new JSZip();
+    for(const path of paths){
+      const ehUrl=/^https?:\/\//i.test(path);
+      const url=ehUrl?path:await linkAssinadoCliente(path, 60*60*24*7);
+      if(!url) continue;
+      const resp=await fetch(url);
+      if(!resp.ok) throw new Error('falha ao baixar');
+      const blob=await resp.blob();
+      zip.file(nomeArquivoCliente(path), blob);
+    }
+    const conteudo=await zip.generateAsync({type:'blob'});
+    const numero=$('pdfLista').dataset.numero||'documentos';
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(conteudo);
+    a.download='documentos-'+numero+'.zip';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }catch(e){
+    console.error(e);
+    alert('Não foi possível gerar o zip. Tente baixar os arquivos um a um.');
+  }
+  if(btn){ btn.disabled=false; btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Baixar todos ('+paths.length+') em .zip'; }
+}
+
+function mostrarResultado(p){
+  const st=STATUS_LABEL[p.status]||STATUS_LABEL.aberto;
+  const etapas=etapasDoPedido(p);
+
+  $('rNumero').textContent=p.numero;
+  $('rNome').textContent=p.cliente_nome.split(' ')[0]+'! ('+p.qtd_documentos+(p.qtd_documentos===1?' documento)':', documentos)');
+  $('rDocs').textContent=p.documentos||'';
+  const badge=$('rBadge');
+  badge.textContent=st.label;
+  badge.className='status-badge '+st.badge;
+
+  // timeline dinâmica conforme o serviço contratado (com entrada em cascata)
+  const reduz=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const tl=$('timeline');
+  tl.innerHTML=etapas.map((s,i)=>`
+    <div class="tl-step${s.done?' done':''}${s.current?' current':''}${reduz?'':' tl-anim'}" style="${reduz?'':`animation-delay:${i*0.14}s`}">
+      <div class="tl-dot">${ICONS[s.ico]||ICONS.recebido}</div>
+      <div class="tl-body">
+        <strong>${esc(s.label)}</strong>
+        ${s.desc?`<p>${esc(s.desc)}</p>`:''}
+      </div>
+    </div>`).join('');
+
+  // mensagem contextual
+  const emsg=$('etapaMsg');
+  emsg.textContent=mensagemDoPedido(p,etapas);
+  emsg.className='etapa-msg'+(p.status==='concluido'?' concluida':'');
+
+  // ARQUIVOS PRONTOS (gera links assinados temporários para cada um)
+  const pc=$('pdfCard');
+  if(p.status==='concluido'&&p.link_pdf){
+    pc.style.display='flex';
+    window.__protoNumero=p.numero;
+    montarArquivosProntos(p.link_pdf);
+  }else{pc.style.display='none';}
+
+  // WPP com número do protocolo
+  $('btnWpp').href='https://wa.me/5511999999999?text='+encodeURIComponent('Oi! Tenho uma dúvida sobre o meu pedido '+p.numero+'.');
+
+  $('result').style.display='block';
+  $('result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+$('btnBuscar').addEventListener('click',buscar);
+$('inputNumero').addEventListener('keydown',e=>{if(e.key==='Enter')buscar();});
+
+// pré-preencher pelo parâmetro da URL (?p=1200)
+const params=new URLSearchParams(window.location.search);
+if(params.get('p')){
+  $('inputNumero').value=params.get('p').toUpperCase();
+  buscar();
+}
+</script>
+</body>
+</html>
