@@ -1,0 +1,549 @@
+/* ================================================================
+   izidoc — camada cinematográfica (Fase 1: Hero + fluxo contínuo)
+   Carregado DEPOIS do <style> inline do index.html de propósito:
+   mesma especificidade, ordem de fonte decide — isso permite
+   sobrescrever regras antigas (fundos sólidos, tamanhos de fonte)
+   sem precisar reescrever o bloco inline original.
+   ================================================================ */
+
+:root{
+  --accent-cool:#5FA6E8;
+  --tone-dark-a:#141416;
+  --tone-dark-b:#202023;
+  --tone-light-a:#F6F6F8;
+  --tone-light-b:#FFFFFF;
+  --ease-premium:cubic-bezier(.16,1,.3,1);
+  /* paleta do efeito de borda animada — recolorida na identidade da izidoc
+     (rosa/magenta + toque de violeta-magenta só p/ dar vida ao movimento) */
+  --color-1:324 100% 47%;  /* magenta da marca #EC008C */
+  --color-2:335 100% 62%;  /* rosa quente */
+  --color-3:318 100% 40%;  /* magenta profundo */
+  --color-4:327 100% 73%;  /* rosa claro #FF7AC4 */
+  --color-5:296 88% 60%;   /* violeta-magenta (acento) */
+  --rainbow-speed:4s;
+}
+@keyframes rainbow{0%{background-position:0%}100%{background-position:200%}}
+
+/* ---------- fundo persistente (fixo atrás de toda a página) ----------
+   Duas camadas de gradiente empilhadas com cross-fade por opacidade, em vez de
+   animar as custom properties --bg-a/--bg-b. Propriedades customizadas não são
+   interpoláveis sem registro via @property: a tentativa de animá-las nunca
+   chegava ao valor final — o tom ficava rastejando entre claro e escuro e as
+   seções escuras (texto branco) acabavam sobre fundo claro. Opacidade é
+   sempre interpolável, roda na GPU e não depende de JS pra completar. */
+#cinematicBg{
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(165deg,var(--tone-dark-a),var(--tone-dark-b) 60%,var(--tone-dark-a));
+  pointer-events:none;
+}
+/* camada clara — some/aparece por cima da escura */
+#cinematicBg::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:1;
+  opacity:0;
+  transition:opacity .45s ease;
+  background:linear-gradient(165deg,var(--tone-light-a),var(--tone-light-b) 60%,var(--tone-light-a));
+}
+:root.tone-light #cinematicBg::after{opacity:1}
+/* granulado sempre por cima das duas camadas */
+#cinematicBg::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:2;
+  /* PERF: mix-blend-mode:overlay em tela cheia recompunha tudo a cada frame.
+     Trocado por grão estático de baixa opacidade (blend normal) — mesmo clima,
+     custo praticamente zero. */
+  opacity:.06;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+@media (prefers-reduced-motion:reduce){
+  #cinematicBg::after{transition:none}
+}
+
+/* seções ficam transparentes para revelar o fundo persistente por trás.
+   nota: era ".b2b-card" (o cartão navy interno) por engano — corrigido para
+   ".b2b-section" (o wrapper externo), senão o navy do cartão some. */
+.hero,.calc-section,.qz-section,.b2b-section,
+.versus,.docs-section,.traducoes,.strip,
+.flow,.receive,.trust-section,#preco,#faq{
+  background:transparent;
+}
+/* Países tem fundo escuro PRÓPRIO (não depende do tom) + data-tone="light" no
+   HTML: assim o tom global já fica claro durante o pin e o FAQ (claro) logo
+   abaixo nunca pisca escuro na transição. */
+.countries{background:linear-gradient(165deg,var(--tone-dark-a),var(--tone-dark-b) 60%,var(--tone-dark-a))}
+/* o rodapé fica FORA da lista de propósito: ele é o fim da página, então numa
+   viewport alta nunca chega a ser a seção com maior área visível — o tom
+   permanecia claro e o texto claro do rodapé sumia. Mantendo o navy próprio ele
+   fica correto em qualquer altura de tela, sem depender do sistema de tom. */
+footer{background:var(--navy)}
+.hero::before,.hero::after{display:none}
+
+/* com o GSAP no comando, o estado de repouso do .reveal é "visível e no lugar" —
+   o deslocamento inicial passa a ser aplicado pelo próprio gsap.from(), não pelo
+   CSS. Sem isto, clearProps devolvia o elemento ao translateY(28px) do mecanismo
+   antigo (.reveal.in), deixando todo o conteúdo revelado 28px fora de posição. */
+.cine-on .reveal{opacity:1;transform:none;transition:none}
+
+/* ---------- header: faixa intermediária (921–1150px) ----------
+   o menu hambúrguer só entra abaixo de 920px, mas a barra completa
+   (logo + 6 links + "Meu pedido" + CTA) precisa de ~1180px. Entre os dois
+   os links eram espremidos abaixo da largura do próprio texto e quebravam
+   no meio da palavra, e o CTA vazava da viewport. `nowrap` vale em qualquer
+   largura; o resto só aperta o ritmo nessa faixa, sem tocar no breakpoint
+   de 920px (a Hero depende dele e já está calibrada). */
+nav a{white-space:nowrap;flex-shrink:0}
+
+@media (min-width:921px) and (max-width:1150px){
+  .header-inner{padding:0 16px;gap:12px}
+  nav{gap:14px}
+  nav a{font-size:.88rem}
+  .header-inner .btn{padding-left:16px;padding-right:16px;font-size:.86rem}
+}
+
+/* contraste: #9AA9BA sobre o card branco dava 2.4:1, abaixo do mínimo legível.
+   --muted (#6E6E78) é o token que o resto do site já usa para texto secundário
+   e sobe para ~5:1 sem mudar a hierarquia visual. */
+.vs-old .vs-sub{color:var(--muted)}
+
+/* ---------- barra de progresso de leitura ---------- */
+.cine-progress{
+  position:fixed;top:0;left:0;height:3px;width:100%;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--pink,#EC008C),var(--accent-cool));
+  z-index:10000;transform-origin:left;pointer-events:none;will-change:transform;
+}
+
+/* ---------- cursor customizado (desktop com mouse de precisão) ---------- */
+@media (hover:hover) and (pointer:fine){
+  body.cine-cursor-on{cursor:none}
+  body.cine-cursor-on a,body.cine-cursor-on button{cursor:none}
+  .cine-cursor{
+    position:fixed;top:0;left:0;width:22px;height:22px;border-radius:50%;
+    border:1.5px solid rgba(236,0,140,.75);pointer-events:none;z-index:10001;
+    transform:translate(-50%,-50%);
+    transition:width .25s var(--ease-premium),height .25s var(--ease-premium),
+      border-color .25s,background-color .25s;
+  }
+  .cine-cursor::after{
+    content:'';position:absolute;inset:0;margin:auto;width:4px;height:4px;
+    border-radius:50%;background:#EC008C;
+  }
+  .cine-cursor.is-cta{
+    width:54px;height:54px;background:rgba(236,0,140,.1);border-color:#EC008C;
+  }
+  .cine-cursor.is-cta::after{opacity:0}
+}
+@media (hover:none),(pointer:coarse){
+  .cine-cursor{display:none!important}
+}
+
+/* ================================================================
+   Hero — Fase 1: composição estática do frame-poster aprovado em
+   docs/hero-art-direction.md (versão final, congelada). Documento no
+   terço inferior-esquerdo, borda distante erguida com contraluz quente,
+   selo pequeno ancorado no canto próximo (frio), vazio atmosférico
+   diagonal abrindo para o canto superior-direito. Sem parallax, sem
+   scroll, sem narrativa — só a cena parada.
+   ================================================================ */
+
+/* grid de 2 LINHAS (nunca colunas): a linha 1 reserva a altura real do texto,
+   a linha 2 reserva a altura real da cena do documento — layout estrutural,
+   não margem arbitrária. Isso é o que garante zero colisão em qualquer
+   viewport, porque cada bloco tem seu próprio espaço garantido pelo grid,
+   nunca sobreposto por posicionamento absoluto solto. */
+.hero-stage{
+  position:relative;z-index:2;
+  display:grid;grid-template-rows:auto auto;row-gap:8px;
+  /* longhand de propósito: .hero-stage também é .container, e o shorthand
+     `padding` zerava o padding lateral de 32px do container — jogando H1,
+     lead, CTAs e o documento contra a borda da viewport. */
+  padding-top:10px;padding-bottom:12px;
+}
+.hero-copy{position:relative;z-index:6;grid-row:1;max-width:640px;padding-top:4px}
+/* espaçamento vertical mais compacto — reserva altura real pro documento
+   (prioridade 1) sem depender de fonte menor nem cortar conteúdo */
+.hero .eyebrow{margin-bottom:8px}
+.hero h1{margin-bottom:8px}
+.hero p.lead{margin-bottom:12px}
+.hero .hero-trust{margin-top:14px}
+
+/* header é fixo/overlay (79px) — 160px/110px de padding do bloco base do
+   site sobra bem além do necessário em telas de notebook (800–900px de
+   altura), o que empurrava documento+selo pra fora do fold (prioridades
+   2 e 3). Acima de 920px de largura a Hero já não usa a versão mobile
+   (120px/72px) definida no <style> inline, então recebe seu próprio
+   ajuste aqui — sem tocar no breakpoint mobile, que já está calibrado. */
+@media (min-width:921px){
+  .hero{padding:118px 0 56px}
+}
+/* notebooks comuns (1280×800, 1366×768, 1440×900): mesma composição,
+   ritmo vertical ainda mais compacto pra caber sem rolar — critério
+   objetivo da seção 9 da spec, hoje só verificado pra mobile, extendido
+   aqui pro desktop porque é exatamente a divergência que sobrou dos
+   screenshots anteriores. */
+@media (min-width:921px) and (max-height:940px){
+  .hero{padding:88px 0 40px}
+  .hero-stage{row-gap:4px;padding-top:4px;padding-bottom:8px}
+  .hero .eyebrow{margin-bottom:6px}
+  .hero h1{margin-bottom:6px}
+  .hero p.lead{margin-bottom:10px}
+  .hero .hero-trust{margin-top:10px}
+}
+
+/* camada de fundo da Hero: contém o canvas da fita e o gradiente de fallback. */
+.hero-atmosphere{
+  position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
+/* Hero clara: o plasma WebGL (assets/js/hero-shader.js) é o fundo.
+   O gradiente abaixo é o estado base — vale enquanto o shader carrega e
+   permanece como fallback definitivo sem WebGL / com reduced-motion,
+   para a Hero nunca ficar num branco chapado. */
+.hero-atmosphere::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(70% 55% at 82% 18%, rgba(236,0,140,.10), transparent 70%),
+    radial-gradient(60% 50% at 12% 88%, rgba(236,0,140,.06), transparent 72%),
+    linear-gradient(180deg,#FFFFFF 0%,#FDF7FB 55%,#FFFFFF 100%);
+}
+.hero-shader{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  opacity:0;transition:opacity .8s ease;
+}
+.hero.shader-active .hero-shader{opacity:1}
+/* borda inferior dissolvida: o canvas termina numa linha reta, e sem isto
+   a emenda com a próxima seção fica visível */
+.hero-atmosphere::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:22%;
+  background:linear-gradient(180deg,transparent,#FFFFFF);
+  pointer-events:none;z-index:1;
+}
+
+/* ---------- Hero clara: inverte a tipografia, que foi escrita para fundo
+   escuro (branco/azulado). Sobre o plasma branco tudo precisa virar tinta
+   escura, mantendo o rosa da marca como acento. ---------- */
+.hero-on-light{color:var(--text)}
+/* Hero ocupa a tela inteira, com o texto centralizado verticalmente sobre a
+   fita. box-sizing:border-box (reset global) faz o 100vh já incluir o padding
+   que afasta o conteúdo do header fixo. */
+.hero-on-light{min-height:100vh;display:flex;flex-direction:column;justify-content:center}
+.hero-on-light .hero-stage{align-content:center}
+.hero-on-light h1{color:var(--navy)}
+.hero-on-light p.lead{color:#4A4A55}
+.hero-on-light .trust-item{color:#3E3E48;font-weight:500}
+.hero-on-light .eyebrow{
+  background:rgba(236,0,140,.10);
+  border-color:rgba(236,0,140,.38);
+  color:#C7007A; /* o #FF7AC4 original tinha ~1.9:1 sobre branco */
+}
+/* o outline claro sumia sobre branco */
+.hero-on-light .btn-outline{
+  border-color:rgba(20,20,22,.28);
+  color:var(--navy);
+}
+.hero-on-light .btn-outline:hover{
+  border-color:var(--pink);
+  background:rgba(236,0,140,.06);
+  color:var(--pink);
+}
+/* véu de legibilidade: a fita passa por cima do texto. Um branco suave atrás
+   da coluna de texto, dissolvendo para a direita, mantém a leitura limpa e
+   deixa a fita respirar do lado direito da Hero. */
+.hero-on-light .hero-copy::before{
+  content:'';position:absolute;z-index:-1;
+  top:-6%;bottom:-10%;left:-8%;right:-14%;
+  background:radial-gradient(75% 70% at 28% 45%, rgba(255,255,255,.94) 0%, rgba(255,255,255,.86) 42%, rgba(255,255,255,0) 78%);
+  pointer-events:none;
+}
+@media (max-width:920px){
+  /* em coluna única o texto é centralizado e ocupa a largura toda —
+     o véu precisa cobrir tudo, não só a esquerda */
+  .hero-on-light .hero-copy::before{
+    left:-20%;right:-20%;
+    background:radial-gradient(85% 60% at 50% 40%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.88) 50%, rgba(255,255,255,0) 82%);
+  }
+}
+
+/* ---------- faixa escura entre a Hero clara e o quiz ----------
+   .strip e o bloco de acompanhamento são <div> sem data-tone: ficam num
+   limbo entre a Hero (clara) e o verificador (escuro), então o tom sob eles
+   dependia de qual vizinho dominava a tela — e o texto quase branco deles
+   sumia quando calhava de ser o claro. Com fundo próprio param de depender
+   do sistema de tom e viram uma transição deliberada: a Hero branca fecha,
+   a faixa escura começa e emenda direto no quiz, que já é escuro. */
+/* container da faixa escura: o navy vive aqui e a onda animada (canvas) fica
+   atrás das duas partes (estatísticas + acompanhamento), que ficam
+   transparentes e acima do canvas. */
+.dark-band{position:relative;background:var(--navy);overflow:hidden}
+.band-wave{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;opacity:0;transition:opacity .8s ease}
+.dark-band.wave-active .band-wave{opacity:1}
+.strip,.acomp-band{position:relative;z-index:1;background:transparent}
+/* altura dobrada da faixa escura (estatísticas + acompanhamento): padding
+   generoso nos dois blocos, dando mais respiro nessa transição entre a Hero
+   e o quiz. */
+.strip{border-top:1px solid rgba(255,255,255,.10);padding:58px 0 29px}
+.acomp-band{padding:12px 0 55px}
+/* números e rótulos das estatísticas maiores — com a faixa mais alta, o texto
+   antigo ficava pequeno demais para o espaço. */
+/* texto das estatísticas em branco (antes os números eram rosa) — melhor
+   contraste sobre o brilho rosa do efeito de onda. */
+.strip-item strong{font-size:clamp(3rem,4.4vw,4.4rem);margin-bottom:6px;color:#FFFFFF;font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.01em;white-space:nowrap}
+.strip-item span{font-size:1.25rem;color:rgba(255,255,255,.85)}
+.strip-grid{gap:28px}
+
+/* compactação vertical do texto da Hero em telas de pouca altura, para o
+   conteúdo caber sem rolar em notebooks (1366×768 e similares). */
+@media (min-width:921px) and (max-height:800px){
+  .hero{padding-top:82px}
+  .hero-stage{row-gap:2px}
+  .hero .eyebrow{margin-bottom:4px}
+  .hero h1{margin-bottom:4px}
+  .hero p.lead{margin-bottom:8px}
+  .hero .hero-trust{margin-top:8px}
+}
+
+/* telas estreitas: coluna única, texto centralizado. */
+@media (max-width:920px){
+  .hero-stage{
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding-top:20px;padding-bottom:32px;row-gap:0;
+  }
+  .hero-copy{display:contents}
+  .hero-trust{order:2;margin-top:22px}
+}
+
+/* ================================================================
+   Cards de tradução — flip 3D (porte do componente React FlippingCard
+   para CSS puro). Frente premium (gradiente + ícone + badge + título +
+   subtítulo) → verso (descrição + benefícios + CTA), rotação de 180° em Y,
+   ~600ms com easing suave. Desktop vira no hover; touch vira no toque
+   (classe .is-flipped via JS). Backface escondida, preserve-3d. ------------ */
+.trad-grid{align-items:stretch}
+.flip-card{
+  position:relative;perspective:1000px;aspect-ratio:3/4;border-radius:18px;
+}
+/* halo rosa que acende atrás do card no hover (fica sobre a seção preta) */
+.flip-card::after{
+  content:'';position:absolute;inset:0;border-radius:18px;z-index:-1;
+  box-shadow:0 24px 60px rgba(236,0,140,0);
+  transition:box-shadow .45s var(--ease-premium);pointer-events:none;
+}
+@media(hover:hover){.flip-card:hover::after{box-shadow:0 26px 66px rgba(236,0,140,.32)}}
+.flip-inner{
+  position:relative;width:100%;height:100%;min-height:inherit;
+  transform-style:preserve-3d;
+  transition:transform .7s cubic-bezier(.4,0,.2,1);
+}
+@media (hover:hover){
+  .flip-card:hover .flip-inner{transform:rotateY(180deg)}
+}
+.flip-card.is-flipped .flip-inner{transform:rotateY(180deg)}
+
+/* faces: CONTORNO em gradiente rosa (via background-clip) + preserve-3d para o
+   conteúdo "flutuar" à frente (translateZ), fiel ao componente FlippingCard */
+.flip-front,.flip-back{
+  position:absolute;inset:0;border-radius:18px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  transform-style:preserve-3d;
+  border:1.6px solid transparent;
+  background:
+    linear-gradient(165deg,#17171c,#0f0f12) padding-box,
+    linear-gradient(135deg,#EC008C,#FF7AC4 48%,#C7007A) border-box;
+  box-shadow:0 18px 44px rgba(0,0,0,.55);
+}
+/* wrapper interno que flutua 70px à frente (translateZ) — o "pop" 3D do prompt */
+.ff-inner,.fb-inner{
+  position:absolute;inset:0;border-radius:inherit;overflow:hidden;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;
+  transform:translateZ(70px) scale(.93);
+}
+/* ----- FRENTE (dark glass sobre a seção preta) ----- */
+.ff-inner{background:linear-gradient(165deg,#1b1b21,#141417)}
+.ff-visual{
+  flex:0 0 55%;position:relative;overflow:hidden;
+  margin:16px 18px 0;border-radius:14px;
+  /* "imagem" do card: 45% da altura, com margens (fiel ao print) — grafite
+     + halo magenta forte, mantendo o vínculo com a marca */
+  background:
+    radial-gradient(125% 95% at 80% 0%,rgba(236,0,140,.4),transparent 58%),
+    linear-gradient(135deg,#26262e,#161619 55%,#0e0e11);
+  display:grid;place-items:center;
+}
+.ff-img{width:100%;height:100%;object-fit:cover;display:block}
+/* overlay sutil da marca sobre a foto: véu magenta no topo + escurecido
+   embaixo — integra a imagem ao card preto+rosa e dá profundidade */
+.ff-visual::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(150deg,rgba(236,0,140,.18),transparent 45%),
+    linear-gradient(to top,rgba(14,14,17,.5),transparent 55%);
+}
+/* corpo do card: ritmo por margens (badge → título mais espaçado; título →
+   subtítulo mais junto) p/ hierarquia clara e texto harmonizado no escuro */
+.ff-body{padding:14px 20px 16px;display:flex;flex-direction:column;flex:1;align-items:center;text-align:center;justify-content:center;gap:0}
+.ff-body h3{
+  font-family:'Bebas Neue',sans-serif;font-size:1.72rem;color:#fff;
+  letter-spacing:.06em;font-weight:400;line-height:1.02;margin-bottom:10px;
+}
+.ff-sub{
+  color:rgba(240,247,255,.72);font-size:.86rem;line-height:1.45;max-width:24ch;
+}
+
+/* ----- VERSO ----- */
+.flip-back{transform:rotateY(180deg);color:#fff}
+.fb-inner{
+  background:linear-gradient(160deg,var(--navy),var(--navy-3));
+  padding:18px 22px;justify-content:center;gap:9px;
+}
+.fb-inner::before{ /* blob rosa da marca no canto (clipado pelo overflow do inner) */
+  content:'';position:absolute;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(236,0,140,.22),transparent 65%);
+  top:-90px;right:-70px;pointer-events:none;
+}
+.flip-back h3{
+  font-family:'Bebas Neue',sans-serif;font-size:1.45rem;color:#fff;
+  letter-spacing:.02em;font-weight:400;line-height:1;position:relative;
+}
+.flip-back p{color:rgba(240,247,255,.78);font-size:.85rem;line-height:1.35;position:relative}
+.flip-back ul{list-style:none;display:flex;flex-direction:column;gap:6px;position:relative}
+.flip-back li{display:flex;gap:9px;align-items:flex-start;font-size:.8rem;line-height:1.3;color:rgba(240,247,255,.92)}
+.flip-back li svg{width:16px;height:16px;color:var(--green-light);flex-shrink:0;margin-top:1px}
+/* ===== Rainbow button (CSS puro): fill escuro + borda arco-íris animada
+   (via background-clip padding/border-box) + underglow borrado embaixo ===== */
+.fb-cta{
+  margin-top:4px;align-self:flex-start;position:relative;
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:12px 26px;border-radius:12px;text-decoration:none;
+  color:#fff;font-weight:600;font-size:.74rem;text-transform:uppercase;letter-spacing:.09em;
+  border:1.4px solid transparent;
+  background:
+    linear-gradient(#121213,#121213) padding-box,
+    linear-gradient(90deg,hsl(var(--color-1)),hsl(var(--color-5)),hsl(var(--color-3)),hsl(var(--color-4)),hsl(var(--color-2))) border-box;
+  background-size:200%;
+  animation:rainbow var(--rainbow-speed) infinite linear paused;
+  transition:transform .2s var(--ease-premium);
+}
+/* PERF: só anima a borda quando o card está virado (é quando o botão aparece).
+   Antes os 4 botões dos versos animavam escondidos o tempo todo, travando. */
+.flip-card.is-flipped .fb-cta{animation-play-state:running}
+@media(hover:hover){.flip-card:hover .fb-cta{animation-play-state:running}}
+.fb-cta::before{ /* underglow rosa borrado — ESTÁTICO (blur animado trava) */
+  content:'';position:absolute;z-index:-1;bottom:-18%;left:50%;transform:translateX(-50%);
+  width:66%;height:20%;pointer-events:none;
+  background:linear-gradient(90deg,hsl(var(--color-1)),hsl(var(--color-3)),hsl(var(--color-4)),hsl(var(--color-2)));
+  filter:blur(11px);
+}
+.fb-cta svg{width:16px;height:16px;order:2;transition:transform .3s var(--ease-premium)}
+@media(hover:hover){
+  .fb-cta:hover{transform:translateY(-2px)}
+  .fb-cta:hover svg{transform:translateX(3px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .fb-cta{animation:none}
+}
+
+/* entrada escalonada do conteúdo do verso (só quando o card está virado) */
+.fb-inner>*{opacity:0;transform:translateY(12px);transition:opacity .45s ease,transform .45s ease}
+.flip-card.is-flipped .fb-inner>*{opacity:1;transform:none}
+@media (hover:hover){.flip-card:hover .fb-inner>*{opacity:1;transform:none}}
+.fb-inner>*:nth-child(1){transition-delay:.24s}
+.fb-inner>*:nth-child(2){transition-delay:.30s}
+.fb-inner>*:nth-child(3){transition-delay:.36s}
+.fb-inner>*:nth-child(4){transition-delay:.42s}
+
+@media (prefers-reduced-motion:reduce){
+  .flip-inner{transition:none}
+  .fb-inner>*{transition:none;opacity:1;transform:none}
+}
+
+/* ---------- tipografia com escala mais editorial ---------- */
+.hero h1{
+  font-size:clamp(3rem,6.4vw,5.6rem);
+  line-height:.98;
+  letter-spacing:.005em;
+}
+.hero p.lead{
+  font-size:1.22rem;
+  max-width:560px;
+}
+.section-head h2{
+  font-size:clamp(2.2rem,4.6vw,3.4rem);
+  letter-spacing:.01em;
+}
+
+/* ---------- botões magnéticos ---------- */
+.btn.magnetic{will-change:transform}
+
+/* ---------- profundidade nas seções que ainda eram planas — mesma
+   convenção de translateY()+sombra já usada em .trad-card/.trust-card/.plan,
+   sem cores/sombras novas. ---------- */
+.t-step{transition:transform .35s var(--ease-premium)}
+.t-step:hover{transform:translateX(6px)}
+.t-dot{transition:transform .3s var(--ease-premium),box-shadow .3s}
+.t-step:hover .t-dot{transform:scale(1.08);box-shadow:0 0 0 6px var(--white),0 10px 26px rgba(236,0,140,.28)}
+.t-step:last-child:hover .t-dot{box-shadow:0 0 0 6px var(--white),0 10px 26px rgba(0,194,129,.3)}
+
+.phone{transition:transform .4s var(--ease-premium),box-shadow .4s;animation:phoneFloat 6s ease-in-out infinite}
+.phone:hover{transform:translateY(-6px);box-shadow:0 32px 70px rgba(13,27,42,.24)}
+@keyframes phoneFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+.b2b-card{transition:box-shadow .4s,transform .4s var(--ease-premium)}
+.b2b-card:hover{box-shadow:0 30px 70px rgba(236,0,140,.16)}
+
+.strip-item{transition:transform .3s var(--ease-premium)}
+.strip-item:hover{transform:translateY(-4px)}
+
+@media (prefers-reduced-motion:reduce){
+  .phone{animation:none}
+}
+
+/* ---------- linha da timeline "se desenha" junto com o scroll ---------- */
+.timeline::before{
+  bottom:auto;
+  height:calc((100% - 20px) * var(--line-p, 1));
+}
+
+/* ---------- pontes entre seções: um fio fino que cruza a borda entre duas
+   seções adjacentes, para que a transição se leia como uma continuação em
+   vez de um corte. Sem altura própria (não afeta o layout ao redor) — só
+   um ponto de luz + um traço curto centralizados sobre a linha de junção. ---------- */
+.section-bridge{
+  position:relative;height:0;display:flex;justify-content:center;
+  z-index:3;pointer-events:none;
+}
+.section-bridge::before{
+  content:'';position:absolute;top:-46px;width:2px;height:92px;
+  background:linear-gradient(180deg,transparent,var(--sb-from,var(--pink)),var(--sb-to,var(--pink)),transparent);
+  opacity:.5;
+}
+.section-bridge::after{
+  content:'';position:absolute;top:-3px;width:9px;height:9px;border-radius:50%;
+  background:var(--sb-to,var(--pink));
+  box-shadow:0 0 18px 5px var(--sb-to,var(--pink));
+  opacity:.85;
+}
+@media (prefers-reduced-motion:reduce){.section-bridge{opacity:.7}}
+
+@media (prefers-reduced-motion:reduce){
+  #cinematicBg{transition:none}
+  .cine-cursor,.cine-progress{display:none!important}
+}
+
+/* ===== Países: modo arco (o scroll controla — pin+scrub via cinematic.js).
+   Só entra por JS (.arc-mode). O grid segue NATIVO (mesmo layout/estilo de
+   sempre); a animação só desloca os cards via transform e volta ao lugar no fim.
+   As margens dão espaço vertical p/ o círculo/arco flutuarem sem cortar. */
+.countries.arc-mode{overflow:visible;position:relative}
+/* glow rosa no fundo da seção inteira — "respira" com o scroll (--arc-glow via JS) */
+.countries.arc-mode::before{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(58% 46% at 50% 56%,rgba(236,0,140,calc(.22*var(--arc-glow,0))),transparent 72%);
+}
+.countries.arc-mode .container{position:relative;z-index:1}
+.countries.arc-mode .flags-grid{overflow:visible;margin-top:80px;margin-bottom:80px}
+.countries.arc-mode .flag-card{opacity:1;will-change:transform,opacity;backface-visibility:hidden}
