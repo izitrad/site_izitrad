@@ -155,7 +155,11 @@ nav a{white-space:nowrap;flex-shrink:0}
      lead, CTAs e o documento contra a borda da viewport. */
   padding-top:10px;padding-bottom:12px;
 }
-.hero-copy{position:relative;z-index:6;grid-row:1;max-width:800px;padding-top:4px}
+/* margin:auto centraliza o bloco na página; o translateX compensa a
+   "bandeirinha" rosa da logo, que fica só do lado direito do wordmark e
+   puxaria o centro visual (baseado na imagem inteira) pra direita — o
+   ponto de referência aqui é o centro do texto "iziTrad", não da imagem */
+.hero-copy{position:relative;z-index:6;grid-row:1;max-width:950px;margin:0 auto;padding-top:4px;transform:translateX(6.84%)}
 /* espaçamento vertical mais compacto — reserva altura real pro documento
    (prioridade 1) sem depender de fonte menor nem cortar conteúdo */
 .hero .eyebrow{margin-bottom:8px}
