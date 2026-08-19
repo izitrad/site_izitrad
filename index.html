@@ -233,7 +233,10 @@ nav a:hover,nav a:focus-visible{color:var(--navy)}
 .hero p.lead{font-size:1.15rem;color:rgba(240,247,255,.82);max-width:520px;margin-bottom:36px;font-weight:300}
 .hero-ctas{display:flex;gap:16px;flex-wrap:wrap}
 .hero-trust{display:flex;gap:28px;margin-top:44px;flex-wrap:wrap}
-.hero-logo-img{width:100%;max-width:950px;height:auto;display:block;margin-top:-17%}
+/* margin-top fica no wrapper (.hero-logo-entrance, mais abaixo), não aqui —
+   initHeroPinkWipe zera a margem do <svg> ao tirá-lo do fluxo (position:absolute),
+   e isso apagava esse deslocamento se ele estivesse na própria imagem. */
+.hero-logo-img{width:100%;max-width:950px;height:auto;display:block}
 
 /* saudação de abertura: "Olá," e "somos a" entram em sequência, depois a
    logo — animação só de carregamento (não é scroll-reveal), por isso usa
@@ -242,10 +245,15 @@ nav a:hover,nav a:focus-visible{color:var(--navy)}
 .greet-word{display:inline-block;opacity:0;transform:translateY(14px);animation:heroGreetIn .8s cubic-bezier(.16,1,.3,1) forwards}
 .greet-1{animation-delay:.15s}
 .greet-2{animation-delay:.7s}
-.hero-logo-img.greet-3{opacity:0;transform:translateY(14px);animation:heroGreetIn .9s cubic-bezier(.16,1,.3,1) forwards;animation-delay:1.25s}
+/* wrapper separado do <img> de propósito: o crescimento no scroll
+   (cinematic.js/initHeroPinkWipe) também anima `transform` no #heroLogoFull,
+   e uma animação CSS sempre vence um transform inline na mesma propriedade
+   do mesmo elemento — deixar a entrada num elemento e o scroll-scale no outro
+   evita essa disputa (era a causa do crescimento "sumir" depois da entrada). */
+.hero-logo-entrance{margin-top:-17%;opacity:0;transform:translateY(14px);animation:heroGreetIn .9s cubic-bezier(.16,1,.3,1) forwards;animation-delay:1.25s}
 @keyframes heroGreetIn{to{opacity:1;transform:translateY(0)}}
 @media (prefers-reduced-motion:reduce){
-  .greet-word,.hero-logo-img.greet-3{animation:none;opacity:1;transform:none}
+  .greet-word,.hero-logo-entrance{animation:none;opacity:1;transform:none}
 }
 .trust-item{display:flex;align-items:center;gap:10px;font-size:.88rem;color:rgba(240,247,255,.75)}
 .trust-item svg{width:18px;height:18px;flex-shrink:0}
@@ -719,13 +727,37 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
   <div class="hero-atmosphere" aria-hidden="true">
     <canvas id="heroShader" class="hero-shader"></canvas>
   </div>
+  <!-- triângulo isolado (recorte justo, assets/img/hero-triangle-grow.svg)
+       que assume o crescimento depois da logo inteira (cinematic.js/
+       initHeroPinkWipe) — como não tem a wordmark ao redor desperdiçando
+       espaço, precisa de uma fração do tamanho em px pra cobrir a tela
+       (a logo inteira estouraria o limite de textura da GPU, ~16384px,
+       bem antes de conseguir cobrir cantos distantes). Mesma forma o tempo
+       todo, sem trocar de figura no meio do efeito. -->
+  <img class="hero-triangle-grow" id="heroTriangleGrow" src="assets/img/hero-triangle-grow.svg" alt="" aria-hidden="true" width="155" height="174" decoding="async">
   <div class="container hero-stage">
     <div class="hero-copy">
       <p class="hero-greeting">
         <span class="greet-word greet-1">Olá,</span>
         <span class="greet-word greet-2">somos a</span>
       </p>
-      <img src="logo-izitrad-hero.png" alt="iziTrad" class="hero-logo-img greet-3" width="1268" height="517" decoding="async">
+      <div class="hero-logo-entrance">
+        <!-- logo inlinada (não <img>) de propósito: initHeroPinkWipe precisa
+             desvanecer as letras pretas (.hlogo-fade) e o "z" rosa (.hlogo-z)
+             juntos no scroll, mantendo só o triângulo (.hlogo-tri) — não dá
+             pra estilizar paths individuais de dentro de um SVG carregado via
+             <img src>. -->
+        <svg id="heroLogoFull" class="hero-logo-img" role="img" aria-label="iziTrad" xmlns="http://www.w3.org/2000/svg" viewBox="78 100 1257 507" width="1257" height="507">
+          <path class="hlogo-pink hlogo-tri" d="M1308.22,192.53l-121.65-70.24c-9.04-5.22-20.33,1.3-20.33,11.74v140.47c0,10.43,11.3,16.96,20.33,11.74l121.65-70.24c9.04-5.22,9.04-18.26,0-23.48Z"/>
+          <path class="hlogo-fade" d="M120.96,376.94c-6.34,0-11.75-2.24-16.23-6.72-4.48-4.48-6.72-9.89-6.72-16.23s2.24-11.59,6.72-16.07c4.48-4.48,9.89-6.72,16.23-6.72s11.58,2.24,16.07,6.72c4.59,4.37,6.89,9.73,6.89,16.07s-2.3,11.86-6.89,16.23c-4.49,4.48-9.84,6.72-16.07,6.72ZM121.12,398.25c5.57,0,10.22,1.97,13.94,5.9,3.94,3.94,5.9,8.64,5.9,14.1v149.04c0,5.58-1.97,10.22-5.9,13.94-3.72,3.94-8.36,5.9-13.94,5.9h-.33c-5.47,0-10.17-1.97-14.1-5.9-3.93-3.71-5.9-8.36-5.9-13.94v-149.04c0-5.46,1.97-10.17,5.9-14.1,3.94-3.94,8.63-5.9,14.1-5.9h.33Z"/>
+          <path class="hlogo-pink hlogo-z" d="M228.35,546.48l82.96.16c5.46,0,10.11,1.91,13.94,5.74,3.94,3.94,5.9,8.64,5.9,14.1v.33c0,5.47-1.97,10.17-5.9,14.1s-8.47,5.74-13.94,5.74h-107.07c-12.9,0-21.92-6.07-27.05-18.2-1.97-4.48-2.95-8.8-2.95-12.95,0-7.32,3.11-14.1,9.35-20.33,10.71-11.15,27-28.2,48.86-51.16,19.13-20.11,33.78-35.47,43.94-46.07h-75.75c-5.58,0-10.28-1.97-14.1-5.9-3.83-3.94-5.74-8.58-5.74-13.94v-.49c0-5.35,1.91-10,5.74-13.94,3.82-3.94,8.53-5.9,14.1-5.9h99.03c13.22,0,22.46,6.07,27.71,18.2,1.97,4.48,2.95,8.8,2.95,12.95,0,7.44-3.12,14.21-9.35,20.33-35.42,37.17-66.3,69.58-92.64,97.23Z"/>
+          <path class="hlogo-fade" d="M383.63,376.94c-6.34,0-11.75-2.24-16.23-6.72-4.48-4.48-6.72-9.89-6.72-16.23s2.24-11.59,6.72-16.07c4.48-4.48,9.89-6.72,16.23-6.72s11.58,2.24,16.07,6.72c4.59,4.37,6.89,9.73,6.89,16.07s-2.3,11.86-6.89,16.23c-4.49,4.48-9.84,6.72-16.07,6.72ZM383.79,398.25c5.57,0,10.22,1.97,13.94,5.9,3.94,3.94,5.9,8.64,5.9,14.1v149.04c0,5.58-1.97,10.22-5.9,13.94-3.72,3.94-8.36,5.9-13.94,5.9h-.33c-5.47,0-10.17-1.97-14.1-5.9-3.93-3.71-5.9-8.36-5.9-13.94v-149.04c0-5.46,1.97-10.17,5.9-14.1,3.94-3.94,8.63-5.9,14.1-5.9h.33Z"/>
+          <path class="hlogo-fade" d="M592.52,351.19c0,5.47-1.97,10.17-5.9,14.1-3.83,3.83-8.47,5.74-13.94,5.74h-40.01v196.26c0,5.47-1.91,10.11-5.74,13.94s-8.64,5.9-14.1,5.9h-.33c-5.47,0-10.17-1.97-14.1-5.9-3.83-3.82-5.74-8.47-5.74-13.94v-196.26h-40.01c-5.36,0-10-1.91-13.94-5.74-3.94-3.94-5.9-8.63-5.9-14.1v-.33c0-5.46,1.97-10.17,5.9-14.1,3.93-3.82,8.58-5.74,13.94-5.74h120.02c5.46,0,10.11,1.91,13.94,5.74,3.94,3.94,5.9,8.64,5.9,14.1v.33Z"/>
+          <path class="hlogo-fade" d="M697.13,398.25c5.46,0,10.17,1.97,14.1,5.9,3.82,3.94,5.74,8.64,5.74,14.1v.33c0,5.47-1.91,10.11-5.74,13.94s-8.64,5.9-14.1,5.9h-9.35c-8.96,0-16.56,3.12-22.79,9.35-6.12,6.23-9.24,13.83-9.35,22.79v96.74c0,5.58-1.97,10.22-5.9,13.94-3.94,3.94-8.58,5.9-13.94,5.9h-.49c-5.36,0-10-1.97-13.94-5.9-3.94-3.71-5.9-8.36-5.9-13.94v-96.74c.22-20,7.27-37.06,21.15-51.16,14.1-14.1,31.15-21.15,51.16-21.15h9.35Z"/>
+          <path class="hlogo-fade" d="M896.18,425.96c18.47,18.47,27.71,40.72,27.71,66.73v74.6c0,5.58-1.97,10.22-5.9,13.94-3.94,3.94-8.58,5.9-13.94,5.9h-.49c-5.36,0-10-1.97-13.94-5.9-3.94-3.71-5.9-8.36-5.9-13.94-12.46,13.23-30.55,19.84-54.27,19.84-26.02,0-48.26-9.24-66.73-27.71-18.47-18.47-27.71-40.72-27.71-66.73s9.23-48.26,27.71-66.73c18.47-18.47,40.72-27.71,66.73-27.71s48.26,9.24,66.73,27.71ZM790.91,454.33c-10.49,10.6-15.74,23.39-15.74,38.37s5.25,27.93,15.74,38.53c10.6,10.49,23.45,15.74,38.53,15.74s27.87-5.25,38.37-15.74c10.6-10.6,15.9-23.45,15.9-38.53s-5.3-27.76-15.9-38.37c-10.6-10.6-23.39-15.9-38.37-15.9s-27.93,5.3-38.53,15.9Z"/>
+          <path class="hlogo-fade" d="M1120.81,331.03c5.35,0,10,1.91,13.94,5.74,3.94,3.94,5.9,8.64,5.9,14.1v142.32c-.11,26.02-9.4,48.15-27.87,66.4-18.47,18.36-40.66,27.55-66.57,27.55s-48.26-9.24-66.73-27.71c-18.47-18.47-27.71-40.72-27.71-66.73s9.24-48.26,27.71-66.73c18.47-18.47,40.72-27.71,66.73-27.71,23.72,0,41.81,5.47,54.27,16.4v-63.78c0-5.46,1.97-10.17,5.9-14.1,3.94-3.82,8.58-5.74,13.94-5.74h.49ZM1007.67,454.66c-10.49,10.6-15.74,23.45-15.74,38.53s5.25,27.77,15.74,38.37c10.6,10.6,23.45,15.9,38.53,15.9s27.76-5.3,38.37-15.9c10.6-10.6,15.9-23.39,15.9-38.37s-5.3-27.93-15.9-38.53c-10.6-10.6-23.39-15.9-38.37-15.9s-27.93,5.3-38.53,15.9Z"/>
+        </svg>
+      </div>
     </div>
   </div>
 </section>

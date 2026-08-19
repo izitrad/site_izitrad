@@ -149,7 +149,13 @@ nav a{white-space:nowrap;flex-shrink:0}
    nunca sobreposto por posicionamento absoluto solto. */
 .hero-stage{
   position:relative;z-index:2;
-  display:grid;grid-template-rows:auto auto;row-gap:8px;
+  /* width:100% e coluna explícita (1fr, não o "auto" implícito) de propósito:
+     sem eles a largura dependia do tamanho intrínseco do conteúdo (stretch
+     do flex do .hero-on-light não bastava sozinho), e o #heroLogoFull virou
+     position:absolute (initHeroPinkWipe), deixando de contribuir com esse
+     tamanho — tudo colapsava a quase zero. */
+  width:100%;
+  display:grid;grid-template-columns:1fr;grid-template-rows:auto auto;row-gap:8px;
   /* longhand de propósito: .hero-stage também é .container, e o shorthand
      `padding` zerava o padding lateral de 32px do container — jogando H1,
      lead, CTAs e o documento contra a borda da viewport. */
@@ -158,8 +164,20 @@ nav a{white-space:nowrap;flex-shrink:0}
 /* margin:auto centraliza o bloco na página; o translateX compensa a
    "bandeirinha" rosa da logo, que fica só do lado direito do wordmark e
    puxaria o centro visual (baseado na imagem inteira) pra direita — o
-   ponto de referência aqui é o centro do texto "iziTrad", não da imagem */
-.hero-copy{position:relative;z-index:6;grid-row:1;max-width:950px;margin:0 auto;padding-top:4px;transform:translateX(6.84%)}
+   ponto de referência aqui é o centro do texto "iziTrad", não da imagem.
+   width:100% explícito de propósito: sem ele o item de grid dependia do
+   tamanho intrínseco do conteúdo pra "esticar", e o #heroLogoFull virou
+   position:absolute (initHeroPinkWipe), deixando de contribuir com esse
+   tamanho — o bloco colapsava a zero e a logo (absoluta, sem afetar isso)
+   ficava desalinhada com o resto da página. */
+.hero-copy{position:relative;z-index:6;grid-row:1;width:100%;max-width:950px;margin:0 auto;padding-top:4px;transform:translateX(6.84%)}
+
+.hlogo-pink{fill:#FF0099;stroke:#FF0099;stroke-miterlimit:10;stroke-width:3px}
+/* posição/tamanho reais são calculados e aplicados via JS a cada quadro
+   (cinematic.js/initHeroPinkWipe) — aqui só o necessário pra ele nascer
+   invisível e fora do fluxo, sem influenciar o layout da Hero. */
+.hero-triangle-grow{position:fixed;opacity:0;pointer-events:none;z-index:9;display:block}
+.hlogo-fade{fill:#000;stroke:#000;stroke-miterlimit:10;stroke-width:3px}
 /* espaçamento vertical mais compacto — reserva altura real pro documento
    (prioridade 1) sem depender de fonte menor nem cortar conteúdo */
 .hero .eyebrow{margin-bottom:8px}
