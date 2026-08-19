@@ -31,7 +31,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://flagcdn.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,400&family=JetBrains+Mono:wght@500;700&family=Playfair+Display:ital@1&family=Fraunces:opsz,wght@9..144,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=DM+Sans:ital,opsz,wght@0,9..40,100..700;1,9..40,400&family=JetBrains+Mono:wght@500;700&family=Playfair+Display:ital@1&family=Fraunces:opsz,wght@9..144,400&display=swap" rel="stylesheet">
 
 <script type="importmap">
 {
@@ -670,9 +670,9 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
 .qz-trad{margin-top:18px;margin-bottom:0;border-color:rgba(236,0,140,.35)}
 .brand-txt{color:#EC008C;font-weight:700}
 
-/* Seção Traduções — fica PRETA pelo sistema de tom (data-tone="dark" no HTML):
-   o fundo persistente escuro (#cinematicBg) aparece por trás da seção
-   transparente. Aqui só ajustamos o cabeçalho p/ texto claro sobre o preto. */
+/* Seção Traduções — fundo preto puro definido em cinematic.css (.traducoes),
+   carregado depois de propósito pra sobrescrever essa lista antiga. Aqui só
+   ajustamos o cabeçalho p/ texto claro sobre o preto. */
 .traducoes .section-head h2{color:#fff}
 .traducoes .section-head p{color:rgba(240,247,255,.72)}
 .trad-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;max-width:1232px;margin:0 auto 40px}
@@ -738,6 +738,81 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
        tamanho (viewBox com padding diferente do path real), visível como
        um "fantasma" no crossfade entre as duas peças. -->
   <svg class="hero-triangle-grow" id="heroTriangleGrow" aria-hidden="true"></svg>
+  <!-- conteúdo que aparece por cima do rosa depois que ele cobre a tela
+       inteira (initHeroPinkWipe/initHeroReveal em cinematic.js) — entra em
+       sequência conforme o scroll continua, reaproveitando o MESMO scrub da
+       animação do triângulo. Frame de referência sempre 1920x1080 (tamanho
+       de export dos SVGs de texto, convertidos em contorno), escalado via
+       JS pra cobrir a viewport inteira (tipo object-fit:cover) — por isso
+       as posições abaixo estão sempre em px desse frame fixo, nunca da tela
+       real. Os 4 textos vieram como SVGs separados, cada um do seu próprio
+       "artboard" (sem posição entre si) — os transforms de cada <g> abaixo
+       foram calculados a partir do bounding box real de cada um (getBBox),
+       não são as coordenadas originais dos arquivos. -->
+  <div class="hero-reveal" id="heroReveal" aria-hidden="true">
+    <div class="hero-reveal-frame">
+      <svg class="hr-svg" viewBox="0 0 1920 1080">
+        <g transform="translate(44.97,33.63) scale(0.8987)" fill="#000">
+        <g class="hr-el">
+          <path d="M89.26,98.37h29.95l39.13,117.56h-30.6l-6.12-20.61h-34.63l-6.12,20.61h-30.76l39.13-117.56ZM114.06,169.55l-9.82-33.18-9.66,33.18h19.49Z"/>
+          <path d="M213.91,98.37c12.88,0,23.22,3.73,31,11.19,7.78,7.46,11.68,16.78,11.68,27.94s-3.87,20.51-11.6,28.02c-7.73,7.52-18.09,11.27-31.08,11.27h-17.55v39.13h-27.86v-117.56h45.42ZM213.27,149.58c4.51,0,8.08-1.13,10.71-3.38,2.63-2.25,3.95-5.15,3.95-8.7s-1.32-6.28-3.95-8.54c-2.63-2.25-6.2-3.38-10.71-3.38h-16.91v24h16.91Z"/>
+          <path d="M283.8,113.99c11.92-11.92,26.36-17.88,43.32-17.88s31.24,5.96,43.16,17.88c11.92,11.92,17.88,26.31,17.88,43.16s-5.96,31.43-17.88,43.4c-11.92,11.97-26.31,17.96-43.16,17.96s-31.4-5.98-43.32-17.96c-11.92-11.97-17.88-26.44-17.88-43.4s5.96-31.24,17.88-43.16ZM304.1,180.18c6.33,6.44,14.01,9.66,23.03,9.66s16.53-3.19,22.87-9.58c6.33-6.39,9.5-14.09,9.5-23.11s-3.17-16.56-9.5-22.95c-6.34-6.39-13.96-9.58-22.87-9.58s-16.59,3.2-23.03,9.58c-6.44,6.39-9.66,14.04-9.66,22.95s3.22,16.7,9.66,23.03Z"/>
+          <path d="M400.08,199.18l17.23-17.55c7.94,7.73,16.69,11.6,26.25,11.6,4.61,0,8.24-.94,10.87-2.82,2.63-1.88,3.95-4.48,3.95-7.81,0-2.47-1.02-4.64-3.06-6.52-2.04-1.88-4.7-3.46-7.97-4.75-3.28-1.29-6.93-2.58-10.95-3.87-4.03-1.29-8.03-2.9-12-4.83-3.97-1.93-7.6-4.16-10.87-6.68-3.28-2.52-5.93-5.96-7.97-10.31-2.04-4.35-3.06-9.31-3.06-14.9,0-10.31,3.65-18.65,10.95-25.04,7.3-6.39,16.96-9.58,28.99-9.58,7.41,0,14.63,1.58,21.66,4.75,7.03,3.17,13.13,7.97,18.28,14.41l-19.33,15.3c-4.73-6.01-11.33-9.12-19.81-9.34-3.97,0-7.25.86-9.82,2.58-2.58,1.72-3.87,3.92-3.87,6.6,0,2.25,1.02,4.21,3.06,5.88,2.04,1.67,4.7,3.09,7.97,4.27,3.27,1.18,6.9,2.39,10.87,3.62,3.97,1.24,7.97,2.82,12,4.75s7.67,4.16,10.95,6.68c3.27,2.52,5.93,5.96,7.97,10.31,2.04,4.35,3.06,9.32,3.06,14.9,0,11.17-3.81,20.24-11.43,27.22-7.62,6.98-17.82,10.47-30.6,10.47-17.82,0-32.27-6.44-43.32-19.33Z"/>
+          <path d="M493.81,98.37h90.83v26.73h-31.4v90.83h-27.86v-90.83h-31.57v-26.73Z"/>
+          <path d="M625.06,215.93h-27.86v-117.56h27.86v117.56Z"/>
+          <path d="M723.46,215.93h-78.27v-117.56h27.86v89.7h50.41v27.86Z"/>
+          <path d="M765.01,98.37h29.95l39.13,117.56h-30.6l-6.12-20.61h-34.63l-6.12,20.61h-30.76l39.13-117.56ZM789.81,169.55l-9.82-33.18-9.66,33.18h19.49Z"/>
+          <path d="M844.24,215.93v-117.56h28.18l35.43,60.88,35.43-60.88h28.18v117.56h-27.86v-69.89l-28.51,49.12h-14.49l-28.51-49.12v69.89h-27.86Z"/>
+          <path d="M991.76,98.37h75.05v25.45h-47.35v19.49h44.13v25.12h-44.13v20.78h48.96v26.73h-76.66v-117.56Z"/>
+          <path d="M1084.52,215.93v-117.56h27.86l45.58,67.96v-67.96h28.02v117.56h-28.02l-45.58-67.96v67.96h-27.86Z"/>
+          <path d="M1198.38,98.37h90.83v26.73h-31.4v90.83h-27.86v-90.83h-31.57v-26.73Z"/>
+          <path d="M1315.62,113.99c11.92-11.92,26.36-17.88,43.32-17.88s31.24,5.96,43.16,17.88,17.88,26.31,17.88,43.16-5.96,31.43-17.88,43.4c-11.92,11.97-26.31,17.96-43.16,17.96s-31.4-5.98-43.32-17.96c-11.92-11.97-17.88-26.44-17.88-43.4s5.96-31.24,17.88-43.16ZM1335.92,180.18c6.33,6.44,14.01,9.66,23.03,9.66s16.53-3.19,22.87-9.58c6.33-6.39,9.5-14.09,9.5-23.11s-3.17-16.56-9.5-22.95c-6.34-6.39-13.96-9.58-22.87-9.58s-16.59,3.2-23.03,9.58c-6.44,6.39-9.66,14.04-9.66,22.95s3.22,16.7,9.66,23.03Z"/>
+        </g>
+        </g>
+        <g transform="translate(179.20,207.21) scale(0.8506)" fill="#000">
+        <g class="hr-el">
+          <path d="M143.79,79.7c17.24,0,31.37,5.33,42.38,15.99,11.02,10.66,16.52,23.94,16.52,39.86s-5.48,29.33-16.45,39.93c-10.97,10.61-25.12,15.91-42.46,15.91h-37.03v-111.69h37.03ZM133.23,105.71v59.67h10.56c9.49,0,17.06-2.83,22.72-8.49s8.49-12.83,8.49-21.5-2.88-15.43-8.64-21.19c-5.76-5.76-13.29-8.64-22.57-8.64l-10.56.15Z"/>
+          <path d="M218.15,79.7h71.3v24.17h-44.98v18.51h41.92v23.87h-41.92v19.74h46.51v25.4h-72.83v-111.69Z"/>
+          <path d="M346.82,79.7h26.47v43.3h36.87v-43.3h26.47v111.69h-26.47v-41.92h-36.87v41.92h-26.47v-111.69Z"/>
+          <path d="M483.45,79.7h28.46l37.18,111.69h-29.07l-5.81-19.58h-32.9l-5.81,19.58h-29.22l37.18-111.69ZM507.01,147.32l-9.33-31.52-9.18,31.52h18.51Z"/>
+          <path d="M585.2,191.39h-26.47v-111.69h26.47v111.69Z"/>
+          <path d="M631.86,79.7h28.46l37.18,111.69h-29.07l-5.81-19.58h-32.9l-5.81,19.58h-29.22l37.18-111.69ZM655.42,147.32l-9.33-31.52-9.18,31.52h18.51Z"/>
+        </g>
+        </g>
+        <g transform="translate(113.41,144.05) scale(0.9534)" fill="#fff">
+        <g class="hr-el hr-sem">
+          <path d="M989.25,236.46l19.2-19.56c8.85,8.61,18.6,12.92,29.25,12.92,5.14,0,9.18-1.05,12.11-3.14,2.93-2.09,4.4-4.99,4.4-8.7,0-2.75-1.14-5.17-3.41-7.27-2.27-2.09-5.23-3.86-8.88-5.29-3.65-1.44-7.72-2.87-12.2-4.31-4.49-1.44-8.94-3.23-13.37-5.38-4.43-2.15-8.46-4.63-12.11-7.45-3.65-2.81-6.61-6.64-8.88-11.48-2.27-4.84-3.41-10.38-3.41-16.6,0-11.48,4.06-20.78,12.2-27.9,8.13-7.12,18.9-10.68,32.3-10.68,8.25,0,16.3,1.77,24.13,5.29,7.83,3.53,14.62,8.88,20.36,16.06l-21.53,17.05c-5.27-6.7-12.62-10.17-22.07-10.41-4.43,0-8.07.96-10.94,2.87-2.87,1.92-4.31,4.37-4.31,7.36,0,2.51,1.14,4.7,3.41,6.55,2.27,1.86,5.23,3.44,8.88,4.75,3.65,1.32,7.68,2.66,12.11,4.04,4.42,1.38,8.88,3.14,13.37,5.29s8.55,4.64,12.2,7.45c3.65,2.81,6.61,6.64,8.88,11.48,2.27,4.84,3.41,10.38,3.41,16.6,0,12.44-4.25,22.55-12.74,30.32-8.5,7.78-19.86,11.66-34.09,11.66-19.86,0-35.95-7.18-48.27-21.53Z"/>
+          <path d="M1102.29,124.14h83.61v28.35h-52.75v21.71h49.16v27.99h-49.16v23.15h54.55v29.79h-85.41V124.14Z"/>
+          <path d="M1205.64,255.12V124.14h31.4l39.47,67.82,39.47-67.82h31.4v130.98h-31.04v-77.87l-31.76,54.73h-16.15l-31.76-54.73v77.87h-31.04Z"/>
+        </g>
+        <g class="hr-el hr-sair">
+          <path d="M1412.7,236.46l19.2-19.56c8.85,8.61,18.6,12.92,29.25,12.92,5.14,0,9.18-1.05,12.11-3.14,2.93-2.09,4.4-4.99,4.4-8.7,0-2.75-1.14-5.17-3.41-7.27-2.27-2.09-5.23-3.86-8.88-5.29-3.65-1.44-7.71-2.87-12.2-4.31-4.49-1.44-8.94-3.23-13.37-5.38-4.43-2.15-8.46-4.63-12.11-7.45-3.65-2.81-6.61-6.64-8.88-11.48-2.27-4.84-3.41-10.38-3.41-16.6,0-11.48,4.07-20.78,12.2-27.9,8.13-7.12,18.9-10.68,32.3-10.68,8.25,0,16.3,1.77,24.13,5.29,7.83,3.53,14.62,8.88,20.36,16.06l-21.53,17.05c-5.26-6.7-12.62-10.17-22.07-10.41-4.43,0-8.07.96-10.95,2.87-2.87,1.92-4.31,4.37-4.31,7.36,0,2.51,1.13,4.7,3.41,6.55,2.27,1.86,5.23,3.44,8.88,4.75,3.65,1.32,7.68,2.66,12.11,4.04,4.42,1.38,8.88,3.14,13.37,5.29,4.49,2.15,8.55,4.64,12.2,7.45,3.65,2.81,6.61,6.64,8.88,11.48,2.27,4.84,3.41,10.38,3.41,16.6,0,12.44-4.25,22.55-12.74,30.32-8.49,7.78-19.86,11.66-34.09,11.66-19.86,0-35.95-7.18-48.27-21.53Z"/>
+          <path d="M1558.03,124.14h33.37l43.6,130.98h-34.09l-6.82-22.97h-38.58l-6.82,22.97h-34.27l43.6-130.98ZM1585.66,203.44l-10.94-36.96-10.77,36.96h21.71Z"/>
+          <path d="M1677.35,255.12h-31.04V124.14h31.04v130.98Z"/>
+          <path d="M1750.38,124.14c14.35,0,25.87,4.16,34.54,12.47,8.67,8.32,13.01,18.69,13.01,31.13,0,8.25-2.09,15.73-6.28,22.43-4.19,6.7-9.93,11.72-17.22,15.07l26.2,49.88h-35.35l-21.53-43.6h-12.92v43.6h-31.04V124.14h50.6ZM1749.66,181.2c5.02,0,9-1.26,11.93-3.77,2.93-2.51,4.4-5.74,4.4-9.69s-1.47-7-4.4-9.51c-2.93-2.51-6.91-3.77-11.93-3.77h-18.84v26.73h18.84Z"/>
+        </g>
+        </g>
+        <g transform="translate(-284.30,230.66) scale(1.0415)" fill="#fff">
+        <g class="hr-el">
+          <path d="M1024.65,199.05c22.77,0,41.43,7.04,55.99,21.12,14.55,14.08,21.83,31.63,21.83,52.65s-7.24,38.74-21.73,52.75c-14.49,14.01-33.18,21.02-56.09,21.02h-48.91v-147.54h48.91ZM1010.71,233.41v78.82h13.95c12.53,0,22.54-3.74,30.01-11.22,7.48-7.48,11.22-16.94,11.22-28.4s-3.81-20.38-11.42-27.99c-7.61-7.61-17.55-11.42-29.81-11.42l-13.95.2Z"/>
+          <path d="M1122.88,199.05h94.18v31.93h-59.42v24.46h55.38v31.53h-55.38v26.07h61.44v33.55h-96.21v-147.54Z"/>
+          <path d="M1310.24,218.65c14.96-14.96,33.08-22.44,54.37-22.44,11.99,0,23.24,2.6,33.75,7.78,10.51,5.19,19.33,12.3,26.48,21.32l-29.1,21.42c-8.22-9.83-18.59-14.75-31.13-14.75-11.19,0-20.82,4.01-28.9,12.03-8.08,8.02-12.13,17.62-12.13,28.8s4.01,20.99,12.03,29c8.01,8.02,17.68,12.03,29,12.03,12.66,0,22.91-4.78,30.72-14.35l31.12,18.8c-7.14,9.84-16.1,17.55-26.88,23.14-10.78,5.59-22.43,8.39-34.97,8.39-21.29,0-39.41-7.51-54.37-22.54-14.96-15.02-22.43-33.18-22.43-54.47s7.48-39.21,22.43-54.17Z"/>
+          <path d="M1481.42,199.05h37.59l49.11,147.54h-38.4l-7.68-25.87h-43.45l-7.68,25.87h-38.6l49.11-147.54ZM1512.55,288.38l-12.33-41.63-12.13,41.63h24.46Z"/>
+          <path d="M1575.41,325.57l21.63-22.03c9.97,9.7,20.95,14.55,32.94,14.55,5.79,0,10.34-1.18,13.64-3.54,3.3-2.36,4.95-5.62,4.95-9.8,0-3.1-1.28-5.83-3.84-8.19-2.56-2.36-5.9-4.35-10-5.96-4.11-1.62-8.69-3.23-13.74-4.85-5.05-1.62-10.07-3.64-15.06-6.06-4.99-2.42-9.53-5.22-13.64-8.39-4.11-3.17-7.45-7.48-10-12.94-2.56-5.46-3.84-11.69-3.84-18.7,0-12.94,4.58-23.41,13.74-31.43,9.16-8.01,21.29-12.03,36.38-12.03,9.3,0,18.36,1.99,27.18,5.96,8.82,3.98,16.47,10,22.94,18.09l-24.25,19.2c-5.93-7.54-14.22-11.45-24.86-11.72-4.99,0-9.09,1.08-12.33,3.23-3.23,2.16-4.85,4.92-4.85,8.29,0,2.83,1.28,5.29,3.84,7.38,2.56,2.09,5.89,3.88,10,5.36,4.11,1.48,8.66,3,13.64,4.55,4.98,1.55,10,3.54,15.06,5.96,5.05,2.43,9.63,5.22,13.74,8.39,4.11,3.17,7.44,7.48,10,12.93,2.56,5.46,3.84,11.69,3.84,18.7,0,14.01-4.79,25.4-14.35,34.16-9.57,8.76-22.37,13.14-38.4,13.14-22.37,0-40.49-8.08-54.37-24.25Z"/>
+          <path d="M1739.12,199.05h37.59l49.11,147.54h-38.4l-7.68-25.87h-43.45l-7.68,25.87h-38.6l49.11-147.54ZM1770.24,288.38l-12.33-41.63-12.13,41.63h24.46Z"/>
+        </g>
+        </g>
+      </svg>
+      <div class="hr-el hr-copy">Você envia seu documento assinado digitalmente, a gente apostila em cartório credenciado e devolve o PDF pronto em até 24 horas, válido em mais de 120 países. Simples assim.</div>
+      <div class="hr-el hr-ctas">
+        <a href="https://wa.me/5511999999999?text=Oi!%20Quero%20apostilar%20um%20documento%20digital." class="btn btn-green" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.3 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2.01-1.42.25-.7.25-1.29.17-1.42-.07-.12-.27-.2-.57-.35z"/><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.05-1.32A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3 .79.8-2.92-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
+          Apostilar pelo WhatsApp
+        </a>
+        <a href="#preco" class="btn btn-white">Ver preços</a>
+      </div>
+    </div>
+  </div>
   <div class="container hero-stage">
     <div class="hero-copy">
       <p class="hero-greeting">
@@ -764,41 +839,6 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
     </div>
   </div>
 </section>
-
-<!-- FAIXA ESCURA (estatísticas + acompanhamento) com onda animada de fundo -->
-<div class="dark-band">
-<canvas id="bandWave" class="band-wave" aria-hidden="true"></canvas>
-<div class="strip">
-  <div class="container strip-grid">
-    <div class="strip-item"><strong data-count="120" data-suffix="+">0</strong><span>países que aceitam<br>a apostila</span></div>
-    <div class="strip-item"><strong>24h</strong><span>prazo médio<br>de entrega</span></div>
-    <div class="strip-item"><strong data-count="100" data-suffix="%">0</strong><span>digital, do envio<br>à entrega</span></div>
-    <div class="strip-item"><strong>R$ 99,90</strong><span>a partir de,<br>por documento</span></div>
-  </div>
-</div>
-
-<!-- BLOCO ACOMPANHAMENTO -->
-<div class="acomp-band">
-  <div class="container">
-    <div style="background:linear-gradient(135deg,rgba(236,0,140,.28),rgba(0,135,90,.18));border:1.5px solid rgba(124,185,232,.45);border-radius:20px;padding:28px 36px;display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap;" class="reveal acomp-card">
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-        <div style="width:48px;height:48px;border-radius:14px;background:rgba(236,0,140,.25);border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;flex-shrink:0;box-shadow:0 4px 14px rgba(236,0,140,.2);">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--sky)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        </div>
-        <div>
-          <p style="font-weight:700;color:var(--white);font-size:1rem;margin-bottom:3px;">Já tem um pedido? Acompanhe em tempo real.</p>
-          <p style="color:rgba(240,247,255,.72);font-size:.88rem;">Digite o número do seu protocolo e veja exatamente em qual etapa está o seu documento, sem precisar perguntar no WhatsApp.</p>
-        </div>
-      </div>
-      <a href="/acompanhar" style="display:inline-flex;align-items:center;gap:9px;background:var(--pink);color:var(--white);padding:13px 24px;border-radius:50px;font-weight:700;font-size:.9rem;text-decoration:none;white-space:nowrap;transition:transform .15s,box-shadow .15s;box-shadow:0 6px 20px rgba(236,0,140,.4);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 28px rgba(236,0,140,.55)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 6px 20px rgba(236,0,140,.4)'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        Consultar meu pedido
-      </a>
-    </div>
-  </div>
-</div>
-</div>
-
 
 <section class="traducoes" id="traducoes" data-tone="dark">
   <div class="container">

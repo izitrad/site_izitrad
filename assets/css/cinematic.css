@@ -69,7 +69,7 @@
    nota: era ".b2b-card" (o cartão navy interno) por engano — corrigido para
    ".b2b-section" (o wrapper externo), senão o navy do cartão some. */
 .hero,.calc-section,.qz-section,.b2b-section,
-.versus,.docs-section,.traducoes,.strip,
+.versus,.docs-section,.strip,
 .flow,.receive,.trust-section,#preco,#faq{
   background:transparent;
 }
@@ -77,6 +77,11 @@
    HTML: assim o tom global já fica claro durante o pin e o FAQ (claro) logo
    abaixo nunca pisca escuro na transição. */
 .countries{background:linear-gradient(165deg,var(--tone-dark-a),var(--tone-dark-b) 60%,var(--tone-dark-a))}
+/* Traduções também tem fundo PRÓPRIO — preto puro (#000), não o gradiente
+   escuro (#141416→#202023) do tom compartilhado — pedido explícito, só
+   nesta seção. Por isso saiu da lista acima (que deixa transparente pra
+   revelar o fundo persistente #cinematicBg por trás). */
+.traducoes{background:#000}
 /* o rodapé fica FORA da lista de propósito: ele é o fim da página, então numa
    viewport alta nunca chega a ser a seção com maior área visível — o tom
    permanecia claro e o texto claro do rodapé sumia. Mantendo o navy próprio ele
@@ -182,6 +187,31 @@ nav a{white-space:nowrap;flex-shrink:0}
    opacity nele: essa regra sozinha controla o aparecimento. */
 .hero-triangle-grow{position:fixed;opacity:0;pointer-events:none;z-index:9;display:block;animation:heroGreetIn .9s cubic-bezier(.16,1,.3,1) forwards;animation-delay:1.25s}
 .hlogo-fade{fill:#000;stroke:#000;stroke-miterlimit:10;stroke-width:3px}
+
+/* ---------- Hero: texto revelado quando o rosa cobre a tela ----------
+   Aparece por cima do #heroTriangleGrow depois que ele cobre a viewport
+   inteira, entrando em sequência conforme o scroll continua — reaproveita
+   o MESMO scrub da animação do triângulo, só numa faixa de tempo depois
+   dela (ver initHeroPinkWipe em cinematic.js). Frame de referência sempre
+   1920x1080 (tamanho de export dos SVGs de texto), escalado via JS pra
+   cobrir a viewport inteira (tipo object-fit:cover) — por isso todo
+   posicionamento aqui dentro é em px fixos desse frame, não da tela real. */
+.hero-reveal{position:fixed;inset:0;pointer-events:none;z-index:11}
+.hero-reveal-frame{position:absolute;top:50%;left:50%;width:1920px;height:1080px}
+.hr-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.hr-el{opacity:0}
+.hr-copy{position:absolute;top:660px;left:250px;width:1050px;color:#fff;font-family:'DM Sans',sans-serif;font-size:40px;line-height:1.5;font-weight:200;letter-spacing:0.9px}
+.hr-ctas{position:absolute;top:879px;right:90px;display:flex;gap:22px;pointer-events:auto}
+.hr-ctas .btn{font-size:12px;padding:11px 20.2px}
+.hr-ctas .btn svg{width:12px;height:12px}
+.btn-white{background:#fff;color:var(--navy)}
+.btn-white:hover{box-shadow:0 6px 20px rgba(0,0,0,.18)}
+@media (max-width:900px){
+  /* frame de 1920px cobrindo uma tela estreita corta demais dos lados —
+     sem um redesign específico pra mobile, melhor esconder o texto revelado
+     e deixar só o rosa sólido (efeito original) do que mostrar cortado. */
+  .hero-reveal{display:none}
+}
 /* espaçamento vertical mais compacto — reserva altura real pro documento
    (prioridade 1) sem depender de fonte menor nem cortar conteúdo */
 .hero .eyebrow{margin-bottom:8px}

@@ -369,6 +369,21 @@ function initHeroPinkWipe() {
   const entrance = document.querySelector('.hero-logo-entrance');
   const triGrow = document.getElementById('heroTriangleGrow');
   const greeting = document.querySelector('.hero-greeting');
+  // textos que aparecem por cima do rosa quando ele cobre a tela inteira
+  // (ver comentário grande no CSS, .hero-reveal) — opcional: se não existir
+  // no HTML, o resto do efeito (crescimento do triângulo) segue normal.
+  const heroReveal = document.getElementById('heroReveal');
+  const heroRevealFrame = heroReveal && heroReveal.querySelector('.hero-reveal-frame');
+  const hrEls = heroReveal ? [...heroReveal.querySelectorAll('.hr-el')] : [];
+  // menu fixo do site — some junto com a wordmark (mesmo fadeOpacity, ver
+  // applyGrowth) pra abrir espaço extra pro texto revelado, que não precisa
+  // mais reservar margem de segurança contra ele. Volta a aparecer ao rolar
+  // de volta, exatamente como todo o resto do efeito.
+  const siteHeader = document.querySelector('header');
+  // bolha flutuante do WhatsApp — some junto (mesmo motivo do menu): fica
+  // redundante com o botão "Apostilar pelo WhatsApp" do próprio texto
+  // revelado, então não faz sentido os dois aparecerem juntos.
+  const wppFloat = document.querySelector('.wpp-float');
   // wordmark preta + "z" rosa + "Olá, somos a": um bloco só que cresce
   // junto com a logo na fase 1 e desvanece perto do handoff.
   const fadeSvgParts = document.querySelectorAll('.hlogo-fade, .hlogo-z');
@@ -414,6 +429,15 @@ function initHeroPinkWipe() {
     // página carrega, antes do delay de 1.25s acabar, fazia o triângulo
     // aparecer sozinho na tela antes da logo e do "Olá, somos a").
     gsap.set(logoPinkParts, { opacity: 0 });
+
+    // frame de referência do texto revelado (1920x1080, tamanho de export
+    // dos SVGs) escalado tipo object-fit:cover — cobre a viewport inteira
+    // sem sobrar borda, do jeito que cresce/encolhe com a tela.
+    if (heroRevealFrame) {
+      const s = Math.max(window.innerWidth / 1920, window.innerHeight / 1080);
+      heroRevealFrame.style.transform = `translate(-50%,-50%) scale(${s.toFixed(4)})`;
+    }
+    gsap.set(hrEls, { opacity: 0, y: 40 });
 
     const r = logo.getBoundingClientRect(); // medida em fluxo normal, tamanho de repouso
     const w0 = r.width, h0 = r.height;
@@ -537,6 +561,17 @@ function initHeroPinkWipe() {
         greeting.style.transform = groupTransform; // mesmo translate+scale da logo — cresce junto
         greeting.style.opacity = fadeOpacity;
       }
+      if (siteHeader) {
+        siteHeader.style.opacity = fadeOpacity;
+        // sem isso o menu (invisível, mas ainda em cima de tudo em
+        // z-index) continuava clicável/hover-ável por cima do conteúdo
+        // revelado, mesmo com opacity:0.
+        siteHeader.style.pointerEvents = fadeT >= 1 ? 'none' : '';
+      }
+      if (wppFloat) {
+        wppFloat.style.opacity = fadeOpacity;
+        wppFloat.style.pointerEvents = fadeT >= 1 ? 'none' : '';
+      }
 
       // o triângulo (#heroTriangleGrow) é o MESMO elemento do início ao
       // fim — cresce continuamente a partir de tw, acompanhando a mesma
@@ -551,21 +586,59 @@ function initHeroPinkWipe() {
 
     const tl = gsap.timeline({
       scrollTrigger: {
-        // scroll mais longo (320% em vez de 170%) => a mesma taxa linear de
-        // crescimento fica espalhada por mais distância de rolagem, então
-        // cada "giro" de scroll cresce menos.
-        trigger: hero, start: 'top top', end: '+=320%', pin: true, scrub: 1, invalidateOnRefresh: true,
+        // scroll mais longo (420% em vez de 320%) => sobra distância extra
+        // depois do rosa cobrir a tela pra revelar os textos abaixo, sem
+        // apertar o ritmo do crescimento do triângulo em si (ver duration
+        // 0.9 do tween de crescimento — inalterado, só o que vem DEPOIS
+        // dele ficou mais espaçado).
+        trigger: hero, start: 'top top', end: '+=470%', pin: true, scrub: 1, invalidateOnRefresh: true,
+        // o scrub só chama applyGrowth() ENQUANTO o scroll está dentro do
+        // pin — ao sair dele (pra qualquer lado), ele para de atualizar e a
+        // última opacity aplicada (0, escondido) ficava PRA SEMPRE no menu
+        // e na bolha do WhatsApp, mesmo em seções bem depois da Hero
+        // (testado e confirmado: sumiam de vez assim que o pin passava).
+        // onLeave/onLeaveBack cobrem os dois sentidos de sair do pin —
+        // fora dele os dois sempre voltam a aparecer normalmente.
+        onLeave: () => {
+          if (siteHeader) { siteHeader.style.opacity = ''; siteHeader.style.pointerEvents = ''; }
+          if (wppFloat) { wppFloat.style.opacity = ''; wppFloat.style.pointerEvents = ''; }
+        },
+        onLeaveBack: () => {
+          if (siteHeader) { siteHeader.style.opacity = ''; siteHeader.style.pointerEvents = ''; }
+          if (wppFloat) { wppFloat.style.opacity = ''; wppFloat.style.pointerEvents = ''; }
+        },
+        // o scrub também não retomava sozinho ao REENTRAR no pin rolando de
+        // volta (onEnter/onEnterBack) depois de tê-lo deixado — o valor
+        // interno do tween já está certo (é só a chamada de applyGrowth que
+        // não disparava), então chamar ela direto aqui resincroniza tudo
+        // (menu, bolha do WhatsApp, triângulo, textos) de uma vez.
+        onEnter: () => applyGrowth(),
+        onEnterBack: () => applyGrowth(),
       }
     })
-      // duration 0.9 (não 1) => sobra 0.9 a 1 como pausa parada, rosa já
-      // cobrindo tudo, antes de soltar o pin — sem essa pausa a próxima
-      // seção aparecia rápido demais.
+      // duration 0.9 (não 1) => sobra 0.9 em diante como "pausa" com o rosa
+      // já cobrindo tudo — é exatamente essa folga que os textos abaixo
+      // usam pra entrar, em vez de ficar parada à toa.
       //
       // ease 'power1.in' (não 'none'): curva ÚNICA e contínua, sempre
       // determinada pela posição do scroll (via scrub) — só começa mais
       // devagar e vai acelerando, em vez de crescer no mesmo ritmo do
       // primeiro ao último pixel.
       .to(proxy, { w: triTargetWidth, ease: 'power1.in', duration: 0.9, onUpdate: applyGrowth }, 0);
+
+    // textos entrando em sequência, presos ao MESMO scrub — cada um só
+    // avança conforme o usuário continua rolando (não é um timer, é
+    // posição de scroll mesmo). offset 0.9 = exatamente onde o triângulo
+    // termina de crescer, então a entrada começa assim que o rosa cobre a
+    // tela, nunca antes.
+    hrEls.forEach((el, i) => {
+      const start = 0.9 + i * 0.07;
+      tl.fromTo(el, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.06, ease: 'none' }, start);
+    });
+    // folga parada no final, com tudo já revelado, antes de soltar o pin —
+    // sem isso a próxima seção aparecia assim que o último botão terminava
+    // de entrar, sem dar tempo de ler o conteúdo.
+    tl.to({}, { duration: 0.15 }, 1.30);
 
     applyGrowth(); // estado inicial correto (repouso) sem esperar o 1º scroll
     currentST = tl.scrollTrigger;
