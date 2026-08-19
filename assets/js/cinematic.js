@@ -377,13 +377,9 @@ function initHeroPinkWipe() {
   // se desloca/cresce (rede de segurança extra além do cálculo de
   // posição/tamanho, que já nasce igual ao original).
   const logoPinkParts = document.querySelectorAll('.hlogo-tri');
-  if (!hero || !logo || !entrance || !triGrow || reduceMotion) return;
+  const triPath = logoPinkParts[0];
+  if (!hero || !logo || !entrance || !triGrow || !triPath || reduceMotion) return;
 
-  // posição do triângulo dentro do SVG da logo inteira (ver viewBox no
-  // <svg id="heroLogoFull"> do index.html), como fração da largura/altura.
-  const TRI_WIDTH_FRAC = 0.1183;
-  const ORIGIN_X_FRAC = 0.9249;
-  const ORIGIN_Y_FRAC = 0.2056;
   // até quantas vezes o tamanho de repouso a logo INTEIRA cresce antes de
   // trocar pro triângulo isolado — só define ONDE a troca acontece, não a
   // velocidade (ver comentário grande mais abaixo sobre o crescimento ser
@@ -412,17 +408,11 @@ function initHeroPinkWipe() {
     logo.style.cssText = '';
     entrance.style.height = '';
     triGrow.style.cssText = '';
+    if (greeting) greeting.style.cssText = '';
 
     const r = logo.getBoundingClientRect(); // medida em fluxo normal, tamanho de repouso
     const w0 = r.width, h0 = r.height;
     const eRect = entrance.getBoundingClientRect();
-    // a Hero começa sempre no topo do documento (scrollY 0 → hero.top 0) —
-    // essa correção reconstrói a posição de repouso mesmo remedindo com a
-    // página já rolada (ex.: rebuild por resize no meio do scroll). Sem
-    // ela, um resize longe do topo fazia a âncora nascer centenas de px
-    // fora do lugar (testado e confirmado — a logo "sumia" pra bem acima
-    // da tela).
-    const restTop = r.top + window.scrollY;
 
     entrance.style.position = 'relative';
     entrance.style.height = h0 + 'px'; // trava o espaço ANTES de tirar a logo do fluxo
@@ -433,23 +423,62 @@ function initHeroPinkWipe() {
     logo.style.height = h0 + 'px';
     logo.style.maxWidth = 'none';
     logo.style.margin = '0';
-    // transform-origin no próprio ponto de referência do triângulo — assim
-    // scale() já mantém a âncora fixa sozinho, sem precisar de translate
-    // manual (só usado pra "Olá, somos a" acompanhar, ver abaixo).
-    logo.style.transformOrigin = (ORIGIN_X_FRAC * 100).toFixed(2) + '% ' + (ORIGIN_Y_FRAC * 100).toFixed(2) + '%';
 
-    // âncora = ponto de referência (92.49%, 20.56%) do triângulo dentro da
-    // logo, em coordenadas de tela — FIXA durante a fase 1 (a logo cresce
-    // "no lugar"; caminhar pro centro fica todo por conta da fase 2, no
-    // triângulo isolado, que é quem de fato precisa alcançar os cantos).
-    const anchorX0 = r.left + w0 * ORIGIN_X_FRAC;
-    const anchorY0 = restTop + h0 * ORIGIN_Y_FRAC;
+    // posição/tamanho do triângulo medidos DIRETO no navegador (não
+    // estimados à mão pelos pontos de controle do path SVG — a estimativa
+    // manual anterior errava a posição vertical, porque a curva Bézier não é
+    // tão simples quanto os pontos de controle sugerem).
+    const triRect0 = triPath.getBoundingClientRect();
+    // transform-origin no centro DE VERDADE do triângulo — em PIXELS
+    // relativos à própria caixa da logo, não em %, pra usar a medição direto
+    // sem reconverter pra fração. Assim scale() já mantém a âncora fixa
+    // sozinho, sem precisar de translate manual (só usado pra "Olá, somos a"
+    // acompanhar, ver abaixo). Não precisa de correção pela animação de
+    // entrada (ver logo abaixo): tanto triCenterY0 quanto r.top são medidos
+    // NESTE instante, então a diferença entre os dois (só o que importa
+    // aqui) já sai certa mesmo se a logo inteira ainda estiver deslocada.
+    const triCenterX0 = triRect0.left + triRect0.width / 2;
+    const triCenterY0 = triRect0.top + triRect0.height / 2;
+    logo.style.transformOrigin = (triCenterX0 - r.left).toFixed(1) + 'px ' + (triCenterY0 - r.top).toFixed(1) + 'px';
 
-    // Proporção (altura/largura) do triângulo REAL medida direto no path da
-    // logo (não do arquivo recortado à parte, que tinha um padding levemente
-    // diferente em cada lado e desalinhava um pouco o handoff).
-    const triAspect = 167.62 / 148.76;
-    const triW0 = w0 * TRI_WIDTH_FRAC; // tamanho do triângulo com a logo em repouso (escala 1)
+    // a entrada da logo ("Olá, somos a" + wordmark) tem uma animação
+    // (heroGreetIn, delay 1.25s) que desliza .hero-logo-entrance de
+    // translateY(14px) até translateY(0). Se o build() rodar durante esse
+    // 1.25s de delay (roda sim — é chamado assim que a página carrega), a
+    // logo/triângulo ainda estão deslocados 14px pra baixo desse
+    // translateY, e qualquer coordenada ABSOLUTA de tela medida agora (como
+    // a âncora abaixo) fica 14px errada pra sempre, porque só é medida uma
+    // vez. Em vez de esperar a animação terminar (precisaria remedir tudo
+    // de novo depois, complicado e frágil), é mais direto ler o próprio
+    // deslocamento ATUAL da animação (via computed style) e já descontar —
+    // a âncora nasce certa pra posição final, sem depender de timing.
+    const entranceShiftY = new DOMMatrix(getComputedStyle(entrance).transform).m42;
+
+    // âncora = centro medido do triângulo, em coordenadas de tela — FIXA
+    // durante a fase 1 (a logo cresce "no lugar"; caminhar pro centro fica
+    // todo por conta da fase 2, no triângulo isolado, que é quem de fato
+    // precisa alcançar os cantos).
+    const anchorX0 = triCenterX0;
+    const anchorY0 = triCenterY0 - entranceShiftY + window.scrollY; // mesma correção do restTop, pro caso de remedir já rolado
+
+    // "Olá, somos a" cresce junto com a logo, não só se desloca: em vez de
+    // calcular manualmente o quanto ela deveria andar a cada quadro (frágil,
+    // dependia de medir onde a wordmark "de verdade" começava dentro da
+    // caixa do SVG — ver WORDMARK_TOP_Y_FRAC acima), o transform-origin dela
+    // é ancorado no MESMO ponto de tela que a logo usa (em pixels, não %,
+    // já que esse ponto fica fora da própria caixa da saudação). Aplicando o
+    // mesmo translate+scale que a logo recebe, os dois crescem como se
+    // fossem uma peça rígida só, sem matemática de compensação separada.
+    if (greeting) {
+      const gRect = greeting.getBoundingClientRect();
+      greeting.style.transformOrigin = (anchorX0 - gRect.left).toFixed(1) + 'px ' + (anchorY0 - gRect.top).toFixed(1) + 'px';
+    }
+
+    // proporção e tamanho de repouso do triângulo — também medidos direto
+    // (não estimados), pra bater exatamente com o que o navegador realmente
+    // desenha, sem depender do recorte manual do arquivo isolado.
+    const triAspect = triRect0.height / triRect0.width;
+    const triW0 = triRect0.width; // tamanho do triângulo com a logo em repouso (escala 1)
     const triHandoff = triW0 * PHASE1_MULT; // tamanho em que troca pra peça isolada
 
     // âncora final = centro da viewport, pra onde o triângulo isolado
@@ -505,9 +534,8 @@ function initHeroPinkWipe() {
           gsap.set(logoPinkParts, { opacity: 1 });
         }
         const s = tw / triW0;
-        logo.style.transform = `translate(${driftX.toFixed(1)}px,${driftY.toFixed(1)}px) scale(${s.toFixed(4)})`;
-        const w = w0 * s, h = h0 * s;
-        const dx = ORIGIN_X_FRAC * (w0 - w) + driftX, dy = ORIGIN_Y_FRAC * (h0 - h) + driftY;
+        const groupTransform = `translate(${driftX.toFixed(1)}px,${driftY.toFixed(1)}px) scale(${s.toFixed(4)})`;
+        logo.style.transform = groupTransform;
 
         // fadeT: 0 até fadeStartP (ainda crescendo junto, sem sumir), 1 em
         // pHandoff (já totalmente sumido bem no instante da troca) — em
@@ -516,22 +544,14 @@ function initHeroPinkWipe() {
         const rawP = Math.sqrt(Math.max(0, (tw - triW0) / (triTargetWidth - triW0)));
         const fadeT = rawP <= fadeStartP ? 0 : (rawP - fadeStartP) / (pHandoff - fadeStartP);
         const opacity = (1 - fadeT).toFixed(3);
-        // sobe proporcional ao tamanho atual do ícone (tw), não um valor
-        // fixo — assim a subida sempre parece do mesmo "tamanho relativo",
-        // não desproporcional em telas/tamanhos diferentes.
-        const riseScreenPx = -fadeT * tw * 0.3;
-        // unidade LOCAL do SVG da logo (não é px de tela): os paths que sobem
-        // são filhos do próprio #heroLogoFull, que já está escalado por
-        // scale(s) — um translateY neles soma ENCIMA dessa escala. Convertendo
-        // de volta pra unidade local (dividindo por s) o resultado final na
-        // tela fica do mesmo tamanho (riseScreenPx), com ou sem zoom.
-        const riseLocalUnits = riseScreenPx / s;
-        fadeSvgParts.forEach((el) => {
-          el.style.opacity = opacity;
-          el.style.transform = `translateY(${riseLocalUnits.toFixed(2)}px)`;
-        });
+        // sem subida própria: a wordmark, o z e a saudação só desvanecem no
+        // lugar, seguindo o MESMO movimento da logo (escala + deriva pro
+        // centro, já aplicado acima) — nada de um translateY extra só deles,
+        // que fazia parecer que estavam indo numa direção diferente da
+        // "izitrad".
+        fadeSvgParts.forEach((el) => { el.style.opacity = opacity; });
         if (greeting) {
-          greeting.style.transform = `translate(${dx.toFixed(1)}px,${(dy + riseScreenPx).toFixed(1)}px)`;
+          greeting.style.transform = groupTransform; // mesmo translate+scale da logo — cresce junto
           greeting.style.opacity = opacity;
         }
       } else {
@@ -549,6 +569,25 @@ function initHeroPinkWipe() {
     };
 
     gsap.set(triGrow, { opacity: 0 });
+    // "esquenta" o triângulo isolado no tamanho exato que ele vai ter no
+    // instante da troca — ainda invisível, mas já com width/height reais
+    // (não os 155×174 originais da imagem). Sem isso, ele passava a fase 1
+    // inteira paradinho no tamanho pequeno e só recebia o tamanho grande no
+    // MESMO quadro em que precisa aparecer — obrigando o navegador a
+    // recalcular layout e redesenhar a imagem nesse tamanho novo bem na
+    // hora de ficar visível, o que dava um pulo pequeno e rápido (um quadro
+    // só) de volta pro tamanho antigo antes de assentar no novo. Deixando
+    // ele pré-dimensionado com antecedência, essa primeira exibição já sai
+    // pronta.
+    {
+      const thHandoff = triHandoff * triAspect;
+      const anchorXHandoff = anchorX0 + (centerX - anchorX0) * pHandoff * pHandoff;
+      const anchorYHandoff = anchorY0 + (centerY - anchorY0) * pHandoff * pHandoff;
+      triGrow.style.left = (anchorXHandoff - triHandoff / 2) + 'px';
+      triGrow.style.top = (anchorYHandoff - thHandoff / 2) + 'px';
+      triGrow.style.width = triHandoff + 'px';
+      triGrow.style.height = thHandoff + 'px';
+    }
     const tl = gsap.timeline({
       scrollTrigger: {
         // scroll mais longo (320% em vez de 170%) => a mesma taxa linear de
