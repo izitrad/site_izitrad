@@ -318,33 +318,40 @@ function initCountriesArc() {
   render(0);
 }
 
-// Transição "wipe" rosa da Hero, em DUAS fases, sempre com a mesma forma
-// (o triângulo) — nada de retângulo/círculo/qualquer coisa estranha
-// aparecendo por cima, que já foi tentado e sempre parecia "falso":
+// Transição "wipe" rosa da Hero — o triângulo é SEMPRE o mesmo elemento
+// (#heroTriangleGrow, um clone do path real gerado em build() via
+// getBBox(), ver mais abaixo), do repouso até cobrir a tela inteira. Nunca
+// existem duas peças pra sincronizar: o triângulo ORIGINAL, dentro da logo
+// (.hlogo-tri), fica escondido pra sempre (opacity 0) assim que build()
+// roda, e quem desenha o triângulo — sempre, do primeiro ao último quadro —
+// é o #heroTriangleGrow. (Uma versão anterior trocava entre o path original
+// escalando junto com a logo e um recorte à parte no meio do efeito, com um
+// crossfade como rede de segurança — mas mesmo com as duas peças desenhando
+// a mesma fórmula de tamanho/posição, um recorte feito à mão tinha padding
+// levemente diferente da forma real e causava um "fantasma" visível durante
+// a troca. Gerar o clone com viewBox calculado ao vivo elimina esse risco
+// por completo, e como não há mais troca, não precisa nem de crossfade.)
 //
-// Fase 1 (0→0.4 do scroll do pin): a logo inteira (inline no HTML — precisa
-// ser SVG pra não pixelar nessa escala) cresce um pouco, ancorada no
-// triângulo, e a wordmark preta (.hlogo-fade) + "Olá, somos a" desvanecem
-// juntas, como pedido.
+// A logo INTEIRA (wordmark + a caixa onde o triângulo escondido mora)
+// continua crescendo via transform na "fase 1", ancorada no triângulo, com
+// a wordmark preta (.hlogo-fade) + "z" + "Olá, somos a" desvanecendo juntas
+// — só que agora isso é decoração visual (a logo cresce e desvanece), sem
+// nenhuma responsabilidade sobre desenhar o triângulo em si. Ela para de
+// crescer em PHASE1_MULT (8x) e fica arbitrariamente parada dali pra frente
+// (já invisível), enquanto o #heroTriangleGrow continua crescendo sozinho
+// até cobrir a tela — só precisa de uma fração da largura em px pra isso (a
+// logo inteira precisaria de ~8x mais só pra chegar no mesmo tamanho de
+// triângulo, porque a wordmark ocupa a maior parte do width; crescer ela
+// até cobrir a tela estouraria o limite de textura de GPU do navegador,
+// ~16384px, bem antes de cobrir os cantos).
 //
-// Fase 2 (0.4→0.9): um SEGUNDO elemento, só o triângulo recortado bem justo
-// (assets/img/hero-triangle-grow.svg, sem a wordmark ao redor desperdiçando
-// espaço) assume e continua crescendo — sozinho, sem o resto da logo, ele
-// só precisa de uma fração da largura em px pra cobrir a tela (a logo
-// inteira precisaria de ~8x mais só pra chegar no mesmo tamanho de
-// triângulo, porque a wordmark ocupa a maior parte do width). Isso mantém
-// o crescimento bem dentro do limite de textura de GPU do navegador
-// (~16384px) mesmo em telas grandes, sem precisar de nenhuma peça extra.
-// No instante da troca (0.4) os dois têm exatamente o mesmo tamanho/posição
-// — a logo já não cresce mais, e o triângulo isolado nasce ali, então não
-// há salto visível, e depois ele cobre sozinho o triângulo (agora parado)
-// dentro da logo, sem precisar escondê-lo.
-//
-// Cresce via width real (não transform:scale): o Chrome cacheia o SVG numa
-// textura de GPU e só amplia ela ao escalar por transform, serrilhando em
-// ~20-40x mesmo sendo vetor na origem (testado e confirmado — persiste
-// mesmo sem will-change/force3D). Mudar width força o navegador a
-// redesenhar o vetor de verdade a cada quadro, sempre nítido.
+// #heroTriangleGrow cresce via width real (não transform:scale): o Chrome
+// cacheia o SVG numa textura de GPU e só amplia ela ao escalar por
+// transform, serrilhando em ~20-40x mesmo sendo vetor na origem (testado e
+// confirmado — persiste mesmo sem will-change/force3D). Mudar width força o
+// navegador a redesenhar o vetor de verdade a cada quadro, sempre nítido. A
+// logo (wordmark) em si só cresce até PHASE1_MULT (8x) via transform:scale,
+// bem abaixo de onde esse serrilhado se torna perceptível.
 //
 // O risco de width real é empurrar a altura da Hero (trigger do pin) a cada
 // quadro, quebrando o range do scroll num loop (testado e confirmado
@@ -353,37 +360,25 @@ function initCountriesArc() {
 // fluxo normal (position:absolute/fixed) assim que o crescimento começa —
 // crescer um elemento fora do fluxo nunca afeta a altura de ninguém. A logo
 // especificamente precisa ficar no fluxo normal EM REPOUSO (pra não
-// arriscar a cadeia de layout flex/grid da Hero — já foi tentado com
-// position:absolute direto no CSS e colapsou a coluna do grid, que
-// dependia do tamanho intrínseco do <svg> pra se dimensionar), então o
-// build() abaixo MEDE o tamanho de repouso em fluxo normal primeiro, TRAVA
-// a altura do wrapper nesse valor em px, e só então tira a logo do fluxo.
+// arriscar a cadeia de layout flex/grid da Hero), então o build() abaixo
+// MEDE o tamanho de repouso em fluxo normal primeiro, TRAVA a altura do
+// wrapper nesse valor em px, e só então tira a logo do fluxo.
 function initHeroPinkWipe() {
   const hero = document.querySelector('.hero');
   const logo = document.getElementById('heroLogoFull');
   const entrance = document.querySelector('.hero-logo-entrance');
   const triGrow = document.getElementById('heroTriangleGrow');
   const greeting = document.querySelector('.hero-greeting');
-  // .hlogo-fade e .hlogo-z (dentro do SVG, precisam de unidade LOCAL —
-  // ver applyGrowth) + .hero-greeting (fora do SVG, unidade de tela normal):
-  // "Olá, somos a", a wordmark preta e o "z" rosa são um bloco só
-  // visualmente, então sobem e somem juntos, só perto da troca pro
-  // triângulo isolado — até lá crescem junto com o ícone, como uma logo só
-  // (pedido explícito: sumir cedo demais, antes da logo ganhar tamanho
-  // considerável, ficava estranho).
+  // wordmark preta + "z" rosa + "Olá, somos a": um bloco só que cresce
+  // junto com a logo na fase 1 e desvanece perto do handoff.
   const fadeSvgParts = document.querySelectorAll('.hlogo-fade, .hlogo-z');
-  // só o triângulo — some logo depois do handoff pra #heroTriangleGrow, pra
-  // nunca ficar o original parado visível por baixo do isolado enquanto ele
-  // se desloca/cresce (rede de segurança extra além do cálculo de
-  // posição/tamanho, que já nasce igual ao original).
   const logoPinkParts = document.querySelectorAll('.hlogo-tri');
   const triPath = logoPinkParts[0];
   if (!hero || !logo || !entrance || !triGrow || !triPath || reduceMotion) return;
 
-  // até quantas vezes o tamanho de repouso a logo INTEIRA cresce antes de
-  // trocar pro triângulo isolado — só define ONDE a troca acontece, não a
-  // velocidade (ver comentário grande mais abaixo sobre o crescimento ser
-  // uma coisa só, na mesma taxa, do início ao fim).
+  // até quantas vezes o tamanho de repouso a logo INTEIRA cresce antes do
+  // triângulo isolado assumir sozinho — também o teto de escala da fase 1
+  // (ver comentário grande acima sobre serrilhado).
   const PHASE1_MULT = 8;
   // folga bem generosa sobre a distância até o canto mais longe: o
   // triângulo aponta pra um lado só, então "afina" perto da ponta — cobrir
@@ -397,11 +392,8 @@ function initHeroPinkWipe() {
 
   const build = () => {
     // mata o pin/timeline anterior antes de remedir — sem isso, um resize
-    // (troca de tela, orientação, etc.) deixava as constantes de tamanho e
-    // âncora desatualizadas enquanto o scroll continuava usando o timeline
-    // antigo, e a logo (fase 1, parada num tamanho velho) e o triângulo
-    // isolado (fase 2, crescendo com números novos) apareciam ao mesmo
-    // tempo em posições diferentes — dois triângulos em vez de um.
+    // deixava as constantes de tamanho/âncora desatualizadas enquanto o
+    // scroll continuava usando o timeline antigo.
     if (currentST) currentST.kill();
 
     // reset — volta tudo ao fluxo normal antes de medir de novo.
@@ -409,6 +401,19 @@ function initHeroPinkWipe() {
     entrance.style.height = '';
     triGrow.style.cssText = '';
     if (greeting) greeting.style.cssText = '';
+    // o triângulo ORIGINAL (dentro da logo) fica escondido pra sempre — quem
+    // desenha o triângulo do início ao fim é o #heroTriangleGrow (clone
+    // gerado logo abaixo), sempre o MESMO elemento, nascendo já no lugar
+    // certo e acompanhando a logo na fase 1. Sem handoff nem crossfade entre
+    // duas peças, então não existe mais um instante pra sincronizar.
+    //
+    // a OPACITY de entrada do #heroTriangleGrow (aparecer junto com a logo,
+    // não antes) fica só por conta do CSS (.hero-triangle-grow, mesma
+    // animação/delay de .hero-logo-entrance) — não é setada aqui de propósito,
+    // pra não competir com essa animação (setar opacity:1 via JS assim que a
+    // página carrega, antes do delay de 1.25s acabar, fazia o triângulo
+    // aparecer sozinho na tela antes da logo e do "Olá, somos a").
+    gsap.set(logoPinkParts, { opacity: 0 });
 
     const r = logo.getBoundingClientRect(); // medida em fluxo normal, tamanho de repouso
     const w0 = r.width, h0 = r.height;
@@ -425,175 +430,130 @@ function initHeroPinkWipe() {
     logo.style.margin = '0';
 
     // posição/tamanho do triângulo medidos DIRETO no navegador (não
-    // estimados à mão pelos pontos de controle do path SVG — a estimativa
-    // manual anterior errava a posição vertical, porque a curva Bézier não é
-    // tão simples quanto os pontos de controle sugerem).
+    // estimados à mão pelos pontos de controle do path SVG).
     const triRect0 = triPath.getBoundingClientRect();
-    // transform-origin no centro DE VERDADE do triângulo — em PIXELS
-    // relativos à própria caixa da logo, não em %, pra usar a medição direto
-    // sem reconverter pra fração. Assim scale() já mantém a âncora fixa
-    // sozinho, sem precisar de translate manual (só usado pra "Olá, somos a"
-    // acompanhar, ver abaixo). Não precisa de correção pela animação de
-    // entrada (ver logo abaixo): tanto triCenterY0 quanto r.top são medidos
-    // NESTE instante, então a diferença entre os dois (só o que importa
-    // aqui) já sai certa mesmo se a logo inteira ainda estiver deslocada.
     const triCenterX0 = triRect0.left + triRect0.width / 2;
     const triCenterY0 = triRect0.top + triRect0.height / 2;
+    // transform-origin no centro DE VERDADE do triângulo, em PIXELS
+    // relativos à própria caixa da logo — scale() já mantém a âncora fixa
+    // sozinho, sem precisar de translate manual pra isso (só o drift pro
+    // centro, ver applyGrowth, precisa de translate).
     logo.style.transformOrigin = (triCenterX0 - r.left).toFixed(1) + 'px ' + (triCenterY0 - r.top).toFixed(1) + 'px';
 
     // a entrada da logo ("Olá, somos a" + wordmark) tem uma animação
     // (heroGreetIn, delay 1.25s) que desliza .hero-logo-entrance de
-    // translateY(14px) até translateY(0). Se o build() rodar durante esse
-    // 1.25s de delay (roda sim — é chamado assim que a página carrega), a
-    // logo/triângulo ainda estão deslocados 14px pra baixo desse
-    // translateY, e qualquer coordenada ABSOLUTA de tela medida agora (como
-    // a âncora abaixo) fica 14px errada pra sempre, porque só é medida uma
-    // vez. Em vez de esperar a animação terminar (precisaria remedir tudo
-    // de novo depois, complicado e frágil), é mais direto ler o próprio
-    // deslocamento ATUAL da animação (via computed style) e já descontar —
-    // a âncora nasce certa pra posição final, sem depender de timing.
+    // translateY(14px) até translateY(0). build() roda antes desse delay
+    // começar, então sem corrigir, a âncora nasceria 14px errada pra
+    // sempre (medida só uma vez aqui). Em vez de esperar a animação
+    // terminar, lê o deslocamento ATUAL (via computed style) e já desconta
+    // — a âncora nasce certa pra posição final, sem depender de timing.
     const entranceShiftY = new DOMMatrix(getComputedStyle(entrance).transform).m42;
 
-    // âncora = centro medido do triângulo, em coordenadas de tela — FIXA
-    // durante a fase 1 (a logo cresce "no lugar"; caminhar pro centro fica
-    // todo por conta da fase 2, no triângulo isolado, que é quem de fato
-    // precisa alcançar os cantos).
+    // âncora = centro medido do triângulo, em coordenadas de tela.
     const anchorX0 = triCenterX0;
-    const anchorY0 = triCenterY0 - entranceShiftY + window.scrollY; // mesma correção do restTop, pro caso de remedir já rolado
+    const anchorY0 = triCenterY0 - entranceShiftY;
 
-    // "Olá, somos a" cresce junto com a logo, não só se desloca: em vez de
-    // calcular manualmente o quanto ela deveria andar a cada quadro (frágil,
-    // dependia de medir onde a wordmark "de verdade" começava dentro da
-    // caixa do SVG — ver WORDMARK_TOP_Y_FRAC acima), o transform-origin dela
-    // é ancorado no MESMO ponto de tela que a logo usa (em pixels, não %,
-    // já que esse ponto fica fora da própria caixa da saudação). Aplicando o
+    // "Olá, somos a" cresce junto com a logo: o transform-origin dela é
+    // ancorado no MESMO ponto de tela que a logo usa (em pixels, já que
+    // esse ponto fica fora da própria caixa da saudação). Aplicando o
     // mesmo translate+scale que a logo recebe, os dois crescem como se
-    // fossem uma peça rígida só, sem matemática de compensação separada.
+    // fossem uma peça rígida só.
     if (greeting) {
       const gRect = greeting.getBoundingClientRect();
       greeting.style.transformOrigin = (anchorX0 - gRect.left).toFixed(1) + 'px ' + (anchorY0 - gRect.top).toFixed(1) + 'px';
     }
 
-    // proporção e tamanho de repouso do triângulo — também medidos direto
-    // (não estimados), pra bater exatamente com o que o navegador realmente
-    // desenha, sem depender do recorte manual do arquivo isolado.
-    const triAspect = triRect0.height / triRect0.width;
-    const triW0 = triRect0.width; // tamanho do triângulo com a logo em repouso (escala 1)
-    const triHandoff = triW0 * PHASE1_MULT; // tamanho em que troca pra peça isolada
+    // #heroTriangleGrow ganha um CLONE do path real (não um arquivo .svg
+    // recortado à parte) com viewBox calculado via getBBox() no próprio
+    // navegador — width/height do elemento passam a corresponder 1:1 ao
+    // tamanho do triângulo (+ a metade do traço), garantido igual ao path
+    // original em qualquer tamanho, sem depender de um crop feito à mão
+    // que podia ter padding levemente diferente (era a causa do "fantasma"
+    // visível no crossfade: o arquivo recortado tinha viewBox mais largo
+    // que a forma real, então o triângulo dentro dele renderizava menor
+    // que o tw que a gente mandava pra ele).
+    const bbox = triPath.getBBox();
+    const strokeW = parseFloat(getComputedStyle(triPath).strokeWidth) || 0;
+    const pad = strokeW / 2;
+    triGrow.setAttribute('viewBox', `${(bbox.x - pad).toFixed(2)} ${(bbox.y - pad).toFixed(2)} ${(bbox.width + strokeW).toFixed(2)} ${(bbox.height + strokeW).toFixed(2)}`);
+    const clone = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    clone.setAttribute('d', triPath.getAttribute('d'));
+    clone.setAttribute('fill', '#FF0099');
+    clone.setAttribute('stroke', '#FF0099');
+    clone.setAttribute('stroke-width', '3');
+    clone.setAttribute('stroke-miterlimit', '10');
+    triGrow.replaceChildren(clone);
 
-    // âncora final = centro da viewport, pra onde o triângulo isolado
-    // caminha enquanto cresce (só depois da troca) — do centro, o canto mais
-    // longe fica bem mais perto do que do canto onde a logo nasceu.
+    // proporção e tamanho de repouso do triângulo — medidos direto, pra
+    // bater exatamente com o que o navegador realmente desenha. triAspect
+    // vem dos MESMOS números usados no viewBox acima (bbox+traço), não de
+    // uma medição separada — fonte única, sem risco de discrepância.
+    const triAspect = (bbox.height + strokeW) / (bbox.width + strokeW);
+    const triW0 = triRect0.width; // tamanho do triângulo com a logo em repouso (escala 1)
+    const triHandoff = triW0 * PHASE1_MULT;
+
+    // âncora final = centro da viewport, pra onde o triângulo caminha
+    // enquanto cresce — do centro, o canto mais longe fica bem mais perto
+    // do que do canto onde a logo nasceu.
     const centerX = window.innerWidth / 2, centerY = window.innerHeight / 2;
     const corners = [[0, 0], [window.innerWidth, 0], [0, window.innerHeight], [window.innerWidth, window.innerHeight]];
     const maxDist = Math.max(...corners.map(([x, y]) => Math.hypot(centerX - x, centerY - y)));
     const triTargetWidth = maxDist * SAFETY;
 
-    // fade+subida da parte preta (+ z): só nos últimos 30% da DISTÂNCIA DE
-    // SCROLL antes da troca — não 30% do TAMANHO. A curva 'power1.in'
+    // fade da wordmark/z/saudação: só nos últimos 30% da DISTÂNCIA DE
+    // SCROLL antes do handoff — não 30% do TAMANHO (a curva 'power1.in'
     // acelera bastante perto do fim da fase 1, então uma janela definida em
-    // tamanho (ex.: "últimos 25% do tw") acaba cabendo numa distância de
-    // scroll minúscula (menos de 1 giro de roda) e o fade parece um corte
-    // seco em vez de gradual (testado e confirmado). rawP desfaz a curva
-    // (inverso de power1.in: eased=raw², então raw=√eased) só pra decidir
-    // ESSE timing — o crescimento em si continua vindo direto de tw, sem
-    // mexer nisso.
+    // tamanho cabe numa distância de scroll minúscula e o fade parece um
+    // corte seco em vez de gradual). rawP desfaz a curva só pra decidir
+    // ESSE timing — o crescimento em si continua vindo direto de tw.
     const pHandoff = Math.sqrt((triHandoff - triW0) / (triTargetWidth - triW0));
     const fadeStartP = pHandoff * 0.7;
 
-    // UM crescimento só, numa taxa só, do início ao fim — não duas fases com
-    // velocidades diferentes se revezando (era isso que causava o "pulo":
-    // testado com easing pra suavizar a troca de velocidade e ficou pior,
-    // porque criava uma pausa antes de "explodir" de novo). tw = largura
-    // "verdadeira" do triângulo nesse instante, sempre proporcional ao
-    // scroll. Enquanto tw ainda cabe dentro da logo (≤ triHandoff), quem
-    // mostra essa largura é a logo inteira escalada; depois disso, o
-    // triângulo isolado assume do mesmo tamanho exato — é só uma troca de
-    // quem desenha o mesmo número, não uma mudança de velocidade.
+    // UM crescimento só, numa taxa só, do início ao fim — não duas fases
+    // com velocidades diferentes se revezando (causava um "pulo" de
+    // velocidade no deslocamento pro centro; testado e confirmado). tw =
+    // largura "verdadeira" do triângulo nesse instante, sempre proporcional
+    // ao scroll.
     const proxy = { w: triW0 };
     const applyGrowth = () => {
       const tw = proxy.w;
-      // âncora caminha pro centro numa taxa só, do início ao fim (mesmo
-      // princípio do crescimento): se ela ficasse PARADA na fase 1 e só
-      // começasse a andar no handoff, a posição continuava batendo mas a
-      // VELOCIDADE desse deslocamento pulava de zero pra um valor constante
-      // bem na troca — um segundo "pulo" (de posição, não de tamanho) sutil
-      // o bastante pra passar despercebido na medida mas não no olho
-      // (testado e confirmado: era isso que sobrava depois de linearizar só
-      // o crescimento). t vai de 0 (repouso) a 1 (cobertura total).
       const t = (tw - triW0) / (triTargetWidth - triW0);
       const curAnchorX = anchorX0 + (centerX - anchorX0) * t;
       const curAnchorY = anchorY0 + (centerY - anchorY0) * t;
       const driftX = curAnchorX - anchorX0, driftY = curAnchorY - anchorY0;
-      if (tw <= triHandoff) {
-        // checagem de estado (só troca quando muda) pra não chamar gsap.set
-        // em todo quadro à toa — importa principalmente ao rolar de volta
-        // pra cima, quando tw cruza triHandoff na direção contrária.
-        if (triGrow.style.opacity !== '0') {
-          gsap.set(triGrow, { opacity: 0 });
-          gsap.set(logoPinkParts, { opacity: 1 });
-        }
-        const s = tw / triW0;
-        const groupTransform = `translate(${driftX.toFixed(1)}px,${driftY.toFixed(1)}px) scale(${s.toFixed(4)})`;
-        logo.style.transform = groupTransform;
 
-        // fadeT: 0 até fadeStartP (ainda crescendo junto, sem sumir), 1 em
-        // pHandoff (já totalmente sumido bem no instante da troca) — em
-        // termos de DISTÂNCIA DE SCROLL (rawP), não de tamanho (ver comentário
-        // grande acima de pHandoff/fadeStartP).
-        const rawP = Math.sqrt(Math.max(0, (tw - triW0) / (triTargetWidth - triW0)));
-        const fadeT = rawP <= fadeStartP ? 0 : (rawP - fadeStartP) / (pHandoff - fadeStartP);
-        const opacity = (1 - fadeT).toFixed(3);
-        // sem subida própria: a wordmark, o z e a saudação só desvanecem no
-        // lugar, seguindo o MESMO movimento da logo (escala + deriva pro
-        // centro, já aplicado acima) — nada de um translateY extra só deles,
-        // que fazia parecer que estavam indo numa direção diferente da
-        // "izitrad".
-        fadeSvgParts.forEach((el) => { el.style.opacity = opacity; });
-        if (greeting) {
-          greeting.style.transform = groupTransform; // mesmo translate+scale da logo — cresce junto
-          greeting.style.opacity = opacity;
-        }
-      } else {
-        // handoff: só troca a visibilidade quando o estado muda (idem acima).
-        if (triGrow.style.opacity !== '1') {
-          gsap.set(triGrow, { opacity: 1 });
-          gsap.set(logoPinkParts, { opacity: 0 });
-        }
-        const th = tw * triAspect;
-        triGrow.style.left = (curAnchorX - tw / 2) + 'px';
-        triGrow.style.top = (curAnchorY - th / 2) + 'px';
-        triGrow.style.width = tw + 'px';
-        triGrow.style.height = th + 'px';
+      // logo cresce via transform até o teto de PHASE1_MULT — além disso
+      // ela para de crescer (evita estourar o limite de textura de GPU),
+      // mas continua desenhando o mesmo tamanho que triGrow assumiu.
+      const sLogo = Math.min(tw, triHandoff) / triW0;
+      const groupTransform = `translate(${driftX.toFixed(1)}px,${driftY.toFixed(1)}px) scale(${sLogo.toFixed(4)})`;
+      logo.style.transform = groupTransform;
+
+      const rawP = Math.sqrt(Math.max(0, t));
+      const fadeT = rawP <= fadeStartP ? 0 : Math.min(1, (rawP - fadeStartP) / (pHandoff - fadeStartP));
+      const fadeOpacity = (1 - fadeT).toFixed(3);
+      fadeSvgParts.forEach((el) => { el.style.opacity = fadeOpacity; });
+      if (greeting) {
+        greeting.style.transform = groupTransform; // mesmo translate+scale da logo — cresce junto
+        greeting.style.opacity = fadeOpacity;
       }
+
+      // o triângulo (#heroTriangleGrow) é o MESMO elemento do início ao
+      // fim — cresce continuamente a partir de tw, acompanhando a mesma
+      // âncora que o resto (curAnchorX/Y). Nada de trocar/crossfadear com
+      // outra peça.
+      const th = tw * triAspect;
+      triGrow.style.left = (curAnchorX - tw / 2) + 'px';
+      triGrow.style.top = (curAnchorY - th / 2) + 'px';
+      triGrow.style.width = tw + 'px';
+      triGrow.style.height = th + 'px';
     };
 
-    gsap.set(triGrow, { opacity: 0 });
-    // "esquenta" o triângulo isolado no tamanho exato que ele vai ter no
-    // instante da troca — ainda invisível, mas já com width/height reais
-    // (não os 155×174 originais da imagem). Sem isso, ele passava a fase 1
-    // inteira paradinho no tamanho pequeno e só recebia o tamanho grande no
-    // MESMO quadro em que precisa aparecer — obrigando o navegador a
-    // recalcular layout e redesenhar a imagem nesse tamanho novo bem na
-    // hora de ficar visível, o que dava um pulo pequeno e rápido (um quadro
-    // só) de volta pro tamanho antigo antes de assentar no novo. Deixando
-    // ele pré-dimensionado com antecedência, essa primeira exibição já sai
-    // pronta.
-    {
-      const thHandoff = triHandoff * triAspect;
-      const anchorXHandoff = anchorX0 + (centerX - anchorX0) * pHandoff * pHandoff;
-      const anchorYHandoff = anchorY0 + (centerY - anchorY0) * pHandoff * pHandoff;
-      triGrow.style.left = (anchorXHandoff - triHandoff / 2) + 'px';
-      triGrow.style.top = (anchorYHandoff - thHandoff / 2) + 'px';
-      triGrow.style.width = triHandoff + 'px';
-      triGrow.style.height = thHandoff + 'px';
-    }
     const tl = gsap.timeline({
       scrollTrigger: {
         // scroll mais longo (320% em vez de 170%) => a mesma taxa linear de
         // crescimento fica espalhada por mais distância de rolagem, então
-        // cada "giro" de scroll cresce menos — pedido explícito depois de
-        // ver a primeira rolagem crescer rápido demais.
+        // cada "giro" de scroll cresce menos.
         trigger: hero, start: 'top top', end: '+=320%', pin: true, scrub: 1, invalidateOnRefresh: true,
       }
     })
@@ -601,19 +561,11 @@ function initHeroPinkWipe() {
       // cobrindo tudo, antes de soltar o pin — sem essa pausa a próxima
       // seção aparecia rápido demais.
       //
-      // ease 'power1.in' (não 'none'): isso NÃO é o mesmo problema de antes
-      // (duas velocidades diferentes brigando na troca de fase — aquilo sim
-      // tinha que ser uma reta só). Aqui é uma curva ÚNICA e contínua, sempre
-      // determinada pela posição do scroll (via scrub), sem fase nem degrau
-      // — só começa mais devagar e vai acelerando, em vez de crescer no
-      // mesmo ritmo do primeiro ao último pixel. Pedido explícito porque a
-      // primeira rolagem estava crescendo rápido demais mesmo com a
-      // distância dobrada.
+      // ease 'power1.in' (não 'none'): curva ÚNICA e contínua, sempre
+      // determinada pela posição do scroll (via scrub) — só começa mais
+      // devagar e vai acelerando, em vez de crescer no mesmo ritmo do
+      // primeiro ao último pixel.
       .to(proxy, { w: triTargetWidth, ease: 'power1.in', duration: 0.9, onUpdate: applyGrowth }, 0);
-    // o fade+subida da wordmark/z não é mais um tween separado — ele é
-    // calculado dentro do próprio applyGrowth(), a partir de tw (ver
-    // fadeStart acima), pra ficar preso ao MESMO crescimento em vez de correr
-    // numa duração própria e desalinhada.
 
     applyGrowth(); // estado inicial correto (repouso) sem esperar o 1º scroll
     currentST = tl.scrollTrigger;

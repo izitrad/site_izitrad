@@ -175,8 +175,12 @@ nav a{white-space:nowrap;flex-shrink:0}
 .hlogo-pink{fill:#FF0099;stroke:#FF0099;stroke-miterlimit:10;stroke-width:3px}
 /* posição/tamanho reais são calculados e aplicados via JS a cada quadro
    (cinematic.js/initHeroPinkWipe) — aqui só o necessário pra ele nascer
-   invisível e fora do fluxo, sem influenciar o layout da Hero. */
-.hero-triangle-grow{position:fixed;opacity:0;pointer-events:none;z-index:9;display:block}
+   invisível e fora do fluxo, sem influenciar o layout da Hero. A entrada
+   (opacity 0→1) usa a MESMA animação/delay/duração de .hero-logo-entrance
+   (ver index.html) — sem isso o triângulo aparecia na tela antes da logo
+   e do "Olá, somos a", que só entram depois de 1.25s. JS nunca define
+   opacity nele: essa regra sozinha controla o aparecimento. */
+.hero-triangle-grow{position:fixed;opacity:0;pointer-events:none;z-index:9;display:block;animation:heroGreetIn .9s cubic-bezier(.16,1,.3,1) forwards;animation-delay:1.25s}
 .hlogo-fade{fill:#000;stroke:#000;stroke-miterlimit:10;stroke-width:3px}
 /* espaçamento vertical mais compacto — reserva altura real pro documento
    (prioridade 1) sem depender de fonte menor nem cortar conteúdo */
