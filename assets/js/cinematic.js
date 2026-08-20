@@ -395,21 +395,25 @@ function initHeroPinkWipe() {
   // triângulo isolado assumir sozinho — também o teto de escala da fase 1
   // (ver comentário grande acima sobre serrilhado).
   const PHASE1_MULT = 8;
-  // folga bem generosa sobre a distância até o canto mais longe: o
-  // triângulo aponta pra um lado só, então "afina" perto da ponta — cobrir
-  // o centro de um canto não garante cobrir os cantos acima/abaixo dele
-  // nessa direção. Como o alvo final fica bem abaixo do limite de textura
-  // de GPU mesmo assim (a peça é só o triângulo, não a logo inteira), dá
-  // pra ser generoso sem risco.
-  const SAFETY = 6;
+  // folga sobre a distância até o canto mais longe: o triângulo aponta pra
+  // um lado só, então "afina" perto da ponta — cobrir o centro de um canto
+  // não garante cobrir os cantos acima/abaixo dele nessa direção. Baixado
+  // de 6 pra 1.3 (mantém folga real, mas SAFETY alto fazia o triângulo
+  // continuar "crescendo" bem depois de já cobrir a tela inteira — esse
+  // trecho a mais não mexe em nada visível, só consome scroll parado com
+  // rosa liso, sem conteúdo, por boa parte do pin; bug reproduzido e
+  // confirmado).
+  const SAFETY = 3;
 
   let currentST = null;
+  let chromeST = null; // ScrollTrigger separada (sem scrub) que esconde/mostra menu+WhatsApp
 
   const build = () => {
     // mata o pin/timeline anterior antes de remedir — sem isso, um resize
     // deixava as constantes de tamanho/âncora desatualizadas enquanto o
     // scroll continuava usando o timeline antigo.
     if (currentST) currentST.kill();
+    if (chromeST) chromeST.kill();
 
     // reset — volta tudo ao fluxo normal antes de medir de novo.
     logo.style.cssText = '';
@@ -438,6 +442,14 @@ function initHeroPinkWipe() {
       heroRevealFrame.style.transform = `translate(-50%,-50%) scale(${s.toFixed(4)})`;
     }
     gsap.set(hrEls, { opacity: 0, y: 40 });
+    // "APOSTILAMENTO" e "DE CASA" fecham a composição entrando na
+    // horizontal (esquerda e direita) em vez de subir — destaque de
+    // manchete no primeiro e no último título, pedido explícito (os
+    // demais textos continuam subindo, sem mudança).
+    const apostilamentoEl = heroReveal && heroReveal.querySelector('.hr-apostilamento');
+    if (apostilamentoEl) gsap.set(apostilamentoEl, { y: 0, x: -160 });
+    const decasaEl = heroReveal && heroReveal.querySelector('.hr-decasa');
+    if (decasaEl) gsap.set(decasaEl, { y: 0, x: 160 });
 
     const r = logo.getBoundingClientRect(); // medida em fluxo normal, tamanho de repouso
     const w0 = r.width, h0 = r.height;
@@ -556,21 +568,22 @@ function initHeroPinkWipe() {
       const rawP = Math.sqrt(Math.max(0, t));
       const fadeT = rawP <= fadeStartP ? 0 : Math.min(1, (rawP - fadeStartP) / (pHandoff - fadeStartP));
       const fadeOpacity = (1 - fadeT).toFixed(3);
-      fadeSvgParts.forEach((el) => { el.style.opacity = fadeOpacity; });
-      if (greeting) {
-        greeting.style.transform = groupTransform; // mesmo translate+scale da logo — cresce junto
-        greeting.style.opacity = fadeOpacity;
-      }
-      if (siteHeader) {
-        siteHeader.style.opacity = fadeOpacity;
-        // sem isso o menu (invisível, mas ainda em cima de tudo em
-        // z-index) continuava clicável/hover-ável por cima do conteúdo
-        // revelado, mesmo com opacity:0.
-        siteHeader.style.pointerEvents = fadeT >= 1 ? 'none' : '';
-      }
-      if (wppFloat) {
-        wppFloat.style.opacity = fadeOpacity;
-        wppFloat.style.pointerEvents = fadeT >= 1 ? 'none' : '';
+      // só mexe na wordmark/saudação enquanto o pin está REALMENTE ativo
+      // (currentST.isActive). Sem essa trava, o mesmo scroll rápido/em saltos
+      // que já causou o bug do menu (ver histórico) também reaparecia aqui:
+      // onUpdate deste tween continua rodando enquanto o scrub ainda está
+      // "alcançando" o alvo (scrub:1), passando de verdade por valores
+      // intermediários de t (early-growth) MESMO já tendo saído do pin há
+      // muito scroll — sobrescrevendo de volta pra opacity:1 o que
+      // hideHeroOverlay() (onLeave/onLeaveBack, ver abaixo) tinha acabado de
+      // esconder. Bug reproduzido e confirmado: saudação/logo pretos
+      // reapareciam fantasmas na faixa de transição logo abaixo da Hero.
+      if (currentST && currentST.isActive) {
+        fadeSvgParts.forEach((el) => { el.style.opacity = fadeOpacity; });
+        if (greeting) {
+          greeting.style.transform = groupTransform; // mesmo translate+scale da logo — cresce junto
+          greeting.style.opacity = fadeOpacity;
+        }
       }
 
       // o triângulo (#heroTriangleGrow) é o MESMO elemento do início ao
@@ -584,36 +597,104 @@ function initHeroPinkWipe() {
       triGrow.style.height = th + 'px';
     };
 
+    // esconde TUDO que o scroll dentro do pin desenha por cima da tela —
+    // usado só ao sair do pin (onLeave/onLeaveBack), ver comentário grande
+    // logo abaixo. #heroTriangleGrow precisa de setProperty(...,'important'):
+    // ele tem uma CSS animation de entrada (heroGreetIn, fill:forwards) que
+    // termina em opacity:1 e FICA nesse valor pra sempre — animation vence
+    // inline style comum na cascata (CSS Animations spec), então só
+    // `style.opacity='0'` não escondia nada (testado e confirmado: o
+    // triângulo reaparecia mesmo com opacity:'0' setado).
+    // o GSAP embrulha a Hero num <div class="pin-spacer"> pra reservar o
+    // espaço do pin no fluxo normal — e, ao criar esse spacer, COPIA o
+    // z-index computado da Hero pra ele NAQUELE INSTANTE (só uma vez, na
+    // hora do pin/refresh), pra manter a mesma ordem de empilhamento de
+    // quando a Hero ainda participava do fluxo normal. Isso quebra a regra
+    // `.hero:not(.hero-past-pin){z-index:5}`: ela é avaliada pelo CSS a
+    // cada frame, mas o valor que o GSAP copiou pro spacer fica CONGELADO
+    // no que era verdade só na criação — nunca é atualizado depois. Resultado
+    // (bug reproduzido e confirmado via DevTools num note): o spacer ficava
+    // travado com z-index:5 pra sempre, cobrindo Traduções permanentemente
+    // mesmo com a Hero já em repouso (z-index:auto, opacity:0 certinhos).
+    // Por isso o z-index precisa ser gerenciado direto no spacer via JS,
+    // sincronizado à mão com hideHeroOverlay/showHeroOverlay, em vez de
+    // depender do CSS que o GSAP só copia uma vez.
+    // hero.parentElement só vira de fato o <div class="pin-spacer"> depois
+    // que o ScrollTrigger com pin:true é criado (mais abaixo, no `const tl =
+    // gsap.timeline(...)`) — pegar essa referência aqui em cima capturava o
+    // pai ANTIGO (pré-pin, ainda no fluxo normal), não o spacer de verdade.
+    // Por isso a busca é feita de novo, ao vivo, dentro de cada função —
+    // hideHeroOverlay/showHeroOverlay só são chamadas depois que o pin já
+    // existe (via onEnter/onLeave do ScrollTrigger), então hero.parentElement
+    // já é o spacer correto nesse momento.
+    const hideHeroOverlay = () => {
+      if (heroReveal) heroReveal.style.opacity = '0';
+      if (triGrow) triGrow.style.setProperty('opacity', '0', 'important');
+      fadeSvgParts.forEach((el) => { el.style.opacity = '0'; });
+      if (greeting) greeting.style.opacity = '0';
+      // o fundo de ondas continua LIGADO (canvas + animação) — só a cor de
+      // base muda pra rosa via .hero-past-pin (CSS). Mantém as ondas se
+      // mexendo nesse trechinho de repouso da Hero, senão vira um bloco liso
+      // sem nenhuma pista visual de que a página está realmente subindo ali
+      // (pedido explícito: "prefiro que a página suba de forma gradual,
+      // como qualquer seção").
+      hero.classList.add('hero-past-pin');
+      if (hero.parentElement) hero.parentElement.style.zIndex = '';
+    };
+    const showHeroOverlay = () => {
+      if (heroReveal) heroReveal.style.opacity = '';
+      if (triGrow) triGrow.style.removeProperty('opacity');
+      hero.classList.remove('hero-past-pin');
+      if (hero.parentElement) hero.parentElement.style.zIndex = '5';
+      // fadeSvgParts/greeting não precisam de reset explícito aqui — o
+      // próximo applyGrowth() (chamado logo em seguida no onEnter/onEnterBack)
+      // já recalcula a opacity certa dos dois a partir da posição real.
+    };
+
     const tl = gsap.timeline({
       scrollTrigger: {
-        // scroll mais longo (420% em vez de 320%) => sobra distância extra
-        // depois do rosa cobrir a tela pra revelar os textos abaixo, sem
-        // apertar o ritmo do crescimento do triângulo em si (ver duration
-        // 0.9 do tween de crescimento — inalterado, só o que vem DEPOIS
-        // dele ficou mais espaçado).
-        trigger: hero, start: 'top top', end: '+=470%', pin: true, scrub: 1, invalidateOnRefresh: true,
+        // scroll mais longo (694% em vez de 470%) => sobra distância extra
+        // depois do rosa cobrir a tela pra revelar os títulos (REVEAL_DURATION/
+        // REVEAL_STEP dobrados) e pro fade-out final ter espaço de verdade
+        // (DWELL_RISE, ver mais abaixo). Sem esticar esse range junto, o
+        // timeline mais longo só "diluía" os mesmos pixels de scroll de
+        // sempre — o crescimento do triângulo (duration 0.9, inalterado)
+        // mantém o MESMO ritmo em pixels de antes, só o que vem DEPOIS dele
+        // ficou mais espaçado.
+        // scrub baixado de 1 pra 0.35: scrub:1 significa a animação levar
+        // até 1s pra "alcançar" a posição real do scroll — em scroll
+        // rápido, o triângulo/textos ficavam visivelmente atrasados em
+        // relação à posição em que onLeave já tinha disparado (que usa a
+        // posição REAL, sem esse atraso), sobrepondo por um instante os
+        // cards da seção seguinte antes de hideHeroOverlay concluir.
+        trigger: hero, start: 'top top', end: '+=694%', pin: true, scrub: 0.35, invalidateOnRefresh: true,
         // o scrub só chama applyGrowth() ENQUANTO o scroll está dentro do
-        // pin — ao sair dele (pra qualquer lado), ele para de atualizar e a
-        // última opacity aplicada (0, escondido) ficava PRA SEMPRE no menu
-        // e na bolha do WhatsApp, mesmo em seções bem depois da Hero
-        // (testado e confirmado: sumiam de vez assim que o pin passava).
-        // onLeave/onLeaveBack cobrem os dois sentidos de sair do pin —
-        // fora dele os dois sempre voltam a aparecer normalmente.
-        onLeave: () => {
-          if (siteHeader) { siteHeader.style.opacity = ''; siteHeader.style.pointerEvents = ''; }
-          if (wppFloat) { wppFloat.style.opacity = ''; wppFloat.style.pointerEvents = ''; }
-        },
-        onLeaveBack: () => {
-          if (siteHeader) { siteHeader.style.opacity = ''; siteHeader.style.pointerEvents = ''; }
-          if (wppFloat) { wppFloat.style.opacity = ''; wppFloat.style.pointerEvents = ''; }
-        },
-        // o scrub também não retomava sozinho ao REENTRAR no pin rolando de
-        // volta (onEnter/onEnterBack) depois de tê-lo deixado — o valor
-        // interno do tween já está certo (é só a chamada de applyGrowth que
-        // não disparava), então chamar ela direto aqui resincroniza tudo
-        // (menu, bolha do WhatsApp, triângulo, textos) de uma vez.
-        onEnter: () => applyGrowth(),
-        onEnterBack: () => applyGrowth(),
+        // pin — ao sair dele (pra qualquer lado), ele para de atualizar e o
+        // triângulo/logo ficavam PRA SEMPRE no estado do último frame
+        // (testado e confirmado). onEnter/onEnterBack resincronizam tudo ao
+        // reentrar rolando de volta.
+        onEnter: () => { showHeroOverlay(); applyGrowth(); },
+        onEnterBack: () => { showHeroOverlay(); applyGrowth(); },
+        // #heroReveal e #heroTriangleGrow são position:fixed — mas o pin da
+        // GSAP usa transform (não position:fixed de verdade) pra fixar a
+        // Hero, e um transform em ancestral vira containing block pra
+        // descendente fixed (spec CSS padrão). Resultado: depois que o pin
+        // solta, a Hero (ainda com esse transform residual, parada no lugar
+        // dentro do pin-spacer) passa a servir de âncora pros dois em vez do
+        // viewport — eles "descolam" do topo real da tela e aparecem
+        // deslocados/fantasmas conforme a página rola por baixo. E o
+        // conteúdo de repouso da Hero (saudação/logo pretos, ".hero-greeting"
+        // /".hlogo-fade") também podia reaparecer — a opacity deles fica
+        // inline, presa no último valor que applyGrowth calculou antes de
+        // sair, então dependendo de POR ONDE você saiu do pin (ex.: voltou
+        // pra cima e saiu de novo antes do fade terminar), esse valor podia
+        // não ser 0. Tudo isso junto criava fantasmas (título, CTAs,
+        // triângulo, logo/saudação) bem na faixa de transição logo abaixo da
+        // Hero (bug reproduzido e confirmado). hideHeroOverlay força opacity
+        // 0 em tudo isso ao sair do pin, pra qualquer lado; showHeroOverlay
+        // devolve o controle normal (scrub/applyGrowth) ao voltar a entrar.
+        onLeave: () => hideHeroOverlay(),
+        onLeaveBack: () => hideHeroOverlay(),
       }
     })
       // duration 0.9 (não 1) => sobra 0.9 em diante como "pausa" com o rosa
@@ -631,17 +712,98 @@ function initHeroPinkWipe() {
     // posição de scroll mesmo). offset 0.9 = exatamente onde o triângulo
     // termina de crescer, então a entrada começa assim que o rosa cobre a
     // tela, nunca antes.
+    // duração de cada entrada e espaço até a próxima — dobrados (era
+    // 0.06 / 0.07, chegou a ir a 0.18 / 0.21 e ficou lento demais) — meio
+    // termo entre o original e o triplicado.
+    const REVEAL_DURATION = 0.12;
+    const REVEAL_STEP = 0.14;
+    let lastRevealEnd = 0.9;
     hrEls.forEach((el, i) => {
-      const start = 0.9 + i * 0.07;
-      tl.fromTo(el, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.06, ease: 'none' }, start);
+      const start = 0.9 + i * REVEAL_STEP;
+      lastRevealEnd = start + REVEAL_DURATION;
+      if (el.classList.contains('hr-apostilamento')) {
+        tl.fromTo(el, { opacity: 0, x: -160, y: 0 }, { opacity: 1, x: 0, y: 0, duration: REVEAL_DURATION, ease: 'none' }, start);
+      } else if (el.classList.contains('hr-decasa')) {
+        tl.fromTo(el, { opacity: 0, x: 160, y: 0 }, { opacity: 1, x: 0, y: 0, duration: REVEAL_DURATION, ease: 'none' }, start);
+      } else {
+        tl.fromTo(el, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: REVEAL_DURATION, ease: 'none' }, start);
+      }
     });
     // folga parada no final, com tudo já revelado, antes de soltar o pin —
     // sem isso a próxima seção aparecia assim que o último botão terminava
-    // de entrar, sem dar tempo de ler o conteúdo.
-    tl.to({}, { duration: 0.15 }, 1.30);
+    // de entrar, sem dar tempo de ler o conteúdo. Dividida em duas partes:
+    // fica parada (DWELL_HOLD) e SÓ DEPOIS sobe em bloco pra fora da tela
+    // (DWELL_RISE) — sem essa segunda parte, o texto revelado ficava 100%
+    // visível até o exato pixel em que o pin solta, e nesse instante ele é
+    // escondido na marra (ver hideHeroOverlay, onLeave/onLeaveBack) pra
+    // evitar o bug do fantasma — isso criava um corte seco, o título
+    // "sumindo" de uma vez em vez de sair de cena. Testamos um fade
+    // (opacity) primeiro, mas não pareceu uma rolagem "de verdade" — subir
+    // em bloco (translateY, sem mexer em opacity) simula melhor uma seção
+    // saindo de tela por scroll normal. #heroReveal e #heroTriangleGrow são
+    // MOVIDOS JUNTOS, com o MESMO deslocamento, pra manter o texto grudado
+    // no rosa (senão um sobe mais rápido que o outro e descola visualmente).
+    // hideHeroOverlay só "oficializa" um estado que já estava fora da tela.
+    const DWELL_HOLD = 0.08;
+    const DWELL_RISE = 0.20;
+    const RISE_DISTANCE = window.innerHeight * 1.15;
+    gsap.set([heroReveal, triGrow], { y: 0 });
+    tl.to({}, { duration: DWELL_HOLD }, lastRevealEnd);
+    tl.to([heroReveal, triGrow], { y: -RISE_DISTANCE, duration: DWELL_RISE, ease: 'none' }, lastRevealEnd + DWELL_HOLD);
 
     applyGrowth(); // estado inicial correto (repouso) sem esperar o 1º scroll
     currentST = tl.scrollTrigger;
+    // estado inicial do z-index (pin recém-criado, ainda não passou por
+    // nenhum onEnter/onLeave) — só existe pin-spacer de verdade a partir
+    // daqui, por isso não dá pra fazer isso mais cedo (ver comentário
+    // grande acima de hideHeroOverlay).
+    if (hero.parentElement) hero.parentElement.style.zIndex = '5';
+
+    // menu + WhatsApp escondidos do momento em que a wordmark termina de
+    // sumir (mesmo ponto de sempre: rawP chega em pHandoff, ver fadeT acima)
+    // até sair do pin — SEM scrub, só onEnter/onLeave reagindo à posição
+    // real do scroll. rawP É a fração (0 a 1) já percorrida da duration 0.9
+    // do tween de crescimento (ease power1.in vira p_time² em t, e rawP
+    // desfaz isso voltando a p_time — conta na ponta do lápis, não
+    // coincidência), o que converte direto pra um instante fixo do
+    // timeline (pHandoff*0.9) e, por tabela, pra um scrollY fixo dentro do
+    // pin — puramente geométrico, não depende de scrub nenhum.
+    if (siteHeader || wppFloat) {
+      const hideChrome = () => {
+        if (siteHeader) { siteHeader.style.opacity = '0'; siteHeader.style.pointerEvents = 'none'; }
+        if (wppFloat) { wppFloat.style.opacity = '0'; wppFloat.style.pointerEvents = 'none'; }
+      };
+      const showChrome = () => {
+        if (siteHeader) { siteHeader.style.opacity = ''; siteHeader.style.pointerEvents = ''; }
+        if (wppFloat) { wppFloat.style.opacity = ''; wppFloat.style.pointerEvents = ''; }
+      };
+      const totalTlDuration = lastRevealEnd + DWELL_HOLD + DWELL_RISE;
+      const chromeHideTlTime = pHandoff * 0.9;
+      // start/end como FUNÇÃO, não valor pronto: no instante em que este
+      // código roda, currentST.start/end ainda são null — o GSAP só resolve
+      // o '+=694%' pra pixel numa passada de refresh que acontece DEPOIS
+      // (a mesma pegadinha do bug das bandeiras, ver comentário lá em cima
+      // sobre initCountriesArc). Passando função, o GSAP chama de novo na
+      // hora certa do refresh, com currentST.end já resolvido — e reavalia
+      // sozinho em resize também, sem precisar recriar isso à mão.
+      chromeST = ScrollTrigger.create({
+        start: () => {
+          const s = currentST.start, e = currentST.end;
+          return s + (chromeHideTlTime / totalTlDuration) * (e - s);
+        },
+        // fim da faixa: cobre a Hero E a Traduções NUM ÚNICO trigger, não
+        // dois adjacentes — a Traduções começa exatamente onde o pin da
+        // Hero termina, sem nenhum respiro entre as duas, e dois triggers
+        // separados com fronteira EXATAMENTE no mesmo pixel corriam risco
+        // de disparar fora de ordem (bug reproduzido e confirmado: menu
+        // reaparecia sobre a Hero ainda coberta de rosa).
+        end: () => {
+          const traducoesEl = document.getElementById('traducoes');
+          return traducoesEl ? traducoesEl.getBoundingClientRect().bottom + window.scrollY : currentST.end;
+        },
+        onEnter: hideChrome, onEnterBack: hideChrome, onLeave: showChrome, onLeaveBack: showChrome,
+      });
+    }
   };
 
   build();
@@ -661,8 +823,18 @@ function init() {
   // este módulo nem executa, a classe não entra e o fallback antigo continua valendo.
   document.documentElement.classList.add('cine-on');
   initToneBackground();
-  initCountriesArc();
+  // initHeroPinkWipe() ANTES de qualquer coisa que meça a posição de uma
+  // seção abaixo dela (countries): a Hero cria um pin-spacer gigante
+  // (~6800px, ver end:'+=651%'). Se a medição acontecer ANTES desse
+  // pin-spacer existir, ela guarda um início baseado numa página bem mais
+  // curta do que a real. Resultado (bug reproduzido e confirmado com a
+  // seção de países): disparava cedo demais e ficava fixa por cima de
+  // outra seção. Girando a ordem, a medição já acontece com a página no
+  // tamanho final. (O menu/WhatsApp escondidos durante Traduções também
+  // são resolvidos dentro do próprio initHeroPinkWipe — ver comentário
+  // grande lá sobre "chromeST".)
   initHeroPinkWipe();
+  initCountriesArc();
   initReveals();
   initStaggerLists();
   initTimelineDraw();
@@ -672,6 +844,11 @@ function init() {
   initFlipCards();
   bootHeroShader();
   bootBandWave();
+
+  // rede de segurança: recalcula todos os triggers depois que tudo foi
+  // criado, incluindo qualquer ajuste que só acontece um tick depois
+  // (fontes/imagens ainda carregando na hora do init()).
+  requestAnimationFrame(() => ScrollTrigger.refresh());
 }
 
 if (document.readyState === 'loading') {

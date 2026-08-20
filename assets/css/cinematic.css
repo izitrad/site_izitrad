@@ -82,6 +82,54 @@
    nesta seção. Por isso saiu da lista acima (que deixa transparente pra
    revelar o fundo persistente #cinematicBg por trás). */
 .traducoes{background:#000}
+/* position:relative só pra entrar no MESMO grupo de pintura da Hero: a Hero
+   é position:relative (index.html, precisa disso pros filhos absolutos dela)
+   — e elementos posicionados pintam DEPOIS de todo conteúdo position:static
+   dentro do mesmo contexto de empilhamento, não importa a ordem no DOM. Sem
+   isso, mesmo com a Hero em z-index:auto (repouso, ver regra logo abaixo),
+   ela continuava pintando por cima de Traduções (que é position:static por
+   padrão) só por estar "posicionada" — bug reproduzido e confirmado: fundo
+   preto de Traduções sumia atrás do rosa da Hero, cards apareciam soltos
+   sobre rosa. Com as duas position:relative e z-index:auto, a ordem do DOM
+   volta a valer, e Traduções (depois da Hero no HTML) pinta por cima. */
+.traducoes{position:relative}
+/* faixa de transição entre a Hero (rosa #FF0099, cor do triângulo que cobre
+   a tela) e Traduções (preto puro) — sem ela o corte era seco: rosa termina,
+   preto começa no pixel seguinte. Rosa chapado (mesma cor do triângulo, sem
+   gradiente) — o corte pro preto de Traduções continua seco de propósito,
+   só que agora com bem menos distância até lá (metade do tamanho de antes).
+   margin-top baixado de -90vh pra -25vh: -90vh sobrepõe quase o viewport
+   inteiro da Hero em repouso sobre o início de Traduções — como o cabeçalho
+   ("Também fazemos a tradução...", .section-head, ~96px de padding da seção
+   + ~270px do próprio texto) é bem mais raso que isso, ele nascia inteiro
+   DENTRO da faixa de sobreposição e saía rolado pra fora do topo da tela
+   antes mesmo do rosa da Hero terminar de sumir — nunca dava tempo de ler,
+   só os cards (mais abaixo no grid) sobravam visíveis (bug reproduzido e
+   confirmado, ver captura da usuária). -25vh mantém sobreposição suficiente
+   pra não voltar o corte seco, sem devorar o cabeçalho. */
+.hero-traducoes-bridge{height:130px;background:#FF0099;margin-top:-25vh}
+@media (max-width:900px){.hero-traducoes-bridge{height:70px;margin-top:-15vh}}
+/* a Hero precisa de um z-index PRÓPRIO (maior que o padrão auto/0) enquanto
+   o pin ainda está ativo, por causa do margin-top negativo acima (que já
+   sobrepõe Hero e Traduções no mesmo trecho de scroll). O GSAP embrulha a
+   Hero num <div class="pin-spacer"> e COPIA o z-index computado da Hero pra
+   esse spacer sempre que RECALCULA o pin (ScrollTrigger.refresh — não só na
+   criação) — então essa regra aqui não é decorativa: ela é a fonte de
+   verdade que o GSAP lê nesses recálculos. Sem ela, a Hero fica com
+   z-index:auto o tempo todo, e QUALQUER refresh (inclusive o disparado no
+   final do init(), ver cinematic.js) recopia esse "auto" pro spacer,
+   sobrescrevendo até o que o JS tinha acabado de setar na mão — resultado
+   (bug reproduzido e confirmado via inspeção real do DOM): o spacer ficava
+   permanentemente sem stacking próprio, e o título "Também fazemos a
+   tradução..." + topo dos cards ficavam cobertos pela Hero mesmo em
+   repouso. Por isso os DOIS lados trabalham juntos agora: esta regra CSS dá
+   ao GSAP o valor certo pra copiar em QUALQUER refresh, e o JS (cinematic.js,
+   hideHeroOverlay/showHeroOverlay) escreve o MESMO valor direto no spacer
+   nas transições onEnter/onLeave, que não passam por um refresh — cobrindo
+   os dois jeitos desse z-index precisar mudar. :not(.hero-past-pin) segue
+   de propósito: só enquanto o pin está de fato ativo (ver histórico grande
+   original abaixo do que dava errado sem essa condição). */
+.hero:not(.hero-past-pin){z-index:5}
 /* o rodapé fica FORA da lista de propósito: ele é o fim da página, então numa
    viewport alta nunca chega a ser a seção com maior área visível — o tom
    permanecia claro e o texto claro do rodapé sumia. Mantendo o navy próprio ele
@@ -268,7 +316,18 @@ nav a{white-space:nowrap;flex-shrink:0}
   content:'';position:absolute;left:0;right:0;bottom:0;height:22%;
   background:linear-gradient(180deg,transparent,#FFFFFF);
   pointer-events:none;z-index:1;
+  transition:background .3s;
 }
+/* depois que o pin solta (.hero-past-pin, ver cinematic.js), o trechinho de
+   repouso da Hero deixa de fazer sentido em branco — a próxima coisa que o
+   scroll mostra é a faixa de transição rosa→preto (.hero-traducoes-bridge),
+   não mais uma seção clara. Troca o branco por rosa (mesma cor do
+   triângulo) E apaga o canvas de ondas (.hero-shader) — chegamos a manter
+   as ondas visíveis (em tom rosa) pra dar pista de movimento, mas ficou
+   estranho (pedido explícito pra tirar): rosa chapado, sem nenhuma linha. */
+.hero.hero-past-pin .hero-atmosphere::before{background:#FF0099}
+.hero.hero-past-pin .hero-atmosphere::after{background:#FF0099}
+.hero.hero-past-pin .hero-shader{opacity:0}
 
 /* ---------- Hero clara: inverte a tipografia, que foi escrita para fundo
    escuro (branco/azulado). Sobre o plasma branco tudo precisa virar tinta

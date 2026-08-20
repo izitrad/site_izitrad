@@ -189,7 +189,7 @@ a{text-decoration:none;color:inherit}
 }
 
 /* ============ HEADER ============ */
-header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.96);border-bottom:1px solid rgba(233,233,239,.7);transition:background .3s,box-shadow .3s,border-color .3s}
+header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.96);border-bottom:1px solid rgba(233,233,239,.7);transition:background .3s,box-shadow .3s,border-color .3s,opacity .3s}
 .header-inner{position:relative;display:flex;align-items:center;justify-content:space-between;height:78px;max-width:100%;margin:0 auto;padding:0 clamp(32px,-141.78px + 15.111vw,100px)}
 @media(max-width:640px){.header-inner{padding:0 16px}}
 .logo{display:flex;align-items:center;gap:10px;color:var(--white)}
@@ -410,7 +410,7 @@ footer{background:var(--navy);color:rgba(240,247,255,.6);padding:56px 0 32px;mar
 .footer-about p{font-size:.9rem;margin-top:14px;max-width:300px}
 .footer-bottom{border-top:1px solid var(--line);padding-top:24px;font-size:.82rem;text-align:center}
 
-.wpp-float{position:fixed;bottom:24px;right:24px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-light));display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,194,129,.5);z-index:99;transition:transform .2s}
+.wpp-float{position:fixed;bottom:24px;right:24px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-light));display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,194,129,.5);z-index:99;transition:transform .2s,opacity .3s}
 .wpp-float:hover{transform:scale(1.08)}
 .wpp-float svg{width:30px;height:30px}
 
@@ -753,7 +753,7 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
     <div class="hero-reveal-frame">
       <svg class="hr-svg" viewBox="0 0 1920 1080">
         <g transform="translate(44.97,33.63) scale(0.8987)" fill="#000">
-        <g class="hr-el">
+        <g class="hr-el hr-apostilamento">
           <path d="M89.26,98.37h29.95l39.13,117.56h-30.6l-6.12-20.61h-34.63l-6.12,20.61h-30.76l39.13-117.56ZM114.06,169.55l-9.82-33.18-9.66,33.18h19.49Z"/>
           <path d="M213.91,98.37c12.88,0,23.22,3.73,31,11.19,7.78,7.46,11.68,16.78,11.68,27.94s-3.87,20.51-11.6,28.02c-7.73,7.52-18.09,11.27-31.08,11.27h-17.55v39.13h-27.86v-117.56h45.42ZM213.27,149.58c4.51,0,8.08-1.13,10.71-3.38,2.63-2.25,3.95-5.15,3.95-8.7s-1.32-6.28-3.95-8.54c-2.63-2.25-6.2-3.38-10.71-3.38h-16.91v24h16.91Z"/>
           <path d="M283.8,113.99c11.92-11.92,26.36-17.88,43.32-17.88s31.24,5.96,43.16,17.88c11.92,11.92,17.88,26.31,17.88,43.16s-5.96,31.43-17.88,43.4c-11.92,11.97-26.31,17.96-43.16,17.96s-31.4-5.98-43.32-17.96c-11.92-11.97-17.88-26.44-17.88-43.4s5.96-31.24,17.88-43.16ZM304.1,180.18c6.33,6.44,14.01,9.66,23.03,9.66s16.53-3.19,22.87-9.58c6.33-6.39,9.5-14.09,9.5-23.11s-3.17-16.56-9.5-22.95c-6.34-6.39-13.96-9.58-22.87-9.58s-16.59,3.2-23.03,9.58c-6.44,6.39-9.66,14.04-9.66,22.95s3.22,16.7,9.66,23.03Z"/>
@@ -793,7 +793,7 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
         </g>
         </g>
         <g transform="translate(-284.30,230.66) scale(1.0415)" fill="#fff">
-        <g class="hr-el">
+        <g class="hr-el hr-decasa">
           <path d="M1024.65,199.05c22.77,0,41.43,7.04,55.99,21.12,14.55,14.08,21.83,31.63,21.83,52.65s-7.24,38.74-21.73,52.75c-14.49,14.01-33.18,21.02-56.09,21.02h-48.91v-147.54h48.91ZM1010.71,233.41v78.82h13.95c12.53,0,22.54-3.74,30.01-11.22,7.48-7.48,11.22-16.94,11.22-28.4s-3.81-20.38-11.42-27.99c-7.61-7.61-17.55-11.42-29.81-11.42l-13.95.2Z"/>
           <path d="M1122.88,199.05h94.18v31.93h-59.42v24.46h55.38v31.53h-55.38v26.07h61.44v33.55h-96.21v-147.54Z"/>
           <path d="M1310.24,218.65c14.96-14.96,33.08-22.44,54.37-22.44,11.99,0,23.24,2.6,33.75,7.78,10.51,5.19,19.33,12.3,26.48,21.32l-29.1,21.42c-8.22-9.83-18.59-14.75-31.13-14.75-11.19,0-20.82,4.01-28.9,12.03-8.08,8.02-12.13,17.62-12.13,28.8s4.01,20.99,12.03,29c8.01,8.02,17.68,12.03,29,12.03,12.66,0,22.91-4.78,30.72-14.35l31.12,18.8c-7.14,9.84-16.1,17.55-26.88,23.14-10.78,5.59-22.43,8.39-34.97,8.39-21.29,0-39.41-7.51-54.37-22.54-14.96-15.02-22.43-33.18-22.43-54.47s7.48-39.21,22.43-54.17Z"/>
@@ -839,6 +839,8 @@ details[open]>*:not(summary){animation:faqIn .35s ease}
     </div>
   </div>
 </section>
+
+<div class="hero-traducoes-bridge" aria-hidden="true"></div>
 
 <section class="traducoes" id="traducoes" data-tone="dark">
   <div class="container">
