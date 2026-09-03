@@ -275,6 +275,31 @@ function initSolucao(root){
     }));
     const onScroll=()=>{ header.toggleAttribute('data-scrolled', scrollY>10); };
     onScroll(); addEventListener('scroll',onScroll,{passive:true});
+
+    // Compacto (hambúrguer) a partir do fim do hero: o próprio hero cuida do
+    // fade durante seu scroll (ver initHero), mas só enquanto a tween de
+    // crescimento do triângulo está ativa (~47% do scroll do hero) — depois
+    // disso ela para de atualizar, então a opacity de volta a 1 fica "presa"
+    // se só resetássemos via JS ao entrar no modo compacto. Por isso a
+    // opacity:1 do compacto é garantida via CSS (!important), não aqui.
+    const heroSec=document.querySelector('.sec-hero');
+    if(heroSec){
+      const nav=header.querySelector('.main-nav');
+      const onCompact=()=>{
+        const pastHero=heroSec.getBoundingClientRect().bottom<=0;
+        if(header.hasAttribute('data-compact')!==pastHero){
+          // troca instantânea (sem herdar as transitions de background/opacity
+          // do header e do nav) pra não "flashar" o menu ao cruzar hero↔seção 2
+          header.style.transition='none';
+          if(nav) nav.style.transition='none';
+          header.toggleAttribute('data-compact', pastHero);
+          header.offsetHeight;
+          requestAnimationFrame(()=>{ header.style.transition=''; if(nav) nav.style.transition=''; });
+        }
+        if(pastHero){ header.style.pointerEvents=''; }
+      };
+      onCompact(); addEventListener('scroll',onCompact,{passive:true});
+    }
   }
 
   // Inits por seção — independentes. Sem GSAP ou reduced-motion → CSS estático.
