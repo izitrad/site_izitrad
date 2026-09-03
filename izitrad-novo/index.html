@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IZITRAD — landing (scaffold)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body class="pre-anim">
+
+<!-- ===================== HEADER / NAV (global, fora das seções) =========== -->
+<!-- Fixo e independente das timelines/sticky. Navegação por âncoras + menu
+     mobile. Comportamento durante o scroll (esconder/reaparecer, contraste)
+     fica preparado para refinar depois via [data-header]. -->
+<header class="site-header" data-header>
+  <div class="header-inner">
+    <a href="#hero" class="brand-logo" aria-label="izi — início">
+      <img src="assets/logo-izi.png" alt="izi" class="brand-img" decoding="async">
+    </a>
+    <nav id="site-nav" class="main-nav" aria-label="Navegação principal">
+      <a href="#caminho">O Caminho</a>
+      <a href="#solucao">A Solução</a>
+      <a href="#como">Como funciona</a>
+      <a href="#destino">Destino</a>
+      <a href="#confianca">Confiança</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <a href="#orcamento" class="btn-meupedido">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Meu pedido
+      </a>
+      <a href="#orcamento" class="btn btn-green btn-header">Apostilar agora</a>
+    </div>
+    <button class="menu-toggle" data-nav-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Abrir menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================ 01 — HERO ============================== -->
+  <!-- Revelação do triângulo (APOSTILAMENTO DE HAIA / SEM SAIR DE CASA).
+       Cena = a própria <section> (comprimento de scroll); .hero-stage sticky. -->
+  <section id="hero" class="sec sec-hero" data-sec="hero" aria-label="Hero animado">
+    <div class="hero-stage">
+      <div class="logo">
+        <span class="logo__greet">Olá, somos a</span>
+        <svg class="logo__img" viewBox="78 100 1257 507" role="img" aria-label="izitrad">
+          <defs><style>
+            .wm-z{fill:#FF0099;stroke:#FF0099}
+            .wm-z,.wm{stroke-miterlimit:10;stroke-width:3px}
+            .wm{fill:#000;stroke:#000}
+          </style></defs>
+          <g>
+            <path class="wm" d="M120.96,376.94c-6.34,0-11.75-2.24-16.23-6.72-4.48-4.48-6.72-9.89-6.72-16.23s2.24-11.59,6.72-16.07c4.48-4.48,9.89-6.72,16.23-6.72s11.58,2.24,16.07,6.72c4.59,4.37,6.89,9.73,6.89,16.07s-2.3,11.86-6.89,16.23c-4.49,4.48-9.84,6.72-16.07,6.72ZM121.12,398.25c5.57,0,10.22,1.97,13.94,5.9,3.94,3.94,5.9,8.64,5.9,14.1v149.04c0,5.58-1.97,10.22-5.9,13.94-3.72,3.94-8.36,5.9-13.94,5.9h-.33c-5.47,0-10.17-1.97-14.1-5.9-3.93-3.71-5.9-8.36-5.9-13.94v-149.04c0-5.46,1.97-10.17,5.9-14.1,3.94-3.94,8.63-5.9,14.1-5.9h.33Z"/>
+            <path class="wm-z" d="M228.35,546.48l82.96.16c5.46,0,10.11,1.91,13.94,5.74,3.94,3.94,5.9,8.64,5.9,14.1v.33c0,5.47-1.97,10.17-5.9,14.1s-8.47,5.74-13.94,5.74h-107.07c-12.9,0-21.92-6.07-27.05-18.2-1.97-4.48-2.95-8.8-2.95-12.95,0-7.32,3.11-14.1,9.35-20.33,10.71-11.15,27-28.2,48.86-51.16,19.13-20.11,33.78-35.47,43.94-46.07h-75.75c-5.58,0-10.28-1.97-14.1-5.9-3.83-3.94-5.74-8.58-5.74-13.94v-.49c0-5.35,1.91-10,5.74-13.94,3.82-3.94,8.53-5.9,14.1-5.9h99.03c13.22,0,22.46,6.07,27.71,18.2,1.97,4.48,2.95,8.8,2.95,12.95,0,7.44-3.12,14.21-9.35,20.33-35.42,37.17-66.3,69.58-92.64,97.23Z"/>
+            <path class="wm" d="M383.63,376.94c-6.34,0-11.75-2.24-16.23-6.72-4.48-4.48-6.72-9.89-6.72-16.23s2.24-11.59,6.72-16.07c4.48-4.48,9.89-6.72,16.23-6.72s11.58,2.24,16.07,6.72c4.59,4.37,6.89,9.73,6.89,16.07s-2.3,11.86-6.89,16.23c-4.49,4.48-9.84,6.72-16.07,6.72ZM383.79,398.25c5.57,0,10.22,1.97,13.94,5.9,3.94,3.94,5.9,8.64,5.9,14.1v149.04c0,5.58-1.97,10.22-5.9,13.94-3.72,3.94-8.36,5.9-13.94,5.9h-.33c-5.47,0-10.17-1.97-14.1-5.9-3.93-3.71-5.9-8.36-5.9-13.94v-149.04c0-5.46,1.97-10.17,5.9-14.1,3.94-3.94,8.63-5.9,14.1-5.9h.33Z"/>
+            <path class="wm" d="M592.52,351.19c0,5.47-1.97,10.17-5.9,14.1-3.83,3.83-8.47,5.74-13.94,5.74h-40.01v196.26c0,5.47-1.91,10.11-5.74,13.94s-8.64,5.9-14.1,5.9h-.33c-5.47,0-10.17-1.97-14.1-5.9-3.83-3.82-5.74-8.47-5.74-13.94v-196.26h-40.01c-5.36,0-10-1.91-13.94-5.74-3.94-3.94-5.9-8.63-5.9-14.1v-.33c0-5.46,1.97-10.17,5.9-14.1,3.93-3.82,8.58-5.74,13.94-5.74h120.02c5.46,0,10.11,1.91,13.94,5.74,3.94,3.94,5.9,8.64,5.9,14.1v.33Z"/>
+            <path class="wm" d="M697.13,398.25c5.46,0,10.17,1.97,14.1,5.9,3.82,3.94,5.74,8.64,5.74,14.1v.33c0,5.47-1.91,10.11-5.74,13.94s-8.64,5.9-14.1,5.9h-9.35c-8.96,0-16.56,3.12-22.79,9.35-6.12,6.23-9.24,13.83-9.35,22.79v96.74c0,5.58-1.97,10.22-5.9,13.94-3.94,3.94-8.58,5.9-13.94,5.9h-.49c-5.36,0-10-1.97-13.94-5.9-3.94-3.71-5.9-8.36-5.9-13.94v-96.74c.22-20,7.27-37.06,21.15-51.16,14.1-14.1,31.15-21.15,51.16-21.15h9.35Z"/>
+            <path class="wm" d="M896.18,425.96c18.47,18.47,27.71,40.72,27.71,66.73v74.6c0,5.58-1.97,10.22-5.9,13.94-3.94,3.94-8.58,5.9-13.94,5.9h-.49c-5.36,0-10-1.97-13.94-5.9-3.94-3.71-5.9-8.36-5.9-13.94-12.46,13.23-30.55,19.84-54.27,19.84-26.02,0-48.26-9.24-66.73-27.71-18.47-18.47-27.71-40.72-27.71-66.73s9.23-48.26,27.71-66.73c18.47-18.47,40.72-27.71,66.73-27.71s48.26,9.24,66.73,27.71ZM790.91,454.33c-10.49,10.6-15.74,23.39-15.74,38.37s5.25,27.93,15.74,38.53c10.6,10.49,23.45,15.74,38.53,15.74s27.87-5.25,38.37-15.74c10.6-10.6,15.9-23.45,15.9-38.53s-5.3-27.76-15.9-38.37c-10.6-10.6-23.39-15.9-38.37-15.9s-27.93,5.3-38.53,15.9Z"/>
+            <path class="wm" d="M1120.81,331.03c5.35,0,10,1.91,13.94,5.74,3.94,3.94,5.9,8.64,5.9,14.1v142.32c-.11,26.02-9.4,48.15-27.87,66.4-18.47,18.36-40.66,27.55-66.57,27.55s-48.26-9.24-66.73-27.71c-18.47-18.47-27.71-40.72-27.71-66.73s9.24-48.26,27.71-66.73c18.47-18.47,40.72-27.71,66.73-27.71,23.72,0,41.81,5.47,54.27,16.4v-63.78c0-5.46,1.97-10.17,5.9-14.1,3.94-3.82,8.58-5.74,13.94-5.74h.49ZM1007.67,454.66c-10.49,10.6-15.74,23.45-15.74,38.53s5.25,27.77,15.74,38.37c10.6,10.6,23.45,15.9,38.53,15.9s27.76-5.3,38.37-15.9c10.6-10.6,15.9-23.39,15.9-38.37s-5.3-27.93-15.9-38.53c-10.6-10.6-23.39-15.9-38.37-15.9s-27.93,5.3-38.53,15.9Z"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="wipe-fill" aria-hidden="true"></div>
+      <svg class="wipe" viewBox="78 100 1257 507" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <path d="M1308.22,192.53l-121.65-70.24c-9.04-5.22-20.33,1.3-20.33,11.74v140.47c0,10.43,11.3,16.96,20.33,11.74l121.65-70.24c9.04-5.22,9.04-18.26,0-23.48Z"/>
+      </svg>
+
+      <!-- Reveal em TEXTO HTML (Outfit 900) — calibrado por JS p/ bater o layout. -->
+      <div class="reveal-html" aria-label="Apostilamento de Haia, sem sair de casa">
+        <div class="hr-frame">
+          <div class="ht" data-k="apost"  data-x="90"     data-y="120" data-w="1231.1" data-h="110" style="color:#000"><span class="ht__in">APOSTILAMENTO</span></div>
+          <div class="ht" data-k="haia"   data-x="330"    data-y="275" data-w="502.5"  data-h="95"  style="color:#000"><span class="ht__in">DE HAIA</span></div>
+          <div class="ht" data-k="sem"    data-x="1056.6" data-y="260" data-w="341.4"  data-h="130" style="color:#fff"><span class="ht__in">SEM</span></div>
+          <div class="ht" data-k="sair"   data-x="1428"   data-y="260" data-w="369.9"  data-h="130" style="color:#fff"><span class="ht__in">SAIR</span></div>
+          <div class="ht" data-k="decasa" data-x="731.9"  data-y="435" data-w="885.4"  data-h="160" style="color:#fff"><span class="ht__in">DE CASA</span></div>
+        </div>
+      </div>
+
+      <div class="reveal-copy">
+        <p>Você envia seu documento, a gente apostila em cartório credenciado e devolve pronto em até 24h — válido em 120+ países.</p>
+        <a class="btn" href="#orcamento">Apostilar pelo WhatsApp</a>
+      </div>
+
+      <div class="hint">role para baixo ↓</div>
+    </div>
+  </section>
+
+  <!-- ============================ 02 — O CAMINHO ======================== -->
+  <!-- Intro "Seu documento / Seu destino / O caminho certo" (reveal por scroll). -->
+  <section id="caminho" class="sec sec-caminho" data-sec="caminho" aria-label="Seu documento, seu destino, o caminho certo">
+    <div class="intro-stage">
+      <span class="intro-eyebrow">02 — O CAMINHO</span>
+      <h1 class="intro-h1">
+        <span class="il il--doc">Seu documento.</span>
+        <span class="il il--dest">Seu destino.</span>
+        <span class="il il--cam">O caminho certo.</span>
+      </h1>
+      <p class="intro-copy">Apostilamento e tradução juramentada sem você precisar decifrar a burocracia.</p>
+      <a class="intro-link" href="#solucao">Explorar o caminho ↓</a>
+    </div>
+  </section>
+
+  <!-- ============================ 03 — A SOLUÇÃO ======================== -->
+  <!-- Jornada do documento: explora os caminhos → atravessa → vira o coração
+       da solução com os rótulos editoriais. UMA timeline (o doc atravessa). -->
+  <section id="solucao" class="sec sec-solucao" data-sec="solucao" aria-label="A solução IZITRAD">
+    <div class="sol-stage">
+
+      <div class="section-id">02 / O CAMINHO</div>
+      <div class="copy copy-a">
+        <h2>Cada documento<br>tem um <em>caminho.</em></h2>
+        <p>País, finalidade e tipo de documento podem mudar o processo.</p>
+      </div>
+
+      <div class="path p1"></div><div class="path p2"></div><div class="path p3"></div>
+      <div class="path p4"></div><div class="path p5"></div>
+
+      <div class="chip c1"><small>01</small><b>APOSTILAMENTO</b><span>Original → Apostila</span></div>
+      <div class="chip c2"><small>02</small><b>TRADUÇÃO</b><span>Original → Tradução</span></div>
+      <div class="chip c3"><small>03</small><b>APOSTILA + TRADUÇÃO</b><span>Original → Apostila → Tradução</span></div>
+      <div class="chip c4"><small>04</small><b>TRADUÇÃO + APOSTILA</b><span>Original → Tradução → Apostila</span></div>
+      <div class="chip c5"><small>05</small><b>PROCESSO COMPLETO</b><span>Apostila → Tradução → Apostila</span></div>
+
+      <div class="s3-bg" aria-hidden="true">
+        <svg class="s3-seam" viewBox="0 0 1440 120" preserveAspectRatio="none">
+          <path d="M0,120 L0,58 C 300,-6 560,44 720,44 C 900,44 1160,-8 1440,58 L1440,120 Z"></path>
+        </svg>
+        <div class="s3-fill"></div>
+      </div>
+
+      <div class="s3">
+        <div class="s3-id">03 / A SOLUÇÃO</div>
+        <div class="s3-intro">
+          <h2 class="s3-headline">Você não precisa<br><span>descobrir o caminho.</span></h2>
+          <p class="s3-sub">Existem diferentes tipos de tradução e processos.<br>A gente sabe qual é o seu.</p>
+        </div>
+
+        <div class="halo"></div>
+        <svg class="veins" aria-hidden="true"></svg>
+
+        <div class="svc o-jur">
+          <span class="svc-node n-jur"></span><span class="svc-line"></span>
+          <div class="svc-txt"><span class="svc-num">01 / TRADUÇÃO</span><b class="svc-title">JURAMENTADA</b><span class="svc-desc">Tradução oficial com validade legal.</span></div>
+        </div>
+        <div class="svc svc--apostila o-haia">
+          <span class="svc-node n-haia"></span><span class="svc-line"></span>
+          <div class="svc-txt"><span class="svc-num">+</span><b class="svc-title">APOSTILA DE HAIA</b><span class="svc-desc">Validação internacional do documento.</span></div>
+        </div>
+        <div class="svc svc--left o-cert">
+          <span class="svc-node n-cert"></span><span class="svc-line"></span>
+          <div class="svc-txt"><span class="svc-num">02 / TRADUÇÃO</span><b class="svc-title">CERTIFICADA</b><span class="svc-desc">Tradução com declaração de conteúdo.</span></div>
+        </div>
+        <div class="svc o-tec">
+          <span class="svc-node n-tec"></span><span class="svc-line"></span>
+          <div class="svc-txt"><span class="svc-num">03 / TRADUÇÃO</span><b class="svc-title">TÉCNICA</b><span class="svc-desc">Tradução especializada para áreas técnicas.</span></div>
+        </div>
+        <div class="svc o-simp">
+          <span class="svc-node n-simp"></span><span class="svc-line"></span>
+          <div class="svc-txt"><span class="svc-num">04 / TRADUÇÃO</span><b class="svc-title">SIMPLES</b><span class="svc-desc">Tradução simples para uso não oficial.</span></div>
+        </div>
+
+        <div class="s3-close">
+          <h2>Você envia.<br><span>A gente resolve.</span></h2>
+          <p>Analisamos, orientamos e cuidamos de tudo até você receber seu documento pronto.</p>
+          <button>Enviar meu documento →</button>
+        </div>
+      </div>
+
+      <div class="doc-stage">
+        <div class="doc" aria-label="Representação abstrata de um documento IZITRAD">
+          <div class="doc-top"><b>IZITRAD<span>▶</span></b><small>01 / DOC</small></div>
+          <div class="dash"></div>
+          <small>YOUR DOCUMENT</small>
+          <h3>DIPLOMA<br><span>DE GRADUAÇÃO</span></h3>
+          <div class="route"><b>BRASIL</b><i>→</i><b>PORTUGAL</b></div>
+          <div class="globe"></div>
+          <div class="meta">
+            <span>PURPOSE<b>ESTUDOS</b></span><span>YEAR<b>2026</b></span><span>STATUS<b>IN PROGRESS</b></span>
+          </div>
+          <div class="doc-foot">WE HANDLE<br>THE COMPLEXITY.</div>
+        </div>
+      </div>
+
+      <div class="progress"><i></i></div>
+    </div>
+  </section>
+
+  <!-- ==================== 04–08 — PLACEHOLDERS estruturais ============== -->
+  <section id="como" class="sec sec-ph" data-sec="ph">
+    <div class="ph"><span class="ph-num">04</span><h2>COMO FUNCIONA</h2><p>seção em desenvolvimento</p></div>
+  </section>
+  <section id="destino" class="sec sec-ph" data-sec="ph">
+    <div class="ph"><span class="ph-num">05</span><h2>DESTINO</h2><p>seção em desenvolvimento</p></div>
+  </section>
+  <section id="confianca" class="sec sec-ph" data-sec="ph">
+    <div class="ph"><span class="ph-num">06</span><h2>CONFIANÇA</h2><p>seção em desenvolvimento</p></div>
+  </section>
+  <section id="orcamento" class="sec sec-ph" data-sec="ph">
+    <div class="ph"><span class="ph-num">07</span><h2>ORÇAMENTO</h2><p>seção em desenvolvimento</p></div>
+  </section>
+  <section id="faq" class="sec sec-ph" data-sec="ph">
+    <div class="ph"><span class="ph-num">08</span><h2>FAQ</h2><p>seção em desenvolvimento</p></div>
+  </section>
+
+</main>
+
+<!-- ============================ FOOTER (global) ========================= -->
+<footer class="site-footer">
+  <div class="foot-brand">izitrad<span>▸</span></div>
+  <p>Apostilamento de Haia e tradução juramentada — sem sair de casa.</p>
+  <small>© 2026 IZITRAD · protótipo de reconstrução</small>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="assets/js/site.js"></script>
+</body>
+</html>
