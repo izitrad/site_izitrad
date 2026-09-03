@@ -156,11 +156,19 @@ function initWaves(canvas){
   rafId=requestAnimationFrame(tick);
 }
 
-/* -------------------------------- 01 · HERO -------------------------- */
-function initHero(root){
+/* -------------------- 01+02 · HERO → O CAMINHO (palco único) ---------- */
+/* Um único ScrollTrigger/timeline (scrub) cobre a sequência inteira:
+   Hero (crescimento do triângulo + textos, igual antes) → entrada de
+   .s2-layer (yPercent 100→0, ease:none, borda reta — a seção 2 REAL sobe
+   cobrindo a Hero, sem painel/clone) → timeline interna de O Caminho (os
+   mesmos "atos" que antes rodavam isolados em .sec-caminho, só deslocados
+   no tempo pra começar depois que .s2-layer já está 100% posicionada).
+   Nada de pin:true, nada de sticky aninhado, nada de 2º ScrollTrigger. */
+function initHeroS2Story(root){
   const wavesCanvas = root.querySelector('.hero-waves canvas');
   if(wavesCanvas) initWaves(wavesCanvas);
-  const stage   = root.querySelector('.hero-stage');
+  const stage   = root.querySelector('.hero-layer');
+  const s2Layer = root.querySelector('.s2-layer');
   const logo    = root.querySelector('.logo');
   const logoImg = root.querySelector('.logo__img');
   const wipe    = root.querySelector('.wipe');
@@ -174,6 +182,8 @@ function initHero(root){
   const copyBtn = root.querySelector('.reveal-copy .btn');
   const hint  = root.querySelector('.hint');
   const header= document.querySelector('[data-header]');
+  const ilDoc=root.querySelector('.il--doc'), ilDest=root.querySelector('.il--dest'), ilCam=root.querySelector('.il--cam');
+  const introCopy=root.querySelector('.intro-copy'), introLink=root.querySelector('.intro-link');
 
   // calibra cada trecho HTML pro tamanho/posição exato medido no SVG original
   const DESKTOP_MIN = 900;
@@ -254,8 +264,42 @@ function initHero(root){
   buildGrow();
   wipe.style.visibility='visible';   // já posicionado → pode mostrar (sem flash)
 
+  // marcos de tempo (unidades locais da timeline, não vh/px):
+  //  0 .. 4.23        → Hero (crescimento + textos), inalterado
+  //  4.23 .. 5.23      → FASE 1: .s2-layer sobe (yPercent 100→0)
+  //  5.23 .. 7.33      → FASE 2: timeline interna de O Caminho
+  const ENTRY_START=4.23, ENTRY_DUR=1.0, PHASE2_START=ENTRY_START+ENTRY_DUR;
+  // introLink (o último texto a entrar) começa em PHASE2_START+1.05 e leva
+  // 0.6 pra terminar — só depois disso o hambúrguer aparece. Antes disso o
+  // triângulo rosa aparecia em cima do fundo AINDA rosa da Hero (a fase de
+  // entrada) e ficava ilegível (rosa sobre rosa) — parecia uma "faixa" bugada.
+  const COMPACT_START=PHASE2_START+1.05+0.6;
+  const nav = header ? header.querySelector('.main-nav') : null;
+
   const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
-    scrub:0.4, invalidateOnRefresh:true, onRefresh:buildGrow } });
+    scrub:0.4, invalidateOnRefresh:true, onRefresh:buildGrow },
+    // compacto (hambúrguer) só liga depois que TODO o texto de O Caminho já
+    // revelou (ver COMPACT_START acima). Fica na MESMA timeline que já
+    // controla tudo o resto: sem 2º listener pra dessincronizar (era
+    // exatamente esse o bug corrigido mais cedo).
+    onUpdate(){
+      if(!header) return;
+      // "this" (não a var "tl" de fora) evita referenciar "tl" antes de
+      // ela existir — o GSAP já roda um render/onUpdate durante a própria
+      // criação da timeline (o scrub sincroniza com a posição atual do
+      // scroll assim que o ScrollTrigger é criado).
+      const compact = this.time()>=COMPACT_START;
+      if(header.hasAttribute('data-compact')!==compact){
+        // troca instantânea (sem herdar as transitions de background/
+        // opacity do header/nav) pra não "flashar" o menu na virada
+        header.style.transition='none';
+        if(nav) nav.style.transition='none';
+        header.toggleAttribute('data-compact', compact);
+        header.offsetHeight;
+        requestAnimationFrame(()=>{ header.style.transition=''; if(nav) nav.style.transition=''; });
+      }
+    }
+  });
   const grow={p:0};
   tl.to(grow,{p:1,ease:'power1.in',duration:2.18,onUpdate(){ proxy.w=triW0+(triTargetWidth-triW0)*grow.p; applyGrowth(); }},0)
     .to(hint,{autoAlpha:0,duration:0.25},0.2);
@@ -268,21 +312,21 @@ function initHero(root){
     .fromTo(copyP,{autoAlpha:0,y:40},IN,2.93)
     .fromTo(copyBtn,{autoAlpha:0,y:40},IN,3.03);
   tl.to({},{duration:0.6},3.63);
-}
 
-/* ----------------------------- 02 · O CAMINHO ------------------------ */
-function initCaminho(root){
-  const ilDoc=root.querySelector('.il--doc'), ilDest=root.querySelector('.il--dest'), ilCam=root.querySelector('.il--cam');
-  const introCopy=root.querySelector('.intro-copy'), introLink=root.querySelector('.intro-link');
-  const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
-    scrub:0.4, invalidateOnRefresh:true } });
-  const IN={autoAlpha:1,x:0,y:0,ease:'power3.out',duration:0.6};
-  tl.fromTo(ilDoc,{autoAlpha:0,x:-260},IN,0.10)
-    .fromTo(ilDest,{autoAlpha:0,x:260},IN,0.35)
-    .fromTo(ilCam,{autoAlpha:0,y:170},IN,0.60)
-    .fromTo(introCopy,{autoAlpha:0,y:40},IN,0.90)
-    .fromTo(introLink,{autoAlpha:0,y:40},IN,1.05)
-    .to({},{duration:0.7},1.4);
+  // FASE 1 — a seção 2 REAL sobe cobrindo a Hero. Borda reta, ease:none
+  // (igual à referência): desde o 1º pixel já é o conteúdo real dela.
+  tl.fromTo(s2Layer,{yPercent:100},{yPercent:0,ease:'none',duration:ENTRY_DUR},ENTRY_START);
+
+  // FASE 2 — só começa depois que .s2-layer está 100% posicionada. Mesma
+  // lógica interna que já existia isolada (nenhuma animação foi alterada,
+  // só o deslocamento de tempo pra encaixar depois da subida).
+  const IN2={autoAlpha:1,x:0,y:0,ease:'power3.out',duration:0.6};
+  tl.fromTo(ilDoc,{autoAlpha:0,x:-260},IN2,PHASE2_START+0.10)
+    .fromTo(ilDest,{autoAlpha:0,x:260},IN2,PHASE2_START+0.35)
+    .fromTo(ilCam,{autoAlpha:0,y:170},IN2,PHASE2_START+0.60)
+    .fromTo(introCopy,{autoAlpha:0,y:40},IN2,PHASE2_START+0.90)
+    .fromTo(introLink,{autoAlpha:0,y:40},IN2,PHASE2_START+1.05)
+    .to({},{duration:0.7},PHASE2_START+1.4);
 }
 
 /* ----------------------------- 03 · A SOLUÇÃO ------------------------ */
@@ -426,31 +470,9 @@ function initSolucao(root){
     }));
     const onScroll=()=>{ header.toggleAttribute('data-scrolled', scrollY>10); };
     onScroll(); addEventListener('scroll',onScroll,{passive:true});
-
-    // Compacto (hambúrguer) a partir do fim do hero: o próprio hero cuida do
-    // fade durante seu scroll (ver initHero), mas só enquanto a tween de
-    // crescimento do triângulo está ativa (~47% do scroll do hero) — depois
-    // disso ela para de atualizar, então a opacity de volta a 1 fica "presa"
-    // se só resetássemos via JS ao entrar no modo compacto. Por isso a
-    // opacity:1 do compacto é garantida via CSS (!important), não aqui.
-    const heroSec=document.querySelector('.sec-hero');
-    if(heroSec){
-      const nav=header.querySelector('.main-nav');
-      const onCompact=()=>{
-        const pastHero=heroSec.getBoundingClientRect().bottom<=0;
-        if(header.hasAttribute('data-compact')!==pastHero){
-          // troca instantânea (sem herdar as transitions de background/opacity
-          // do header e do nav) pra não "flashar" o menu ao cruzar hero↔seção 2
-          header.style.transition='none';
-          if(nav) nav.style.transition='none';
-          header.toggleAttribute('data-compact', pastHero);
-          header.offsetHeight;
-          requestAnimationFrame(()=>{ header.style.transition=''; if(nav) nav.style.transition=''; });
-        }
-        if(pastHero){ header.style.pointerEvents=''; }
-      };
-      onCompact(); addEventListener('scroll',onCompact,{passive:true});
-    }
+    // Compacto (hambúrguer): agora controlado de dentro da própria timeline
+    // Hero→O Caminho (ver initHeroS2Story) — nada aqui, evita 2 sistemas
+    // brigando pelo mesmo atributo (era a causa do bug corrigido antes).
   }
 
   // Inits por seção — independentes. Sem GSAP ou reduced-motion → CSS estático.
@@ -459,8 +481,7 @@ function initSolucao(root){
     gsap.registerPlugin(ScrollTrigger);
     document.querySelectorAll('.sec[data-sec]').forEach(sec=>{
       const kind=sec.dataset.sec;
-      if(kind==='hero') initHero(sec);
-      else if(kind==='caminho') initCaminho(sec);
+      if(kind==='hero-s2-story') initHeroS2Story(sec);
       else if(kind==='solucao') initSolucao(sec);
     });
     if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>ScrollTrigger.refresh()); }

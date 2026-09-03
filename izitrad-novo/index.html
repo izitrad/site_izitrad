@@ -44,11 +44,18 @@
 
 <main>
 
-  <!-- ============================ 01 — HERO ============================== -->
-  <!-- Revelação do triângulo (APOSTILAMENTO DE HAIA / SEM SAIR DE CASA).
-       Cena = a própria <section> (comprimento de scroll); .hero-stage sticky. -->
-  <section id="hero" class="sec sec-hero" data-sec="hero" aria-label="Hero animado">
-    <div class="hero-stage">
+  <!-- ==================== 01+02 — HERO → O CAMINHO ======================= -->
+  <!-- Um ÚNICO palco sticky (.hero-s2-stage) com duas camadas coexistindo:
+       .hero-layer (a Hero, como antes) e .s2-layer (O Caminho REAL, como
+       antes — não é clone nem painel). Uma timeline/ScrollTrigger só: a
+       Hero acontece, depois .s2-layer sobe (yPercent 100→0, ease:none,
+       borda reta) cobrindo a Hero, e só DEPOIS disso começa a timeline
+       interna de O Caminho (os "atos" que já existiam isolados). Nada de
+       pin:true, nada de sticky aninhado, nada de painel/clone intermediário
+       — ver initHeroS2Story em site.js. -->
+  <section id="hero" class="sec hero-s2-story" data-sec="hero-s2-story" aria-label="Hero e O Caminho">
+    <div class="hero-s2-stage">
+    <div class="hero-layer">
       <div class="hero-waves" aria-hidden="true"><canvas></canvas></div>
       <div class="hero-fade-bottom" aria-hidden="true"></div>
       <div class="logo">
@@ -94,12 +101,10 @@
 
       <div class="hint">role para baixo ↓</div>
     </div>
-  </section>
 
-  <!-- ============================ 02 — O CAMINHO ======================== -->
-  <!-- Intro "Seu documento / Seu destino / O caminho certo" (reveal por scroll). -->
-  <section id="caminho" class="sec sec-caminho" data-sec="caminho" aria-label="Seu documento, seu destino, o caminho certo">
-    <div class="intro-stage">
+    <!-- O Caminho REAL (era .sec-caminho/.intro-stage isolada) — mesma
+         estrutura/conteúdo, agora como camada que sobe cobrindo a Hero. -->
+    <div class="s2-layer" id="caminho" aria-label="Seu documento, seu destino, o caminho certo">
       <span class="intro-eyebrow">02 — O CAMINHO</span>
       <h1 class="intro-h1">
         <span class="il il--doc">Seu documento.</span>
@@ -108,6 +113,7 @@
       </h1>
       <p class="intro-copy">Apostilamento e tradução juramentada sem você precisar decifrar a burocracia.</p>
       <a class="intro-link" href="#solucao">Explorar o caminho ↓</a>
+    </div>
     </div>
   </section>
 

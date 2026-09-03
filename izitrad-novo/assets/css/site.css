@@ -108,53 +108,56 @@ img,svg{display:block}
 .ph p{margin-top:14px;color:rgba(255,255,255,.4);letter-spacing:.14em;text-transform:uppercase;font-size:12px}
 
 /* ===================================================================== */
-/* 01 — HERO (revelação do triângulo)                                     */
+/* 01+02 — HERO → O CAMINHO (palco único, duas camadas)                   */
 /* ===================================================================== */
-.sec-hero{height:758vh;background:var(--claro)}
-.sec-hero .hero-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-items:center;background:var(--claro)}
-/* fundo animado (canvas de ondas), z-index mais baixo que tudo (logo=4,
-   wipe=3, wipe-fill=2) → fica atrás de tudo, só decorativo (pointer-
-   events:none — o mousemove é capturado no window, não precisa do canvas) */
-.sec-hero .hero-waves{position:absolute;inset:0;z-index:1;pointer-events:none}
-.sec-hero .hero-waves canvas{display:block;width:100%;height:100%}
-.sec-hero .hero-fade-bottom{position:absolute;left:0;right:0;bottom:0;height:24%;z-index:1;pointer-events:none;background:linear-gradient(to bottom, rgba(255,255,255,0), #fff)}
+/* altura combinada: fase Hero + fase de entrada (yPercent 100→0) + fase
+   interna de O Caminho, tudo na MESMA timeline (ver initHeroS2Story) —
+   por isso não existe mais .sec-hero/.sec-caminho separadas. */
+.hero-s2-story{height:1314vh;background:#111}
+.hero-s2-story .hero-s2-stage{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--claro)}
+/* .hero-layer = o antigo .hero-stage (mesmo layout/grid); .s2-layer = o
+   antigo .intro-stage (mesmo layout/flex) — nenhum dos dois é mais sticky
+   por si só, os dois COEXISTEM dentro do único .hero-s2-stage sticky. */
+.hero-s2-story .hero-layer{position:absolute;inset:0;z-index:1;display:grid;place-items:center;background:var(--claro)}
+.hero-s2-story .s2-layer{position:absolute;inset:0;z-index:2;background:#111;color:#fff;display:flex;flex-direction:column;justify-content:center;padding:9vw}
+/* fundo animado (canvas de ondas), z-index mais baixo que tudo dentro da
+   hero-layer (logo=4, wipe=3, wipe-fill=2) → fica atrás de tudo, só
+   decorativo (pointer-events:none — o mousemove é capturado no window). */
+.hero-layer .hero-waves{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero-layer .hero-waves canvas{display:block;width:100%;height:100%}
+.hero-layer .hero-fade-bottom{position:absolute;left:0;right:0;bottom:0;height:24%;z-index:1;pointer-events:none;background:linear-gradient(to bottom, rgba(255,255,255,0), #fff)}
 /* --logo-raise: margem que levanta a wordmark p/ ACIMA do centro (como o
    antigo, margin-top:-17%). Via margem (não transform) p/ não brigar com o
    crescimento por JS. Item centrado no grid → margin-bottom M sobe M/2. */
 /* wordmark ANCORADA À ESQUERDA (como no antigo): a saudação fica perto da
    borda esquerda, na mesma distância horizontal da referência. justify-self
    funciona mesmo com position:absolute (item alinhado na sua área do grid). */
-.sec-hero .logo{position:absolute;z-index:4;text-align:center;transform-origin:center}
-.sec-hero .logo__greet{display:block;font-weight:300;font-size:clamp(1rem,.6rem + 1.6vw,1.5rem);letter-spacing:.04em;color:var(--tinta);opacity:.85;margin-bottom:.5rem;transform:translate(calc(-35% - 15px),80px)}
+.hero-layer .logo{position:absolute;z-index:4;text-align:center;transform-origin:center}
+.hero-layer .logo__greet{display:block;font-weight:300;font-size:clamp(1rem,.6rem + 1.6vw,1.5rem);letter-spacing:.04em;color:var(--tinta);opacity:.85;margin-bottom:.5rem;transform:translate(calc(-35% - 15px),80px)}
 /* left:6.9% desloca a img p/ a direita → CENTRALIZA o texto "izitrad" (ignora o
    triângulo, que sobra à direita). % da largura da logo → escala em qualquer tamanho. */
-.sec-hero .logo__img{position:relative;left:6.9%;width:min(750px,74vw);height:auto;margin:0 auto}
-.sec-hero .wipe-fill{position:absolute;z-index:2;inset:0;background:var(--rosa);opacity:0}
+.hero-layer .logo__img{position:relative;left:6.9%;width:min(750px,74vw);height:auto;margin:0 auto}
+.hero-layer .wipe-fill{position:absolute;z-index:2;inset:0;background:var(--rosa);opacity:0}
 /* invisível até o JS (buildGrow) posicionar → evita o "flash" do triângulo no
    canto direito no carregamento. O JS torna visível logo após posicionar. */
-.sec-hero .wipe{position:absolute;z-index:3;overflow:visible;visibility:hidden}
-.sec-hero .wipe path{fill:var(--rosa)}
-.sec-hero .reveal-copy{position:absolute;z-index:6;left:50%;bottom:14%;transform:translateX(-50%);width:min(760px,86vw);text-align:center;pointer-events:none;font-family:var(--copy-font),'DM Sans',sans-serif}
-.sec-hero .reveal-copy p{opacity:0;color:#fff;font-weight:300;font-size:25px;line-height:1.5}
-.sec-hero .reveal-copy .btn{opacity:0;display:inline-block;margin-top:2.2rem;background:#fff;color:var(--rosa);font-weight:700;padding:.85rem 1.7rem;border-radius:999px;text-decoration:none;pointer-events:auto;box-shadow:0 10px 30px rgba(0,0,0,.15)}
-.sec-hero .reveal-html{position:absolute;z-index:5;inset:0;overflow:hidden;pointer-events:none}
-.sec-hero .reveal-html .hr-frame{position:absolute;top:50%;left:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center}
-.sec-hero .ht{position:absolute;transform-origin:left top;opacity:0}
-.sec-hero .ht__in{display:inline-block;font-family:var(--reveal-font),sans-serif;font-weight:var(--reveal-weight,700);line-height:1;white-space:nowrap;transform-origin:left top;text-box-trim:trim-both;text-box-edge:cap alphabetic}
-.sec-hero .hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:#00FF66;opacity:.55;animation:hintPulse 1.8s ease-in-out infinite}
+.hero-layer .wipe{position:absolute;z-index:3;overflow:visible;visibility:hidden}
+.hero-layer .wipe path{fill:var(--rosa)}
+.hero-layer .reveal-copy{position:absolute;z-index:6;left:50%;bottom:14%;transform:translateX(-50%);width:min(760px,86vw);text-align:center;pointer-events:none;font-family:var(--copy-font),'DM Sans',sans-serif}
+.hero-layer .reveal-copy p{opacity:0;color:#fff;font-weight:300;font-size:25px;line-height:1.5}
+.hero-layer .reveal-copy .btn{opacity:0;display:inline-block;margin-top:2.2rem;background:#fff;color:var(--rosa);font-weight:700;padding:.85rem 1.7rem;border-radius:999px;text-decoration:none;pointer-events:auto;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.hero-layer .reveal-html{position:absolute;z-index:5;inset:0;overflow:hidden;pointer-events:none}
+.hero-layer .reveal-html .hr-frame{position:absolute;top:50%;left:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center}
+.hero-layer .ht{position:absolute;transform-origin:left top;opacity:0}
+.hero-layer .ht__in{display:inline-block;font-family:var(--reveal-font),sans-serif;font-weight:var(--reveal-weight,700);line-height:1;white-space:nowrap;transform-origin:left top;text-box-trim:trim-both;text-box-edge:cap alphabetic}
+.hero-layer .hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:#00FF66;opacity:.55;animation:hintPulse 1.8s ease-in-out infinite}
 @keyframes hintPulse{50%{opacity:.15;transform:translate(-50%,4px)}}
 
-/* ===================================================================== */
-/* 02 — O CAMINHO (intro reveal)                                          */
-/* ===================================================================== */
-.sec-caminho{height:260vh;background:#111}
-.sec-caminho .intro-stage{position:sticky;top:0;height:100vh;overflow:hidden;background:#111;color:#fff;display:flex;flex-direction:column;justify-content:center;padding:9vw}
-.sec-caminho .intro-eyebrow{font-size:12px;letter-spacing:.18em;font-weight:700;color:#fff}
-.sec-caminho .intro-h1{font-family:var(--reveal-font),'Outfit',sans-serif;font-weight:900;font-size:clamp(58px,8.6vw,150px);line-height:.88;letter-spacing:-.045em;margin:25px 0;text-transform:uppercase}
-.sec-caminho .intro-h1 .il{display:block;opacity:0;will-change:transform,opacity}
-.sec-caminho .intro-h1 .il--dest{color:var(--rosa)}
-.sec-caminho .intro-copy{font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:400;font-size:clamp(17px,1.5vw,24px);line-height:1.5;max-width:620px;opacity:0}
-.sec-caminho .intro-link{display:inline-block;width:max-content;margin-top:28px;color:#fff;text-decoration:underline;text-underline-offset:4px;opacity:0}
+.s2-layer .intro-eyebrow{font-size:12px;letter-spacing:.18em;font-weight:700;color:#fff}
+.s2-layer .intro-h1{font-family:var(--reveal-font),'Outfit',sans-serif;font-weight:900;font-size:clamp(58px,8.6vw,150px);line-height:.88;letter-spacing:-.045em;margin:25px 0;text-transform:uppercase}
+.s2-layer .intro-h1 .il{display:block;opacity:0;will-change:transform,opacity}
+.s2-layer .intro-h1 .il--dest{color:var(--rosa)}
+.s2-layer .intro-copy{font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:400;font-size:clamp(17px,1.5vw,24px);line-height:1.5;max-width:620px;opacity:0}
+.s2-layer .intro-link{display:inline-block;width:max-content;margin-top:28px;color:#fff;text-decoration:underline;text-underline-offset:4px;opacity:0}
 
 /* ===================================================================== */
 /* 03 — A SOLUÇÃO (documento = coração)                                   */
@@ -234,14 +237,14 @@ img,svg{display:block}
 
 /* ============================== MOBILE ============================== */
 @media(max-width:900px){
-  .sec-hero .reveal-html .hr-frame{position:absolute;inset:0;width:auto;height:auto;transform:none;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1.2vh;padding:12vw 5vw;text-align:center}
-  .sec-hero .ht{position:static}
-  .sec-hero .ht__in{transform:none;white-space:nowrap;line-height:.98;font-size:12vw}
-  .sec-hero .ht[data-k="apost"] .ht__in{font-size:9.6vw}
-  .sec-hero .ht[data-k="haia"] .ht__in{font-size:8.3vw}
-  .sec-hero .ht[data-k="sem"] .ht__in{font-size:11.4vw}
-  .sec-hero .ht[data-k="sair"] .ht__in{font-size:11.4vw}
-  .sec-hero .ht[data-k="decasa"] .ht__in{font-size:14vw}
+  .hero-layer .reveal-html .hr-frame{position:absolute;inset:0;width:auto;height:auto;transform:none;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1.2vh;padding:12vw 5vw;text-align:center}
+  .hero-layer .ht{position:static}
+  .hero-layer .ht__in{transform:none;white-space:nowrap;line-height:.98;font-size:12vw}
+  .hero-layer .ht[data-k="apost"] .ht__in{font-size:9.6vw}
+  .hero-layer .ht[data-k="haia"] .ht__in{font-size:8.3vw}
+  .hero-layer .ht[data-k="sem"] .ht__in{font-size:11.4vw}
+  .hero-layer .ht[data-k="sair"] .ht__in{font-size:11.4vw}
+  .hero-layer .ht[data-k="decasa"] .ht__in{font-size:14vw}
 }
 @media(max-width:760px){
   .sec-solucao{height:520vh}
@@ -272,12 +275,14 @@ img,svg{display:block}
 
 /* ==================== PREFERÊNCIA: MENOS MOVIMENTO ==================== */
 @media(prefers-reduced-motion:reduce){
-  .sec-hero{height:100vh}
-  .sec-hero .wipe-fill{opacity:1}.sec-hero .logo{opacity:0}
-  .sec-hero .ht,.sec-hero .reveal-copy p,.sec-hero .reveal-copy .btn{opacity:1}
-  .sec-hero .hint{display:none}
-  .sec-caminho{height:100vh}
-  .sec-caminho .intro-h1 .il,.sec-caminho .intro-copy,.sec-caminho .intro-link{opacity:1;transform:none}
+  .hero-s2-story{height:auto}
+  .hero-s2-story .hero-s2-stage{position:relative;height:auto;overflow:visible}
+  .hero-s2-story .hero-layer{position:relative;height:100vh}
+  .hero-s2-story .s2-layer{position:relative;height:100vh;transform:none}
+  .hero-layer .wipe-fill{opacity:1}.hero-layer .logo{opacity:0}
+  .hero-layer .ht,.hero-layer .reveal-copy p,.hero-layer .reveal-copy .btn{opacity:1}
+  .hero-layer .hint{display:none}
+  .s2-layer .intro-h1 .il,.s2-layer .intro-copy,.s2-layer .intro-link{opacity:1;transform:none}
   .sec-solucao{height:auto}
   .sec-solucao .sol-stage{position:relative;height:auto;overflow:visible;padding:64px 7%;background:#fbfbfa}
   .section-id{position:relative;top:auto;left:auto}
