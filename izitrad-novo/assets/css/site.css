@@ -110,7 +110,7 @@ img,svg{display:block}
 /* ===================================================================== */
 /* 01 — HERO (revelação do triângulo)                                     */
 /* ===================================================================== */
-.sec-hero{height:520vh;background:var(--claro)}
+.sec-hero{height:828vh;background:var(--claro)}
 .sec-hero .hero-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-items:center;background:var(--claro)}
 /* --logo-raise: margem que levanta a wordmark p/ ACIMA do centro (como o
    antigo, margin-top:-17%). Via margem (não transform) p/ não brigar com o
@@ -119,7 +119,7 @@ img,svg{display:block}
    borda esquerda, na mesma distância horizontal da referência. justify-self
    funciona mesmo com position:absolute (item alinhado na sua área do grid). */
 .sec-hero .logo{position:absolute;z-index:4;text-align:center;transform-origin:center}
-.sec-hero .logo__greet{display:block;font-weight:300;font-size:clamp(1rem,.6rem + 1.6vw,1.5rem);letter-spacing:.04em;color:var(--tinta);opacity:.85;margin-bottom:.5rem;transform:translate(-42%,80px)}
+.sec-hero .logo__greet{display:block;font-weight:300;font-size:clamp(1rem,.6rem + 1.6vw,1.5rem);letter-spacing:.04em;color:var(--tinta);opacity:.85;margin-bottom:.5rem;transform:translate(calc(-35% - 15px),80px)}
 /* left:6.9% desloca a img p/ a direita → CENTRALIZA o texto "izitrad" (ignora o
    triângulo, que sobra à direita). % da largura da logo → escala em qualquer tamanho. */
 .sec-hero .logo__img{position:relative;left:6.9%;width:min(750px,74vw);height:auto;margin:0 auto}

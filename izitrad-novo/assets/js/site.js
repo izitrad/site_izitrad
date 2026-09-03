@@ -106,17 +106,17 @@ function initHero(root){
   const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
     scrub:0.4, invalidateOnRefresh:true, onRefresh:buildGrow } });
   const grow={p:0};
-  tl.to(grow,{p:1,ease:'power1.in',duration:1.8,onUpdate(){ proxy.w=triW0+(triTargetWidth-triW0)*grow.p; applyGrowth(); }},0)
+  tl.to(grow,{p:1,ease:'power1.in',duration:2.57,onUpdate(){ proxy.w=triW0+(triTargetWidth-triW0)*grow.p; applyGrowth(); }},0)
     .to(hint,{autoAlpha:0,duration:0.25},0.2);
   const IN={autoAlpha:1,x:0,y:0,ease:'power2.out',duration:0.5};
-  tl.fromTo(apost,{autoAlpha:0,x:-320},IN,1.9)
-    .fromTo(haia,{autoAlpha:0,x:320},IN,2.05)
-    .fromTo(sem,{autoAlpha:0,y:90},IN,2.2)
-    .fromTo(sair,{autoAlpha:0,y:90},IN,2.3)
-    .fromTo(decasa,{autoAlpha:0,y:90},IN,2.4)
-    .fromTo(copyP,{autoAlpha:0,y:40},IN,2.55)
-    .fromTo(copyBtn,{autoAlpha:0,y:40},IN,2.65);
-  tl.to({},{duration:0.6},3.25);
+  tl.fromTo(apost,{autoAlpha:0,x:-320},IN,2.67)
+    .fromTo(haia,{autoAlpha:0,x:320},IN,2.82)
+    .fromTo(sem,{autoAlpha:0,y:90},IN,2.97)
+    .fromTo(sair,{autoAlpha:0,y:90},IN,3.07)
+    .fromTo(decasa,{autoAlpha:0,y:90},IN,3.17)
+    .fromTo(copyP,{autoAlpha:0,y:40},IN,3.32)
+    .fromTo(copyBtn,{autoAlpha:0,y:40},IN,3.42);
+  tl.to({},{duration:0.6},4.02);
 }
 
 /* ----------------------------- 02 · O CAMINHO ------------------------ */
