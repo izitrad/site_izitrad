@@ -24,7 +24,7 @@ img,svg{display:block}
    CAIXA ALTA com separadores "|", botões "Meu pedido" + "Apostilar agora".
    Fixo, independente das timelines/sticky. Cores do site antigo (hardcoded
    pra não colidir com o --pink #FF0099 da solução). */
-.site-header{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.96);border-bottom:1px solid rgba(233,233,239,.7);transition:background .3s,box-shadow .3s,transform .3s}
+.site-header{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.45);backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);border-bottom:1px solid rgba(233,233,239,.7);transition:background .3s,box-shadow .3s,transform .3s}
 .site-header .header-inner{position:relative;display:flex;align-items:center;justify-content:space-between;height:65px;padding:0 clamp(32px,-141.78px + 15.111vw,100px)}
 .site-header .brand-logo{display:inline-flex;align-items:center;flex-shrink:0;transform:translateX(110px)}
 .site-header .brand-img{height:35px;width:auto;display:block}
@@ -110,8 +110,14 @@ img,svg{display:block}
 /* ===================================================================== */
 /* 01 — HERO (revelação do triângulo)                                     */
 /* ===================================================================== */
-.sec-hero{height:828vh;background:var(--claro)}
+.sec-hero{height:758vh;background:var(--claro)}
 .sec-hero .hero-stage{position:sticky;top:0;height:100vh;overflow:hidden;display:grid;place-items:center;background:var(--claro)}
+/* fundo animado (canvas de ondas), z-index mais baixo que tudo (logo=4,
+   wipe=3, wipe-fill=2) → fica atrás de tudo, só decorativo (pointer-
+   events:none — o mousemove é capturado no window, não precisa do canvas) */
+.sec-hero .hero-waves{position:absolute;inset:0;z-index:1;pointer-events:none}
+.sec-hero .hero-waves canvas{display:block;width:100%;height:100%}
+.sec-hero .hero-fade-bottom{position:absolute;left:0;right:0;bottom:0;height:24%;z-index:1;pointer-events:none;background:linear-gradient(to bottom, rgba(255,255,255,0), #fff)}
 /* --logo-raise: margem que levanta a wordmark p/ ACIMA do centro (como o
    antigo, margin-top:-17%). Via margem (não transform) p/ não brigar com o
    crescimento por JS. Item centrado no grid → margin-bottom M sobe M/2. */
@@ -135,7 +141,7 @@ img,svg{display:block}
 .sec-hero .reveal-html .hr-frame{position:absolute;top:50%;left:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center}
 .sec-hero .ht{position:absolute;transform-origin:left top;opacity:0}
 .sec-hero .ht__in{display:inline-block;font-family:var(--reveal-font),sans-serif;font-weight:var(--reveal-weight,700);line-height:1;white-space:nowrap;transform-origin:left top;text-box-trim:trim-both;text-box-edge:cap alphabetic}
-.sec-hero .hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta);opacity:.55;animation:hintPulse 1.8s ease-in-out infinite}
+.sec-hero .hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:#00FF66;opacity:.55;animation:hintPulse 1.8s ease-in-out infinite}
 @keyframes hintPulse{50%{opacity:.15;transform:translate(-50%,4px)}}
 
 /* ===================================================================== */

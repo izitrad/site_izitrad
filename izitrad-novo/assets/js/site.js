@@ -7,8 +7,159 @@
    - Adicionar/remover/reordenar uma seção não quebra as outras.
    ===================================================================== */
 
+/* --------------------- 00 · ONDAS (fundo animado do hero) ------------- */
+/* Portado de um componente React (canvas + Perlin noise, grade de linhas
+   que ondulam e reagem ao mouse/touch) pra JS puro — este site não usa
+   build step nem React, então cada peça (classe Noise, física dos pontos,
+   loop de render) vira função/objeto simples, sem hooks. */
+function initWaves(canvas){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  class Noise{
+    constructor(seed){
+      this.p=new Uint8Array(512);
+      this.seed=seed>0&&seed<1?seed:Math.random();
+      this.grad3=[[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+      this.init(this.seed);
+    }
+    init(seed){
+      const p=new Uint8Array(256);
+      for(let i=0;i<256;i++) p[i]=i;
+      for(let i=0;i<256;i++){ const j=Math.floor(seed*(i+1))%256; const k=p[i]; p[i]=p[j]; p[j]=k; }
+      for(let i=0;i<512;i++) this.p[i]=p[i&255];
+    }
+    dot(g,x,y){ return g[0]*x+g[1]*y; }
+    perlin2(x,y){
+      const X=Math.floor(x)&255, Y=Math.floor(y)&255;
+      x-=Math.floor(x); y-=Math.floor(y);
+      const fade=t=>t*t*t*(t*(t*6-15)+10);
+      const u=fade(x), v=fade(y), p=this.p, grad3=this.grad3;
+      const n00=this.dot(grad3[p[X+p[Y]]%12],x,y);
+      const n01=this.dot(grad3[p[X+p[Y+1]]%12],x,y-1);
+      const n10=this.dot(grad3[p[X+1+p[Y]]%12],x-1,y);
+      const n11=this.dot(grad3[p[X+1+p[Y+1]]%12],x-1,y-1);
+      const lerp=(a,b,t)=>a+t*(b-a);
+      return lerp(lerp(n00,n10,u),lerp(n01,n11,u),v);
+    }
+  }
+
+  const CFG={
+    GRID_X_GAP:10, GRID_Y_GAP:32, GRID_WIDTH_OFFSET:200, GRID_HEIGHT_OFFSET:30,
+    WAVE_TIME_X_FACTOR:.0125, WAVE_NOISE_X_FACTOR:.002, WAVE_TIME_Y_FACTOR:.005, WAVE_NOISE_Y_FACTOR:.0015,
+    WAVE_NOISE_MAGNITUDE:12, WAVE_AMPLITUDE_X:32, WAVE_AMPLITUDE_Y:16,
+    MOUSE_INFLUENCE_RADIUS:175, MOUSE_FALLOFF_FACTOR:.001, MOUSE_FORCE_FACTOR:.00065, MOUSE_SMOOTHING_FACTOR:.1, MAX_MOUSE_VELOCITY:100,
+    TENSION_STRENGTH:.005, FRICTION:.925, CURSOR_DISPLACEMENT_STRENGTH:2, MAX_CURSOR_DISPLACEMENT:100
+  };
+
+  const container=canvas.parentElement;
+  const ctx=canvas.getContext('2d');
+  const noise=new Noise(Math.random());
+  const mouse={x:-10,y:0,lx:0,ly:0,sx:0,sy:0,v:0,vs:0,a:0,set:false};
+  const lineColor='rgba(255,0,153,.55)';
+  let lines=[], bounding=null, rafId=null;
+
+  function moved(point, withCursorForce){
+    const c={ x:point.x+point.wave.x+(withCursorForce?point.cursor.x:0), y:point.y+point.wave.y+(withCursorForce?point.cursor.y:0) };
+    c.x=Math.round(c.x*10)/10; c.y=Math.round(c.y*10)/10;
+    return c;
+  }
+  function setSize(){
+    bounding=container.getBoundingClientRect();
+    canvas.width=bounding.width; canvas.height=bounding.height;
+  }
+  function setLines(){
+    if(!bounding) return;
+    const {width,height}=bounding;
+    lines=[];
+    const oWidth=width+CFG.GRID_WIDTH_OFFSET, oHeight=height+CFG.GRID_HEIGHT_OFFSET;
+    const totalLines=Math.ceil(oWidth/CFG.GRID_X_GAP), totalPoints=Math.ceil(oHeight/CFG.GRID_Y_GAP);
+    const xStart=(width-CFG.GRID_X_GAP*totalLines)/2, yStart=(height-CFG.GRID_Y_GAP*totalPoints)/2;
+    for(let i=0;i<=totalLines;i++){
+      const points=[];
+      for(let j=0;j<=totalPoints;j++){
+        points.push({x:xStart+CFG.GRID_X_GAP*i, y:yStart+CFG.GRID_Y_GAP*j, wave:{x:0,y:0}, cursor:{x:0,y:0,vx:0,vy:0}});
+      }
+      lines.push(points);
+    }
+  }
+  function movePoints(time){
+    lines.forEach(points=>points.forEach(p=>{
+      const nX=(p.x+time*CFG.WAVE_TIME_X_FACTOR)*CFG.WAVE_NOISE_X_FACTOR;
+      const nY=(p.y+time*CFG.WAVE_TIME_Y_FACTOR)*CFG.WAVE_NOISE_Y_FACTOR;
+      const move=noise.perlin2(nX,nY)*CFG.WAVE_NOISE_MAGNITUDE;
+      p.wave.x=Math.cos(move)*CFG.WAVE_AMPLITUDE_X;
+      p.wave.y=Math.sin(move)*CFG.WAVE_AMPLITUDE_Y;
+
+      const dx=p.x-mouse.sx, dy=p.y-mouse.sy, d=Math.hypot(dx,dy);
+      const influenceRadius=Math.max(CFG.MOUSE_INFLUENCE_RADIUS, mouse.vs);
+      if(d<influenceRadius){
+        const falloff=1-d/influenceRadius;
+        const force=Math.cos(d*CFG.MOUSE_FALLOFF_FACTOR)*falloff;
+        const forceFactor=force*influenceRadius*mouse.vs*CFG.MOUSE_FORCE_FACTOR;
+        p.cursor.vx+=Math.cos(mouse.a)*forceFactor;
+        p.cursor.vy+=Math.sin(mouse.a)*forceFactor;
+      }
+      p.cursor.vx+=(0-p.cursor.x)*CFG.TENSION_STRENGTH;
+      p.cursor.vy+=(0-p.cursor.y)*CFG.TENSION_STRENGTH;
+      p.cursor.vx*=CFG.FRICTION; p.cursor.vy*=CFG.FRICTION;
+      p.cursor.x+=p.cursor.vx*CFG.CURSOR_DISPLACEMENT_STRENGTH;
+      p.cursor.y+=p.cursor.vy*CFG.CURSOR_DISPLACEMENT_STRENGTH;
+      p.cursor.x=Math.min(CFG.MAX_CURSOR_DISPLACEMENT, Math.max(-CFG.MAX_CURSOR_DISPLACEMENT, p.cursor.x));
+      p.cursor.y=Math.min(CFG.MAX_CURSOR_DISPLACEMENT, Math.max(-CFG.MAX_CURSOR_DISPLACEMENT, p.cursor.y));
+    }));
+  }
+  function drawLines(){
+    if(!bounding) return;
+    ctx.clearRect(0,0,bounding.width,bounding.height);
+    ctx.beginPath();
+    ctx.strokeStyle=lineColor;
+    ctx.lineWidth=.5;
+    lines.forEach(points=>{
+      const p1=moved(points[0], false);
+      ctx.moveTo(p1.x, p1.y);
+      for(let i=0;i<points.length-1;i++){
+        const cur=moved(points[i], true), next=moved(points[i+1], true);
+        const xc=(cur.x+next.x)/2, yc=(cur.y+next.y)/2;
+        ctx.quadraticCurveTo(cur.x, cur.y, xc, yc);
+      }
+    });
+    ctx.stroke();
+  }
+  function tick(time){
+    mouse.sx+=(mouse.x-mouse.sx)*CFG.MOUSE_SMOOTHING_FACTOR;
+    mouse.sy+=(mouse.y-mouse.sy)*CFG.MOUSE_SMOOTHING_FACTOR;
+    const dx=mouse.sx-mouse.lx, dy=mouse.sy-mouse.ly, d=Math.hypot(dx,dy);
+    mouse.v=d;
+    mouse.vs+=(d-mouse.vs)*CFG.MOUSE_SMOOTHING_FACTOR;
+    mouse.vs=Math.min(CFG.MAX_MOUSE_VELOCITY, mouse.vs);
+    mouse.a=Math.atan2(dy,dx);
+    mouse.lx=mouse.sx; mouse.ly=mouse.sy;
+    movePoints(time);
+    drawLines();
+    rafId=requestAnimationFrame(tick);
+  }
+  function updateMousePosition(x,y){
+    if(!bounding) return;
+    mouse.x=x-bounding.left; mouse.y=y-bounding.top;
+    if(!mouse.set){ mouse.sx=mouse.x; mouse.sy=mouse.y; mouse.lx=mouse.x; mouse.ly=mouse.y; mouse.set=true; }
+  }
+  const onResize=()=>{ setSize(); setLines(); };
+  const onMouseMove=e=>updateMousePosition(e.pageX, e.pageY);
+  // sem preventDefault: no touch, o scroll da página (que é o motor do
+  // hero inteiro) não pode ser bloqueado por essa interação decorativa.
+  const onTouchMove=e=>{ if(e.touches[0]) updateMousePosition(e.touches[0].clientX, e.touches[0].clientY); };
+
+  setSize(); setLines();
+  addEventListener('resize', onResize);
+  addEventListener('mousemove', onMouseMove);
+  container.addEventListener('touchmove', onTouchMove, {passive:true});
+  rafId=requestAnimationFrame(tick);
+}
+
 /* -------------------------------- 01 · HERO -------------------------- */
 function initHero(root){
+  const wavesCanvas = root.querySelector('.hero-waves canvas');
+  if(wavesCanvas) initWaves(wavesCanvas);
   const stage   = root.querySelector('.hero-stage');
   const logo    = root.querySelector('.logo');
   const logoImg = root.querySelector('.logo__img');
@@ -106,17 +257,17 @@ function initHero(root){
   const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
     scrub:0.4, invalidateOnRefresh:true, onRefresh:buildGrow } });
   const grow={p:0};
-  tl.to(grow,{p:1,ease:'power1.in',duration:2.57,onUpdate(){ proxy.w=triW0+(triTargetWidth-triW0)*grow.p; applyGrowth(); }},0)
+  tl.to(grow,{p:1,ease:'power1.in',duration:2.18,onUpdate(){ proxy.w=triW0+(triTargetWidth-triW0)*grow.p; applyGrowth(); }},0)
     .to(hint,{autoAlpha:0,duration:0.25},0.2);
   const IN={autoAlpha:1,x:0,y:0,ease:'power2.out',duration:0.5};
-  tl.fromTo(apost,{autoAlpha:0,x:-320},IN,2.67)
-    .fromTo(haia,{autoAlpha:0,x:320},IN,2.82)
-    .fromTo(sem,{autoAlpha:0,y:90},IN,2.97)
-    .fromTo(sair,{autoAlpha:0,y:90},IN,3.07)
-    .fromTo(decasa,{autoAlpha:0,y:90},IN,3.17)
-    .fromTo(copyP,{autoAlpha:0,y:40},IN,3.32)
-    .fromTo(copyBtn,{autoAlpha:0,y:40},IN,3.42);
-  tl.to({},{duration:0.6},4.02);
+  tl.fromTo(apost,{autoAlpha:0,x:-320},IN,2.28)
+    .fromTo(haia,{autoAlpha:0,x:320},IN,2.43)
+    .fromTo(sem,{autoAlpha:0,y:90},IN,2.58)
+    .fromTo(sair,{autoAlpha:0,y:90},IN,2.68)
+    .fromTo(decasa,{autoAlpha:0,y:90},IN,2.78)
+    .fromTo(copyP,{autoAlpha:0,y:40},IN,2.93)
+    .fromTo(copyBtn,{autoAlpha:0,y:40},IN,3.03);
+  tl.to({},{duration:0.6},3.63);
 }
 
 /* ----------------------------- 02 · O CAMINHO ------------------------ */
