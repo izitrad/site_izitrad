@@ -314,8 +314,26 @@ function initHeroS2Story(root){
   tl.to({},{duration:0.6},3.63);
 
   // FASE 1 — a seção 2 REAL sobe cobrindo a Hero. Borda reta, ease:none
-  // (igual à referência): desde o 1º pixel já é o conteúdo real dela.
+  // (igual à referência): desde o 1º pixel já é o conteúdo real dela. Os
+  // elementos visuais já existentes da Hero (sem fundo/ondas, sem wrapper
+  // novo — DOM igual ao original) sobem um pouco menos e somem junto,
+  // mesma posição/duração/ease, mesma timeline: dá profundidade (a Seção 2
+  // "ultrapassa" a Hero) sem 2º ScrollTrigger e sem alterar a hierarquia.
   tl.fromTo(s2Layer,{yPercent:100},{yPercent:0,ease:'none',duration:ENTRY_DUR},ENTRY_START);
+  // .wipe-fill fica de fora de propósito: no CSS original ela é sempre
+  // opacity:0 (elemento inerte, nunca usado) — animar a opacidade dela
+  // direto sobrescrevia esse 0 pra 1 já na criação da timeline, cobrindo a
+  // cena inteira de rosa sólido no repouso (bug visto e corrigido agora).
+  // .to() (não .fromTo()): .logo e .wipe já têm sua PRÓPRIA opacity/estado
+  // controlados por applyGrowth (ex: logo já está em opacity 0 nesse ponto,
+  // depois que o triângulo termina de crescer) — um "from" fixo sobrescrevia
+  // isso e fazia a logo reaparecer cedo demais (outro bug já visto e
+  // corrigido). .to() anima a partir do valor REAL de cada elemento nesse
+  // instante, sem forçar nada. Só "y" — sem opacity: a Hero sobe sólida,
+  // sem ficar transparente, e some por trás de .s2-layer (que já cobre
+  // tudo com borda reta), não por dissolver.
+  const heroVisuals = root.querySelectorAll('.logo, .wipe, .reveal-html, .reveal-copy, .hint');
+  if(heroVisuals.length) tl.to(heroVisuals,{y:'-30vh',ease:'none',duration:ENTRY_DUR},ENTRY_START);
 
   // FASE 2 — só começa depois que .s2-layer está 100% posicionada. Mesma
   // lógica interna que já existia isolada (nenhuma animação foi alterada,

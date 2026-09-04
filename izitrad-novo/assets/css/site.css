@@ -76,7 +76,7 @@ img,svg{display:block}
    (position:fixed, largura só do conteúdo, fundo transparente). O
    pointer-events:none no header evita bloquear cliques na página por trás
    do espaço vazio; volta a "auto" só nos elementos clicáveis. */
-.site-header[data-compact]{left:auto;right:0;width:max-content;background:none;border-bottom:none;box-shadow:none;pointer-events:none;opacity:1!important}
+.site-header[data-compact]{left:auto;right:0;width:max-content;background:none;backdrop-filter:none;border-bottom:none;box-shadow:none;pointer-events:none;opacity:1!important}
 .site-header[data-compact] .main-nav{pointer-events:auto}
 .site-header[data-compact] .main-nav{position:absolute;top:100%;right:20px;left:auto;height:auto;width:max-content;min-width:168px;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;margin:8px 0 0;padding:8px;background:#141416;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .25s,transform .25s,visibility .25s}
 .site-header[data-compact][data-nav-open] .main-nav{opacity:1;visibility:visible;transform:translateY(0)}
