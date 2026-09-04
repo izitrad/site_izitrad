@@ -168,7 +168,7 @@ img,svg{display:block}
 .copy h2,.s3-headline,.s3-close h2{font-family:'Outfit';font-weight:900;line-height:.88;letter-spacing:-.045em}
 .copy em,.s3-headline span,.s3-close h2 span{color:var(--pink);font-style:normal}
 .section-id{position:absolute;top:5%;left:5%;color:var(--pink);z-index:4}
-.copy{position:absolute;left:7%;top:21%;width:32%;z-index:4}
+.copy{position:absolute;left:4%;top:21%;width:32%;z-index:4}
 .copy h2{font-size:clamp(46px,5vw,90px);margin:0 0 24px;text-transform:uppercase}
 .copy p{max-width:420px;font-size:18px;line-height:1.5}
 .doc-stage{position:absolute;left:50%;top:50%;width:min(31vw,470px);z-index:9;transform:translate(-50%,-50%) rotate(-4deg);will-change:transform}
