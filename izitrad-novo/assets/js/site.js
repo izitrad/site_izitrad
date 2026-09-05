@@ -263,6 +263,12 @@ function initHeroS2Story(root){
   }
   buildGrow();
   wipe.style.visibility='visible';   // já posicionado → pode mostrar (sem flash)
+  // a entrada "Olá, somos a" → logo (heroGreetIn, ver site.css) anima o
+  // .logo__img isolado do JS via CSS puro — mas o buildGrow acima já mediu
+  // o retângulo dele ainda com o translateY(14px) da entrada aplicado.
+  // Um refresh depois que a entrada termina (~2.15s) corrige a posição do
+  // triângulo rosa (.wipe) sem tocar na timeline de scroll em si.
+  setTimeout(()=>{ if(window.ScrollTrigger) ScrollTrigger.refresh(); },2200);
 
   // marcos de tempo (unidades locais da timeline, não vh/px):
   //  0 .. 4.23        → Hero (crescimento + textos), inalterado
