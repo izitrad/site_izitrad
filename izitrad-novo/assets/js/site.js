@@ -243,8 +243,14 @@ function initHeroS2Story(root){
     wipe.setAttribute('viewBox','78 100 1257 507');
     const s=stage.getBoundingClientRect();
     const lr=logoImg.getBoundingClientRect();
+    // a entrada "Olá, somos a" → logo (heroGreetIn, ver site.css) desliza o
+    // .logo__img de translateY(14px) até 0 — se buildGrow rodar antes disso
+    // terminar, o retângulo medido vem deslocado. Descontamos o deslocamento
+    // ATUAL (0 se a entrada já terminou) pra sempre medir a posição final de
+    // repouso, sem depender de esperar a animação ou de um refresh tardio.
+    const entryY = new DOMMatrixReadOnly(getComputedStyle(logoImg).transform).m42;
     wipe.style.left=(lr.left-s.left)+'px';
-    wipe.style.top=(lr.top-s.top)+'px';
+    wipe.style.top=(lr.top-s.top-entryY)+'px';
     wipe.style.width=lr.width+'px';
     wipe.style.height=lr.height+'px';
     const t0=wipePath.getBoundingClientRect();
@@ -254,7 +260,7 @@ function initHeroS2Story(root){
     wipe.setAttribute('viewBox',`${b.x.toFixed(2)} ${b.y.toFixed(2)} ${b.width.toFixed(2)} ${b.height.toFixed(2)}`);
     triAspect=b.height/b.width;
     const logoRect=logo.getBoundingClientRect();
-    logo.style.transformOrigin=(triCX-logoRect.left).toFixed(1)+'px '+(triCY-logoRect.top).toFixed(1)+'px';
+    logo.style.transformOrigin=(triCX-logoRect.left).toFixed(1)+'px '+(triCY-logoRect.top+entryY).toFixed(1)+'px';
     anchorX0=triCX-s.left; anchorY0=triCY-s.top;
     centerX=window.innerWidth/2-s.left; centerY=window.innerHeight/2-s.top;
     triTargetWidth=(window.innerWidth+2*window.innerHeight/triAspect)*COVER_MARGIN;
@@ -263,12 +269,6 @@ function initHeroS2Story(root){
   }
   buildGrow();
   wipe.style.visibility='visible';   // já posicionado → pode mostrar (sem flash)
-  // a entrada "Olá, somos a" → logo (heroGreetIn, ver site.css) anima o
-  // .logo__img isolado do JS via CSS puro — mas o buildGrow acima já mediu
-  // o retângulo dele ainda com o translateY(14px) da entrada aplicado.
-  // Um refresh depois que a entrada termina (~2.15s) corrige a posição do
-  // triângulo rosa (.wipe) sem tocar na timeline de scroll em si.
-  setTimeout(()=>{ if(window.ScrollTrigger) ScrollTrigger.refresh(); },2200);
 
   // marcos de tempo (unidades locais da timeline, não vh/px):
   //  0 .. 4.23        → Hero (crescimento + textos), inalterado
