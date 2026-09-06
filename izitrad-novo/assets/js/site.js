@@ -447,42 +447,57 @@ function initSolucao(root){
   gsap.set(q('.path'),{scaleX:0});
   gsap.set(q('.s3-bg'),{y:0,yPercent:100});
 
+  /* 01b — apresentação: texto entra primeiro, uma pequena pausa de
+     leitura, só DEPOIS a folha entra (de baixo, um pouco menor, ganhando
+     opacidade — chega na MESMA pose de repouso de sempre, só o y/scale
+     acima são sobrescritos aqui pro estado inicial "escondida"). Antes os
+     dois já apareciam prontos assim que a seção entrava em vista. Isso é
+     só no .doc-stage (dono do scroll) — o .doc-mouse (tilt do mouse) não é
+     tocado, continua isolado. INTRO = quanto essa apresentação empurra o
+     resto da timeline; a altura da seção (site.css) cresce na mesma
+     proporção pra não acelerar o resto do scroll. */
+  gsap.set(q('.copy-a'),{opacity:0,y:32});
+  gsap.set(q('.doc-stage'),{opacity:0,y:70,scale:.92});
+  tl.to(q('.copy-a'),{opacity:1,y:0,duration:.42,ease:'power2.out'},0)
+    .to(q('.doc-stage'),{opacity:1,y:0,scale:1,duration:.75,ease:'power2.out'},0.62);
+  const INTRO=0.9;
+
   /* 02 — exploração dos caminhos */
-  tl.to(q('.copy-a'),{opacity:0,y:-50,duration:1},0.7)
-    .to(q('.doc-stage'),{rotation:2,scale:1.08,duration:1.2},0.5)
-    .to(q('.chip'),{opacity:1,stagger:.12,duration:.7},1.25)
-    .to(q('.path'),{opacity:.65,scaleX:1,duration:.7},1.2)
-    .to(q('.doc-stage'),{rotation:-2,scale:1.02,duration:1},2.2);
+  tl.to(q('.copy-a'),{opacity:0,y:-50,duration:1},0.7+INTRO)
+    .to(q('.doc-stage'),{rotation:2,scale:1.08,duration:1.2},0.5+INTRO)
+    .to(q('.chip'),{opacity:1,stagger:.12,duration:.7},1.25+INTRO)
+    .to(q('.path'),{opacity:.65,scaleX:1,duration:.7},1.2+INTRO)
+    .to(q('.doc-stage'),{rotation:-2,scale:1.02,duration:1},2.2+INTRO);
 
   /* transição 02→03 (o mesmo documento atravessa) */
-  tl.to(q('.chip'),{opacity:.12,y:10,duration:.7},3.0)
-    .to(q('.path'),{opacity:.1,duration:.6},3.0)
-    .to(q('.section-id'),{opacity:0,duration:.5},3.2)
-    .to(q('.s3-bg'),{yPercent:0,duration:1.4,ease:'power2.inOut'},3.2)
-    .to(q('.doc-stage'),{y:90,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2)
-    .to(q('.doc-stage'),{y:0,rotation:-1.5,scale:.55,duration:1.0,ease:'power2.out'},4.05)
-    .to(q('.doc'),{boxShadow:'0 30px 80px rgba(0,0,0,.55), 0 0 62px rgba(255,0,153,.42)',duration:1.2},3.6)
-    .to(q('.chip, .path'),{opacity:0,duration:.4},4.4);
+  tl.to(q('.chip'),{opacity:.12,y:10,duration:.7},3.0+INTRO)
+    .to(q('.path'),{opacity:.1,duration:.6},3.0+INTRO)
+    .to(q('.section-id'),{opacity:0,duration:.5},3.2+INTRO)
+    .to(q('.s3-bg'),{yPercent:0,duration:1.4,ease:'power2.inOut'},3.2+INTRO)
+    .to(q('.doc-stage'),{y:90,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2+INTRO)
+    .to(q('.doc-stage'),{y:0,rotation:-1.5,scale:.55,duration:1.0,ease:'power2.out'},4.05+INTRO)
+    .to(q('.doc'),{boxShadow:'0 30px 80px rgba(0,0,0,.55), 0 0 62px rgba(255,0,153,.42)',duration:1.2},3.6+INTRO)
+    .to(q('.chip, .path'),{opacity:0,duration:.4},4.4+INTRO);
 
   /* 03 — chegada + headline + halo */
-  tl.to(q('.s3-id'),{opacity:1,duration:.5},4.8)
-    .fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9)
-    .fromTo(q('.s3-sub'),{opacity:0,x:-30},{opacity:1,x:0,duration:.8},5.2)
-    .fromTo(q('.halo'),{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.0},5.3);
+  tl.to(q('.s3-id'),{opacity:1,duration:.5},4.8+INTRO)
+    .fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9+INTRO)
+    .fromTo(q('.s3-sub'),{opacity:0,x:-30},{opacity:1,x:0,duration:.8},5.2+INTRO)
+    .fromTo(q('.halo'),{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.0},5.3+INTRO);
 
   /* serviços ativados em sequência (linha → pulso → nó → rótulo) */
-  activate('jur','.o-jur',5.7);
-  activate('haia','.o-haia',7.1);
-  activate('cert','.o-cert',8.1);
-  activate('tec','.o-tec',9.1);
-  activate('simp','.o-simp',10.1);
+  activate('jur','.o-jur',5.7+INTRO);
+  activate('haia','.o-haia',7.1+INTRO);
+  activate('cert','.o-cert',8.1+INTRO);
+  activate('tec','.o-tec',9.1+INTRO);
+  activate('simp','.o-simp',10.1+INTRO);
 
   /* fechamento: composição recua, coração sobe, CTA centrado */
-  tl.to(q('.s3-headline, .s3-sub'),{opacity:0,y:-20,duration:.6},11.6)
-    .to(q('.svc, .vein'),{opacity:0,duration:.7},11.6)
-    .to(q('.doc-stage'),{y:-60,scale:.5,rotation:0,duration:.9,ease:'power2.out'},11.6)
-    .fromTo(q('.s3-close'),{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power2.out'},12.0)
-    .to({},{duration:.9},13.0);
+  tl.to(q('.s3-headline, .s3-sub'),{opacity:0,y:-20,duration:.6},11.6+INTRO)
+    .to(q('.svc, .vein'),{opacity:0,duration:.7},11.6+INTRO)
+    .to(q('.doc-stage'),{y:-60,scale:.5,rotation:0,duration:.9,ease:'power2.out'},11.6+INTRO)
+    .fromTo(q('.s3-close'),{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power2.out'},12.0+INTRO)
+    .to({},{duration:.9},13.0+INTRO);
 
   gsap.to(q('.progress i'),{height:'100%',ease:'none',
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});

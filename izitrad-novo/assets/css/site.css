@@ -178,7 +178,7 @@ img,svg{display:block}
 /* ===================================================================== */
 /* 03 — A SOLUÇÃO (documento = coração)                                   */
 /* ===================================================================== */
-.sec-solucao{height:960vh;background:#fbfbfa}
+.sec-solucao{height:1022vh;background:#fbfbfa}
 .sec-solucao .sol-stage{position:sticky;top:0;height:100vh;overflow:hidden;background:radial-gradient(circle at 55% 52%,#fff 0,#faf9f8 50%,#f0efed 100%)}
 .section-id,.s3-id{font-size:12px;letter-spacing:.18em;font-weight:700}
 .copy h2,.s3-headline,.s3-close h2{font-family:'Outfit';font-weight:900;line-height:.88;letter-spacing:-.045em}
@@ -274,7 +274,7 @@ img,svg{display:block}
   .hero-layer .ht[data-k="decasa"] .ht__in{font-size:14vw}
 }
 @media(max-width:760px){
-  .sec-solucao{height:520vh}
+  .sec-solucao{height:554vh}
   .copy{left:7%;top:12%;width:86%}
   .copy h2{font-size:48px}
   .copy p{font-size:15px;max-width:300px}
