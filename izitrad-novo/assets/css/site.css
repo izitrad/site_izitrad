@@ -81,7 +81,7 @@ img,svg{display:block}
 .site-header[data-compact] .main-nav{position:absolute;top:100%;right:20px;left:auto;height:auto;width:max-content;min-width:168px;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;margin:8px 0 0;padding:8px;background:#141416;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .25s,transform .25s,visibility .25s}
 .site-header[data-compact][data-nav-open] .main-nav{opacity:1;visibility:visible;transform:translateY(0)}
 .site-header[data-compact] .main-nav a{padding:9px 16px;font-size:13px;border-radius:10px;color:#fff;transition:background .2s,color .25s}
-.site-header[data-compact] .main-nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+.site-header[data-compact] .main-nav a:hover{background:rgba(255,0,153,.18);color:#fff}
 .site-header[data-compact] .main-nav a:not(:first-child)::before{display:none}
 .site-header[data-compact] .main-nav a::after{display:none}
 .site-header[data-compact] .header-inner{justify-content:flex-end}
@@ -183,7 +183,7 @@ img,svg{display:block}
 /* ===================================================================== */
 /* 03 — A SOLUÇÃO (documento = coração)                                   */
 /* ===================================================================== */
-.sec-solucao{height:1022vh;background:#fbfbfa}
+.sec-solucao{height:1692vh;background:#fbfbfa}
 .sec-solucao .sol-stage{position:sticky;top:0;height:100vh;overflow:hidden;background:radial-gradient(circle at 55% 52%,#fff 0,#faf9f8 50%,#f0efed 100%)}
 .section-id,.s3-id{font-size:12px;letter-spacing:.18em;font-weight:700}
 .copy h2,.s3-headline,.s3-close h2{font-family:'Outfit';font-weight:900;line-height:.88;letter-spacing:-.045em}
@@ -191,7 +191,16 @@ img,svg{display:block}
 .section-id{position:absolute;top:5%;left:5%;color:var(--pink);z-index:4}
 .copy{position:absolute;left:4%;top:21%;width:32%;z-index:4}
 .copy h2{font-size:clamp(46px,5vw,90px);margin:0 0 24px;text-transform:uppercase}
-.copy p{max-width:420px;font-size:18px;line-height:1.5}
+/* headline nova (2 linhas, sem parágrafo) é mais curta E mais leve que a
+   antiga — sobe (não disputa espaço com o card 02, esquerda superior, nem
+   com a linha que chega nele) e usa fonte bem menor que o padrão .copy h2
+   acima (clamp 46-90px), de propósito: "Um documento." precisa caber numa
+   linha só, e o documento é quem tem que protagonizar, não o texto. Vem
+   DEPOIS de ".copy h2" no arquivo de propósito — mesma especificidade,
+   quem vem depois ganha. */
+.copy-a{top:8%;width:34%}
+.copy-a h2{font-size:clamp(28px,2.6vw,46px);font-weight:500;letter-spacing:-.01em;line-height:1.08}
+.copy-a h2 span{color:var(--pink);font-weight:600}
 .doc-stage{position:absolute;left:50%;top:50%;width:min(31vw,470px);z-index:9;perspective:1000px;transform:translate(-50%,-50%) rotate(-4deg);will-change:transform}
 /* sombra reativa ao mouse — fica FORA do .doc (que tem overflow:hidden) pra
    poder borrar/vazar livremente atrás dele. Some visualmente por baixo da
@@ -220,13 +229,35 @@ img,svg{display:block}
 .meta span{font-size:8px;color:#999}
 .meta b{display:block;color:#111;font-size:10px;margin-top:4px}
 .doc-foot{position:absolute;z-index:2;bottom:6%;left:8%;color:#fff;font-weight:800;font-size:14px}
-.chip{position:absolute;width:230px;border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;z-index:3}
-.chip small{position:absolute;top:-38px;left:14px;width:50px;height:50px;border-radius:50%;background:var(--pink);color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center}
+/* .chip = só posicionamento (sem visual próprio, sem opacity). O crachá
+   (small) e o corpo (chip-box) são IRMÃOS dentro dele e revelam em
+   momentos diferentes — ver a sequência em buildCaminho, site.js. */
+.chip{position:absolute;width:230px;z-index:3}
+.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:left center}
+/* cards à esquerda do documento (02/04): o crachá fica do lado que
+   encosta no documento (direita do card, não esquerda) e o corpo se abre
+   pra esquerda — espelhado em relação a 01/03/05. */
+.c2 .chip-box,.c4 .chip-box{transform-origin:right center}
+.chip small{position:absolute;top:-38px;left:14px;width:50px;height:50px;border-radius:50%;background:var(--pink);color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2}
+.c2 small,.c4 small{left:auto;right:14px}
+.chip .badge-num{opacity:0}
 .chip b{display:block;font-size:13px}
-.chip span{display:block;font-size:11px;margin-top:6px;color:#666}
-.c1{left:69%;top:20%}.c2{left:24%;top:32%}.c3{left:72%;top:47%}.c4{left:23%;top:68%}.c5{left:69%;top:73%}
-.path{position:absolute;height:1px;background:var(--pink);transform-origin:left;opacity:0}
-.p1{left:60%;top:31%;width:18%;transform:rotate(-19deg)}.p2{left:35%;top:42%;width:17%;transform:rotate(13deg)}.p3{left:62%;top:52%;width:17%;transform:rotate(8deg)}.p4{left:35%;top:69%;width:17%;transform:rotate(-10deg)}.p5{left:61%;top:70%;width:18%;transform:rotate(15deg)}
+.chip-desc{display:block;font-size:11px;margin-top:6px;color:#666}
+.c1{left:69%;top:20%}.c2{left:17%;top:37%}.c3{left:72%;top:47%}.c4{left:13%;top:69%}.c5{left:69%;top:73%}
+/* linhas orgânicas dos 5 caminhos — svg único, paths criados/atualizados
+   por JS (mesma técnica das .veins da Solução: d calculado, comprimento
+   real via getTotalLength, desenho via uma <mask> — ver site.js). Fino,
+   tracejado, sem glow/decoração de propósito (linguagem "documento +
+   caminhos + cards", nada além disso). z-index ACIMA do documento e dos
+   cards: a folha tem rotation e cantos arredondados, então um ponto bem
+   NA borda (sem gap, "fisicamente conectado") cai por dentro da caixa
+   alinhada aos eixos que o JS mede — sem isso ficaria escondido atrás do
+   documento/card em vez de tocá-lo. */
+.caminhos-svg{position:absolute;inset:0;width:100%;height:100%;z-index:10;overflow:visible;pointer-events:none}
+.cam-line{fill:none;stroke:#FF0099;stroke-width:1.3;stroke-dasharray:9 7;opacity:.85}
+/* pontos de conexão sólidos — pequenos, sem glow, encostados na borda do
+   documento e na borda do card (ver cardEdgePoint/camDocAnchors em site.js). */
+.cam-node{fill:#FF0099;opacity:0}
 .progress{position:absolute;right:3%;top:20%;height:60%;width:1px;background:rgba(120,120,120,.28);z-index:10}
 .progress i{display:block;width:5px;height:0;background:var(--pink);transform:translateX(-2px)}
 .s3-bg{position:absolute;left:0;right:0;top:-160px;height:calc(100% + 160px);z-index:6;transform:translateY(100%);will-change:transform;pointer-events:none}
@@ -279,13 +310,17 @@ img,svg{display:block}
   .hero-layer .ht[data-k="decasa"] .ht__in{font-size:14vw}
 }
 @media(max-width:760px){
-  .sec-solucao{height:554vh}
+  .sec-solucao{height:918vh}
   .copy{left:7%;top:12%;width:86%}
   .copy h2{font-size:48px}
-  .copy p{font-size:15px;max-width:300px}
-  .doc-stage{width:34vw;top:34%}
-  .chip{width:170px;padding:12px}
-  .c1{left:52%;top:29%}.c2{left:4%;top:42%}.c3{left:50%;top:52%}.c4{left:3%;top:70%}.c5{left:50%;top:78%}
+  .doc-stage{width:34vw;top:30%}
+  /* mobile: documento fica em cima, os 5 cards empilham verticalmente
+     abaixo dele (zigue-zague sutil, não uma coluna rígida) — não é só o
+     desktop encolhido, as linhas (calculadas via JS a partir das posições
+     reais) se adaptam sozinhas a essa coluna estreita. */
+  .chip{width:158px;transform:translateX(-50%)}
+  .chip-box{padding:12px}
+  .c1{left:64%;top:48%}.c2{left:36%;top:58%}.c3{left:64%;top:68%}.c4{left:36%;top:78%}.c5{left:64%;top:88%}
   .s3-intro{left:7%;top:3%;max-width:90%}
   .s3-headline{font-size:23px}
   .s3-sub{font-size:11.5px;max-width:74%}
@@ -321,7 +356,9 @@ img,svg{display:block}
   .sec-solucao .sol-stage{position:relative;height:auto;overflow:visible;padding:64px 7%;background:#fbfbfa}
   .section-id{position:relative;top:auto;left:auto}
   .copy,.chip{position:relative;left:auto!important;top:auto!important;right:auto;opacity:1!important;transform:none!important;width:auto;margin:14px 0}
-  .path,.progress,.veins,.halo,.s3-seam{display:none}
+  .chip small,.chip .badge-num,.chip-box{opacity:1!important;transform:none!important}
+  .chip small{position:static;margin-bottom:8px}
+  .caminhos-svg,.progress,.veins,.halo,.s3-seam{display:none}
   .doc-stage{position:relative;left:auto;top:auto;transform:rotate(-3deg);margin:48px auto;width:min(72vw,340px)}
   .s3-bg{position:relative;inset:auto;transform:none;margin-top:56px}
   .s3-fill{position:relative;top:auto;padding:64px 7%;min-height:auto}

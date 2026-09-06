@@ -437,10 +437,146 @@ function initSolucao(root){
     });
   }
   updateVeins();
+
+  /* ---- 02 · os 5 caminhos (reta curta + curva suave doc→card + nós) --- */
+  /* Curva "cotovelo" (elbow): cada trecho SAI do documento numa direção
+     definida (reta) e CHEGA no card vindo de outra direção definida — dois
+     pontos de controle colocados ao longo dessas tangentes (não um offset
+     perpendicular genérico) — é o que dá o efeito "reta → curva suave →
+     reta", sem parecer fluxograma (ângulo 90°) nem veia (serpenteia). Só
+     bordas ESQUERDA/DIREITA do documento (nunca topo/baixo — 04/05 não
+     descem pro rodapé). Chega na borda do CARD mais próxima do documento
+     (não o centro, não o crachá do número).
+     Estilo tracejado: a linha VISÍVEL (.cam-line) tem um stroke-dasharray
+     FIXO (padrão "traço-espaço" curto) — não pode ser reaproveitado pro
+     dashoffset de revelação (senão o padrão só desliza de fase, não
+     revela/esconde nada). Por isso o desenho-por-scroll acontece numa
+     <mask> separada (path invisível, mesmo d, comprimento REAL via
+     getTotalLength, dasharray=length/dashoffset length→0 — a técnica de
+     sempre) que recorta a linha visível — os dois efeitos (tracejado +
+     revelação real) coexistem sem conflito. */
+  const caminhosSvg = root.querySelector('.caminhos-svg');
+  let caminhosDefs = caminhosSvg.querySelector('defs');
+  if(!caminhosDefs){ caminhosDefs=document.createElementNS(svgNS,'defs'); caminhosSvg.appendChild(caminhosDefs); }
+  const CAMINHOS = [
+    // key usa prefixo "pc" (path-caminho) DE PROPÓSITO — "c1".."c5" puro
+    // colide com a classe dos CARDS (.c1..c5) e, como o <path> vem antes
+    // no DOM, root.querySelector('.c1') pegava a LINHA em vez do CARD.
+    // dir0/f0 = direção+distância (fração do trajeto) que a linha sai RETA
+    // do documento; dir1/f1 = direção de onde ela CHEGA no card.
+    {key:'pc1', anchor:'rTop',   dir0:{x:1,y:0},     f0:.55, dir1:{x:0,y:-1},    f1:.5,  card:'.c1'},
+    {key:'pc2', anchor:'lUpper', dir0:{x:-1,y:0},    f0:.62, dir1:{x:-1,y:-.25}, f1:.55, card:'.c2'},
+    {key:'pc3', anchor:'rMid',   dir0:{x:1,y:0},     f0:.55, dir1:{x:1,y:.3},    f1:.5,  card:'.c3'},
+    {key:'pc4', anchor:'lLower', dir0:{x:-.6,y:.7},  f0:.4,  dir1:{x:-1,y:.15},  f1:.55, card:'.c4'},
+    {key:'pc5', anchor:'rLower', dir0:{x:1,y:.15},   f0:.5,  dir1:{x:.6,y:.6},   f1:.5,  card:'.c5'}
+  ];
+  const ensureCamPath=(cls)=>{ let el=caminhosSvg.querySelector('path.'+cls); if(!el){ el=document.createElementNS(svgNS,'path'); el.setAttribute('class','cam-line '+cls); caminhosSvg.appendChild(el); } return el; };
+  const ensureCamNode=(cls)=>{ let el=caminhosSvg.querySelector('circle.'+cls); if(!el){ el=document.createElementNS(svgNS,'circle'); el.setAttribute('class','cam-node '+cls); el.setAttribute('r','3.4'); caminhosSvg.appendChild(el); } return el; };
+  const ensureCamMask=(key)=>{
+    let mask=caminhosDefs.querySelector('#camMask-'+key), path;
+    if(!mask){
+      mask=document.createElementNS(svgNS,'mask'); mask.setAttribute('id','camMask-'+key); mask.setAttribute('maskUnits','userSpaceOnUse');
+      path=document.createElementNS(svgNS,'path');
+      path.setAttribute('stroke','#fff'); path.setAttribute('fill','none'); path.setAttribute('stroke-width','22');
+      mask.appendChild(path); caminhosDefs.appendChild(mask);
+    } else path=mask.querySelector('path');
+    return path;
+  };
+  function elbow(start,end,dir0,len0,dir1,len1){
+    const n0=Math.hypot(dir0.x,dir0.y)||1, n1=Math.hypot(dir1.x,dir1.y)||1;
+    const c1x=start.x+dir0.x/n0*len0, c1y=start.y+dir0.y/n0*len0;
+    const c2x=end.x-dir1.x/n1*len1, c2y=end.y-dir1.y/n1*len1;
+    return `M${start.x.toFixed(1)},${start.y.toFixed(1)} C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${end.x.toFixed(1)},${end.y.toFixed(1)}`;
+  }
+  function camDocAnchors(){
+    const s=caminhosSvg.getBoundingClientRect();
+    const dr=root.querySelector('.doc-stage').getBoundingClientRect();
+    const cy=dr.top-s.top+dr.height/2;
+    const L=dr.left-s.left, R=dr.right-s.left;
+    // só esquerda/direita (nunca topo/baixo) — 5 regiões da própria folha,
+    // proporcionais à altura real medida agora (getBoundingClientRect).
+    return {
+      rTop:  {x:R, y:cy-dr.height*0.33},  // 01 — direita, região superior (identificação)
+      lUpper:{x:L, y:cy-dr.height*0.14},  // 02 — esquerda, região de conteúdo/texto
+      rMid:  {x:R, y:cy+dr.height*0.03},  // 03 — direita, centro
+      lLower:{x:L, y:cy+dr.height*0.30},  // 04 — esquerda, etapa posterior
+      rLower:{x:R, y:cy+dr.height*0.40}   // 05 — direita, perto do rodapé rosa
+    };
+  }
+  // ponto de ancoragem = o CRACHÁ numerado (.chip small), não o centro do
+  // card — é ele quem "nasce" quando a linha chega (ver buildCaminho), a
+  // linha mira nele diretamente. small só anima opacity/scale (nunca
+  // posição), e scale a partir do centro não desloca o centro medido —
+  // então, ao contrário do .chip inteiro antes, não precisa neutralizar
+  // nada pra medir: o centro do crachá já é confiável a qualquer momento.
+  function cardBadgeAnchor(cardEl, s, docCx, docL, docR){
+    const badge=cardEl.querySelector('small');
+    const br=badge.getBoundingClientRect();
+    const bx=br.left-s.left+br.width/2, by=br.top-s.top+br.height/2;
+    // em telas mais estreitas o crachá pode encostar (ou passar por baixo)
+    // do documento — trava o ponto pra nunca ultrapassar a borda do doc.
+    const x = bx<docCx ? Math.min(bx, docL-14) : Math.max(bx, docR+14);
+    return {x, y:by};
+  }
+  function updateCaminhos(){
+    const s=caminhosSvg.getBoundingClientRect(); if(!s.width) return;
+    caminhosSvg.setAttribute('viewBox',`0 0 ${s.width.toFixed(0)} ${s.height.toFixed(0)}`);
+    const A=camDocAnchors();
+    const dr=root.querySelector('.doc-stage').getBoundingClientRect();
+    const docCx=dr.left-s.left+dr.width/2, docL=dr.left-s.left, docR=dr.right-s.left;
+    CAMINHOS.forEach(c=>{
+      const el=ensureCamPath(c.key), maskPath=ensureCamMask(c.key);
+      const start=A[c.anchor];
+      const end=cardBadgeAnchor(root.querySelector(c.card), s, docCx, docL, docR);
+      const dist=Math.hypot(end.x-start.x, end.y-start.y);
+      const d=elbow(start, end, c.dir0, dist*c.f0, c.dir1, dist*c.f1);
+      el.setAttribute('d', d);
+      el.setAttribute('mask','url(#camMask-'+c.key+')');
+      maskPath.setAttribute('d', d);
+      maskPath._len=maskPath.getTotalLength(); maskPath.style.strokeDasharray=maskPath._len+'px'; applyDraw(maskPath);
+      const n0=ensureCamNode(c.key+'-a'); n0.setAttribute('cx',start.x.toFixed(1)); n0.setAttribute('cy',start.y.toFixed(1));
+    });
+  }
+  updateCaminhos();
+
   gsap.to(q('.doc'),{scale:1.014,duration:2.6,repeat:-1,yoyo:true,ease:'sine.inOut'});
 
   const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
-    scrub:1, invalidateOnRefresh:true, onRefresh:updateVeins } });
+    scrub:1, invalidateOnRefresh:true, onRefresh:()=>{ updateVeins(); updateCaminhos(); } } });
+
+  // sequência por caminho (obrigatória, cada etapa só começa depois que a
+  // anterior "resolveu"): nó de origem → linha desenha (dasharray/
+  // dashoffset real, não fade) → CÍRCULO grande nasce no destino (sem o
+  // card ainda) → NÚMERO aparece dentro dele → pausa de leitura só com o
+  // círculo+número → SÓ ENTÃO o corpo do card se abre, crescendo a partir
+  // do círculo (scaleX, transform-origin do lado do círculo — ver CSS).
+  // O crachá (círculo) nunca se move — fica parado como âncora enquanto o
+  // corpo cresce ao lado dele. Tudo permanece visível depois (nada some).
+  const LINE_DUR=1.0;
+  const BADGE_AT=0.92, BADGE_DUR=0.22;   // fração de LINE_DUR em que o círculo nasce
+  const NUM_GAP=0.05, NUM_DUR=0.16;      // número entra logo depois do círculo assentar
+  const READ_PAUSE=0.28;                 // pausa só com círculo+número (pedido explícito)
+  const BOX_DUR=0.42;                    // corpo do card se abrindo
+  const buildCaminho=(cfg,at)=>{
+    const maskPath=ensureCamMask(cfg.key);
+    const nodeA=ensureCamNode(cfg.key+'-a');
+    const cardEl=root.querySelector(cfg.card);
+    const badge=cardEl.querySelector('small'), num=badge.querySelector('.badge-num'), box=cardEl.querySelector('.chip-box');
+
+    tl.fromTo(nodeA,{opacity:0,scale:.5},{opacity:1,scale:1,duration:.15,ease:'power1.out'},at);
+
+    const lineP={p:0};
+    tl.to(lineP,{p:1,duration:LINE_DUR,ease:'power1.inOut',onUpdate(){ maskPath._p=lineP.p; applyDraw(maskPath); }},at);
+
+    const badgeAt=at+LINE_DUR*BADGE_AT;
+    tl.fromTo(badge,{opacity:0,scale:.4},{opacity:1,scale:1,duration:BADGE_DUR,ease:'back.out(2.2)'},badgeAt);
+
+    const numAt=badgeAt+BADGE_DUR+NUM_GAP;
+    tl.fromTo(num,{opacity:0},{opacity:1,duration:NUM_DUR},numAt);
+
+    const boxAt=numAt+NUM_DUR+READ_PAUSE;
+    tl.fromTo(box,{opacity:0,scaleX:0},{opacity:1,scaleX:1,duration:BOX_DUR,ease:'power2.out'},boxAt);
+  };
 
   const activate=(key,svcSel,at)=>{
     const vp=root.querySelector('.v-'+key), pp=root.querySelector('.pl-'+key), node=root.querySelector('.n-'+key);
@@ -461,7 +597,6 @@ function initSolucao(root){
   };
 
   gsap.set(q('.doc-stage'),{x:0,y:0,xPercent:-50,yPercent:-50,rotation:-4,scale:1});
-  gsap.set(q('.path'),{scaleX:0});
   gsap.set(q('.s3-bg'),{y:0,yPercent:100});
 
   /* 01b — apresentação: texto entra primeiro, uma pequena pausa de
@@ -479,42 +614,65 @@ function initSolucao(root){
     .to(q('.doc-stage'),{opacity:1,y:0,scale:1,duration:.75,ease:'power2.out'},0.62);
   const INTRO=0.9;
 
-  /* 02 — exploração dos caminhos */
-  tl.to(q('.copy-a'),{opacity:0,y:-50,duration:1},0.7+INTRO)
-    .to(q('.doc-stage'),{rotation:2,scale:1.08,duration:1.2},0.5+INTRO)
-    .to(q('.chip'),{opacity:1,stagger:.12,duration:.7},1.25+INTRO)
-    .to(q('.path'),{opacity:.65,scaleX:1,duration:.7},1.2+INTRO)
-    .to(q('.doc-stage'),{rotation:-2,scale:1.02,duration:1},2.2+INTRO);
+  /* 02 — os 5 caminhos, um de cada vez: linha desenha → card nasce dela →
+     os dois FICAM (nada é escondido) → começa o próximo. .doc-stage fica
+     parado nessa fase (sem o "wobble" de rotação/escala que existia antes)
+     de propósito — as linhas são recalculadas só no onRefresh (perf), não
+     a cada frame do scroll, então precisam de um documento parado pra não
+     desalinhar. Ritmo bem espaçado (SLOT largo) de propósito: a ideia é
+     que cada caminho tenha espaço pra "respirar" antes do próximo nascer,
+     em vez de tudo aparecer rápido demais. */
+  const CAMINHOS_START=1.6, SLOT=2.4;
+  // updateCaminhos() já rodou uma vez lá em cima (init), mas nesse momento
+  // .doc-stage ainda está no estado "escondido" da apresentação inicial
+  // (gsap.set aplica na hora, não espera o scroll) — geometria errada,
+  // baseada numa pose que não é a de repouso. Recalcula de novo bem antes
+  // do caminho 01 nascer, quando o documento já assentou de vez (a
+  // apresentação termina por volta de 1.37) e NUNCA mais se move nessa
+  // fase — uma vez corrigido aqui, fica certo pro resto da sequência.
+  tl.call(updateCaminhos, null, CAMINHOS_START-0.05);
+  CAMINHOS.forEach((cfg,i)=> buildCaminho(cfg, CAMINHOS_START+i*SLOT));
+  const CAMINHOS_END=CAMINHOS_START+CAMINHOS.length*SLOT; // 1.6+5*1.5=9.1
+  // quanto a sequência dos caminhos precisa a mais do que a antiga
+  // "exploração" ocupava (2.3 unidades, de 0.7+INTRO a 3.0+INTRO) — soma-se
+  // ao +INTRO de todo mundo depois daqui pra abrir espaço sem alterar o
+  // resto da coreografia já aprovada, só deslocá-la.
+  const CAMINHOS_SHIFT=CAMINHOS_END-(3.0+INTRO);
 
-  /* transição 02→03 (o mesmo documento atravessa) */
-  tl.to(q('.chip'),{opacity:.12,y:10,duration:.7},3.0+INTRO)
-    .to(q('.path'),{opacity:.1,duration:.6},3.0+INTRO)
-    .to(q('.section-id'),{opacity:0,duration:.5},3.2+INTRO)
-    .to(q('.s3-bg'),{yPercent:0,duration:1.4,ease:'power2.inOut'},3.2+INTRO)
-    .to(q('.doc-stage'),{y:90,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2+INTRO)
-    .to(q('.doc-stage'),{y:0,rotation:-1.5,scale:.55,duration:1.0,ease:'power2.out'},4.05+INTRO)
-    .to(q('.doc'),{boxShadow:'0 30px 80px rgba(0,0,0,.55), 0 0 62px rgba(255,0,153,.42)',duration:1.2},3.6+INTRO)
-    .to(q('.chip, .path'),{opacity:0,duration:.4},4.4+INTRO);
+  /* transição 02→03 (o mesmo documento atravessa) — só começa quando os 5
+     caminhos já estão completos (CAMINHOS_END), por isso o headline usa a
+     mesma âncora que o resto do bloco (3.0+INTRO+CAMINHOS_SHIFT), não o
+     "0.7+INTRO" antigo (que era do início da exploração, antes de existir
+     a sequência dos caminhos — deixaria o headline sumir no meio dela). */
+  tl.to(q('.copy-a'),{opacity:0,y:-50,duration:1},3.0+INTRO+CAMINHOS_SHIFT)
+    .to(q('.chip'),{opacity:.12,y:10,duration:.7},3.0+INTRO+CAMINHOS_SHIFT)
+    .to(q('.caminhos-svg'),{opacity:.1,duration:.6},3.0+INTRO+CAMINHOS_SHIFT)
+    .to(q('.section-id'),{opacity:0,duration:.5},3.2+INTRO+CAMINHOS_SHIFT)
+    .to(q('.s3-bg'),{yPercent:0,duration:1.4,ease:'power2.inOut'},3.2+INTRO+CAMINHOS_SHIFT)
+    .to(q('.doc-stage'),{y:90,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2+INTRO+CAMINHOS_SHIFT)
+    .to(q('.doc-stage'),{y:0,rotation:-1.5,scale:.55,duration:1.0,ease:'power2.out'},4.05+INTRO+CAMINHOS_SHIFT)
+    .to(q('.doc'),{boxShadow:'0 30px 80px rgba(0,0,0,.55), 0 0 62px rgba(255,0,153,.42)',duration:1.2},3.6+INTRO+CAMINHOS_SHIFT)
+    .to(q('.chip, .caminhos-svg'),{opacity:0,duration:.4},4.4+INTRO+CAMINHOS_SHIFT);
 
   /* 03 — chegada + headline + halo */
-  tl.to(q('.s3-id'),{opacity:1,duration:.5},4.8+INTRO)
-    .fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9+INTRO)
-    .fromTo(q('.s3-sub'),{opacity:0,x:-30},{opacity:1,x:0,duration:.8},5.2+INTRO)
-    .fromTo(q('.halo'),{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.0},5.3+INTRO);
+  tl.to(q('.s3-id'),{opacity:1,duration:.5},4.8+INTRO+CAMINHOS_SHIFT)
+    .fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9+INTRO+CAMINHOS_SHIFT)
+    .fromTo(q('.s3-sub'),{opacity:0,x:-30},{opacity:1,x:0,duration:.8},5.2+INTRO+CAMINHOS_SHIFT)
+    .fromTo(q('.halo'),{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.0},5.3+INTRO+CAMINHOS_SHIFT);
 
   /* serviços ativados em sequência (linha → pulso → nó → rótulo) */
-  activate('jur','.o-jur',5.7+INTRO);
-  activate('haia','.o-haia',7.1+INTRO);
-  activate('cert','.o-cert',8.1+INTRO);
-  activate('tec','.o-tec',9.1+INTRO);
-  activate('simp','.o-simp',10.1+INTRO);
+  activate('jur','.o-jur',5.7+INTRO+CAMINHOS_SHIFT);
+  activate('haia','.o-haia',7.1+INTRO+CAMINHOS_SHIFT);
+  activate('cert','.o-cert',8.1+INTRO+CAMINHOS_SHIFT);
+  activate('tec','.o-tec',9.1+INTRO+CAMINHOS_SHIFT);
+  activate('simp','.o-simp',10.1+INTRO+CAMINHOS_SHIFT);
 
   /* fechamento: composição recua, coração sobe, CTA centrado */
-  tl.to(q('.s3-headline, .s3-sub'),{opacity:0,y:-20,duration:.6},11.6+INTRO)
-    .to(q('.svc, .vein'),{opacity:0,duration:.7},11.6+INTRO)
-    .to(q('.doc-stage'),{y:-60,scale:.5,rotation:0,duration:.9,ease:'power2.out'},11.6+INTRO)
-    .fromTo(q('.s3-close'),{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power2.out'},12.0+INTRO)
-    .to({},{duration:.9},13.0+INTRO);
+  tl.to(q('.s3-headline, .s3-sub'),{opacity:0,y:-20,duration:.6},11.6+INTRO+CAMINHOS_SHIFT)
+    .to(q('.svc, .vein'),{opacity:0,duration:.7},11.6+INTRO+CAMINHOS_SHIFT)
+    .to(q('.doc-stage'),{y:-60,scale:.5,rotation:0,duration:.9,ease:'power2.out'},11.6+INTRO+CAMINHOS_SHIFT)
+    .fromTo(q('.s3-close'),{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power2.out'},12.0+INTRO+CAMINHOS_SHIFT)
+    .to({},{duration:.9},13.0+INTRO+CAMINHOS_SHIFT);
 
   gsap.to(q('.progress i'),{height:'100%',ease:'none',
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=6">
+<link rel="stylesheet" href="assets/css/site.css?v=27">
 </head>
 <body class="pre-anim">
 
@@ -21,6 +21,7 @@
       <img src="assets/logo-izi.png" alt="izi" class="brand-img" decoding="async">
     </a>
     <nav id="site-nav" class="main-nav" aria-label="Navegação principal">
+      <a href="#hero">Início</a>
       <a href="#caminho">O Caminho</a>
       <a href="#solucao">A Solução</a>
       <a href="#como">Como funciona</a>
@@ -136,18 +137,22 @@
 
       <div class="section-id">02 / O CAMINHO</div>
       <div class="copy copy-a">
-        <h2>Cada documento<br>tem um <em>caminho.</em></h2>
-        <p>País, finalidade e tipo de documento podem mudar o processo.</p>
+        <h2>Um documento.<br><span>Varios caminhos.</span></h2>
       </div>
 
-      <div class="path p1"></div><div class="path p2"></div><div class="path p3"></div>
-      <div class="path p4"></div><div class="path p5"></div>
+      <!-- linhas orgânicas saindo do documento até cada card — path/d e
+           stroke-dashoffset calculados por JS (revealCaminho em site.js),
+           desenhadas progressivamente pelo scroll (scrub, mesma timeline). -->
+      <svg class="caminhos-svg" aria-hidden="true"></svg>
 
-      <div class="chip c1"><small>01</small><b>APOSTILAMENTO</b><span>Original → Apostila</span></div>
-      <div class="chip c2"><small>02</small><b>TRADUÇÃO</b><span>Original → Tradução</span></div>
-      <div class="chip c3"><small>03</small><b>APOSTILA + TRADUÇÃO</b><span>Original → Apostila → Tradução</span></div>
-      <div class="chip c4"><small>04</small><b>TRADUÇÃO + APOSTILA</b><span>Original → Tradução → Apostila</span></div>
-      <div class="chip c5"><small>05</small><b>PROCESSO COMPLETO</b><span>Apostila → Tradução → Apostila</span></div>
+      <!-- .chip = só posicionamento. .chip small (crachá) e .chip-box (corpo)
+           revelam em momentos DIFERENTES (ver buildCaminho em site.js) —
+           por isso viraram irmãos, não um bloco só como antes. -->
+      <div class="chip c1"><small><span class="badge-num">01</span></small><div class="chip-box"><b>APOSTILAMENTO</b><span class="chip-desc">Original → Apostila</span></div></div>
+      <div class="chip c2"><small><span class="badge-num">02</span></small><div class="chip-box"><b>TRADUÇÃO</b><span class="chip-desc">Original → Tradução</span></div></div>
+      <div class="chip c3"><small><span class="badge-num">03</span></small><div class="chip-box"><b>APOSTILA + TRADUÇÃO</b><span class="chip-desc">Original → Apostila → Tradução</span></div></div>
+      <div class="chip c4"><small><span class="badge-num">04</span></small><div class="chip-box"><b>TRADUÇÃO + APOSTILA</b><span class="chip-desc">Original → Tradução → Apostila</span></div></div>
+      <div class="chip c5"><small><span class="badge-num">05</span></small><div class="chip-box"><b>PROCESSO COMPLETO</b><span class="chip-desc">Apostila → Tradução → Apostila</span></div></div>
 
       <div class="s3-bg" aria-hidden="true">
         <svg class="s3-seam" viewBox="0 0 1440 120" preserveAspectRatio="none">
@@ -255,6 +260,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="assets/js/site.js?v=6"></script>
+<script src="assets/js/site.js?v=27"></script>
 </body>
 </html>
