@@ -438,15 +438,16 @@ function initSolucao(root){
   }
   updateVeins();
 
-  /* ---- 02 · os 5 caminhos (reta curta + curva suave doc→card + nós) --- */
-  /* Curva "cotovelo" (elbow): cada trecho SAI do documento numa direção
-     definida (reta) e CHEGA no card vindo de outra direção definida — dois
-     pontos de controle colocados ao longo dessas tangentes (não um offset
-     perpendicular genérico) — é o que dá o efeito "reta → curva suave →
-     reta", sem parecer fluxograma (ângulo 90°) nem veia (serpenteia). Só
-     bordas ESQUERDA/DIREITA do documento (nunca topo/baixo — 04/05 não
-     descem pro rodapé). Chega na borda do CARD mais próxima do documento
-     (não o centro, não o crachá do número).
+  /* ---- 02 · os 5 caminhos (reta → curva suave → reta + nós) --- */
+  /* Geometria "reta/curva/reta" EXPLÍCITA (pathSTS mais abaixo): dois
+     segmentos de reta de verdade (L) nas pontas, e só o trecho do meio é
+     Bézier — a curva existe só pra mudar de direção, nunca é o corpo do
+     trajeto (diferente da versão anterior, um cúbico único esticado, que
+     virava "onda"/S). Cada caminho tem seus PRÓPRIOS parâmetros (direção e
+     comprimento de cada reta, abertura da curva) — não é roteamento
+     genérico. Só bordas ESQUERDA/DIREITA do documento (nunca topo/baixo —
+     04/05 não descem pro rodapé). Termina GEOMETRICAMENTE na borda do
+     círculo numerado (não no centro, não alguns px antes).
      Estilo tracejado: a linha VISÍVEL (.cam-line) tem um stroke-dasharray
      FIXO (padrão "traço-espaço" curto) — não pode ser reaproveitado pro
      dashoffset de revelação (senão o padrão só desliza de fase, não
@@ -458,17 +459,25 @@ function initSolucao(root){
   const caminhosSvg = root.querySelector('.caminhos-svg');
   let caminhosDefs = caminhosSvg.querySelector('defs');
   if(!caminhosDefs){ caminhosDefs=document.createElementNS(svgNS,'defs'); caminhosSvg.appendChild(caminhosDefs); }
+  // dir0/f0 = direção+distância (fração da reta origem→destino) que a
+  // linha sai RETA do documento; dir1/f1 = direção+distância do trecho
+  // reto final, já vindo DE onde o path chega no destino; bend = o quanto
+  // a curva do meio "puxa" nessas mesmas direções (maior = curva mais
+  // aberta/suave, menor = mudança de direção mais concentrada). Cada
+  // caminho tem sua PRÓPRIA geometria — não é um roteamento genérico.
   const CAMINHOS = [
     // key usa prefixo "pc" (path-caminho) DE PROPÓSITO — "c1".."c5" puro
     // colide com a classe dos CARDS (.c1..c5) e, como o <path> vem antes
     // no DOM, root.querySelector('.c1') pegava a LINHA em vez do CARD.
-    // dir0/f0 = direção+distância (fração do trajeto) que a linha sai RETA
-    // do documento; dir1/f1 = direção de onde ela CHEGA no card.
-    {key:'pc1', anchor:'rTop',   dir0:{x:1,y:0},     f0:.55, dir1:{x:0,y:-1},    f1:.5,  card:'.c1'},
-    {key:'pc2', anchor:'lUpper', dir0:{x:-1,y:0},    f0:.62, dir1:{x:-1,y:-.25}, f1:.55, card:'.c2'},
-    {key:'pc3', anchor:'rMid',   dir0:{x:1,y:0},     f0:.55, dir1:{x:1,y:.3},    f1:.5,  card:'.c3'},
-    {key:'pc4', anchor:'lLower', dir0:{x:-.6,y:.7},  f0:.4,  dir1:{x:-1,y:.15},  f1:.55, card:'.c4'},
-    {key:'pc5', anchor:'rLower', dir0:{x:1,y:.15},   f0:.5,  dir1:{x:.6,y:.6},   f1:.5,  card:'.c5'}
+    // 01 — reta longa pra direita → curva suave aberta pra CIMA → reta final curta.
+    {key:'pc1', anchor:'rTop',   dir0:{x:1,y:0},    f0:.50, dir1:{x:1,y:0},    f1:.16, bend:.42, card:'.c1'},
+    // 02 — reta longa pra esquerda (o mais longo) → uma mudança suave de nível → reta final.
+    {key:'pc2', anchor:'lUpper', dir0:{x:-1,y:0},   f0:.56, dir1:{x:-1,y:0},   f1:.20, bend:.42, card:'.c2'},
+    // 03 — parecido com 01, mas curva mais discreta (menos variação vertical).
+    {key:'pc3', anchor:'rMid',   dir0:{x:1,y:0},    f0:.58, dir1:{x:1,y:0},    f1:.18, bend:.36, card:'.c3'},
+    {key:'pc4', anchor:'lLower', dir0:{x:-1,y:.08}, f0:.52, dir1:{x:-1,y:.04}, f1:.20, bend:.38, card:'.c4'},
+    // 05 — o mais longo/elaborado: reta ampla → curva larga descendente → reta final.
+    {key:'pc5', anchor:'rLower', dir0:{x:1,y:.05},  f0:.55, dir1:{x:1,y:.08},  f1:.18, bend:.48, card:'.c5'}
   ];
   const ensureCamPath=(cls)=>{ let el=caminhosSvg.querySelector('path.'+cls); if(!el){ el=document.createElementNS(svgNS,'path'); el.setAttribute('class','cam-line '+cls); caminhosSvg.appendChild(el); } return el; };
   const ensureCamNode=(cls)=>{ let el=caminhosSvg.querySelector('circle.'+cls); if(!el){ el=document.createElementNS(svgNS,'circle'); el.setAttribute('class','cam-node '+cls); el.setAttribute('r','3.4'); caminhosSvg.appendChild(el); } return el; };
@@ -482,11 +491,22 @@ function initSolucao(root){
     } else path=mask.querySelector('path');
     return path;
   };
-  function elbow(start,end,dir0,len0,dir1,len1){
+  // RETA → CURVA SUAVE → RETA, explícito (não um cúbico genérico esticado):
+  // dois segmentos de reta de verdade (L) nas pontas, com só a curva do
+  // meio (mid1→mid2) sendo Bézier. Os pontos de controle da curva ficam
+  // ao longo das MESMAS direções dos trechos retos que ela conecta (c1 na
+  // direção de saída, c2 na direção de chegada) — isso garante transição
+  // suave (sem "bico") nas emendas reta/curva, e a curva serve só pra
+  // mudar de direção, nunca é o corpo principal do trajeto.
+  function pathSTS(start,dir0,len0,end,dir1,len1,bendLen){
     const n0=Math.hypot(dir0.x,dir0.y)||1, n1=Math.hypot(dir1.x,dir1.y)||1;
-    const c1x=start.x+dir0.x/n0*len0, c1y=start.y+dir0.y/n0*len0;
-    const c2x=end.x-dir1.x/n1*len1, c2y=end.y-dir1.y/n1*len1;
-    return `M${start.x.toFixed(1)},${start.y.toFixed(1)} C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${end.x.toFixed(1)},${end.y.toFixed(1)}`;
+    const ux0=dir0.x/n0, uy0=dir0.y/n0, ux1=dir1.x/n1, uy1=dir1.y/n1;
+    const mid1={x:start.x+ux0*len0, y:start.y+uy0*len0};
+    const mid2={x:end.x-ux1*len1,   y:end.y-uy1*len1};
+    const c1={x:mid1.x+ux0*bendLen, y:mid1.y+uy0*bendLen};
+    const c2={x:mid2.x-ux1*bendLen, y:mid2.y-uy1*bendLen};
+    const f=n=>n.toFixed(1);
+    return `M${f(start.x)},${f(start.y)} L${f(mid1.x)},${f(mid1.y)} C${f(c1.x)},${f(c1.y)} ${f(c2.x)},${f(c2.y)} ${f(mid2.x)},${f(mid2.y)} L${f(end.x)},${f(end.y)}`;
   }
   function camDocAnchors(){
     const s=caminhosSvg.getBoundingClientRect();
@@ -503,20 +523,21 @@ function initSolucao(root){
       rLower:{x:R, y:cy+dr.height*0.40}   // 05 — direita, perto do rodapé rosa
     };
   }
-  // ponto de ancoragem = o CRACHÁ numerado (.chip small), não o centro do
-  // card — é ele quem "nasce" quando a linha chega (ver buildCaminho), a
-  // linha mira nele diretamente. small só anima opacity/scale (nunca
-  // posição), e scale a partir do centro não desloca o centro medido —
-  // então, ao contrário do .chip inteiro antes, não precisa neutralizar
-  // nada pra medir: o centro do crachá já é confiável a qualquer momento.
-  function cardBadgeAnchor(cardEl, s, docCx, docL, docR){
+  // centro do CRACHÁ numerado (.chip small), não o centro do card — é ele
+  // quem "nasce" quando a linha chega (ver buildCaminho), a linha mira
+  // nele. small só anima opacity/scale (nunca posição), e scale a partir
+  // do centro não desloca o centro medido — então, ao contrário do .chip
+  // inteiro antes, não precisa neutralizar nada pra medir: o centro do
+  // crachá já é confiável a qualquer momento (inclusive logo depois de um
+  // ScrollTrigger.refresh(), ver onRefresh mais abaixo).
+  function badgeCenter(cardEl, s, docCx, docL, docR){
     const badge=cardEl.querySelector('small');
     const br=badge.getBoundingClientRect();
     const bx=br.left-s.left+br.width/2, by=br.top-s.top+br.height/2;
     // em telas mais estreitas o crachá pode encostar (ou passar por baixo)
     // do documento — trava o ponto pra nunca ultrapassar a borda do doc.
     const x = bx<docCx ? Math.min(bx, docL-14) : Math.max(bx, docR+14);
-    return {x, y:by};
+    return {x, y:by, r:br.width/2};
   }
   function updateCaminhos(){
     const s=caminhosSvg.getBoundingClientRect(); if(!s.width) return;
@@ -527,9 +548,14 @@ function initSolucao(root){
     CAMINHOS.forEach(c=>{
       const el=ensureCamPath(c.key), maskPath=ensureCamMask(c.key);
       const start=A[c.anchor];
-      const end=cardBadgeAnchor(root.querySelector(c.card), s, docCx, docL, docR);
+      const center=badgeCenter(root.querySelector(c.card), s, docCx, docL, docR);
+      // termina GEOMETRICAMENTE na borda do círculo (não no centro, não
+      // alguns px antes) — recua um raio a partir do centro, na direção
+      // de chegada (dir1) do próprio caminho.
+      const n1=Math.hypot(c.dir1.x,c.dir1.y)||1;
+      const end={x:center.x-c.dir1.x/n1*center.r, y:center.y-c.dir1.y/n1*center.r};
       const dist=Math.hypot(end.x-start.x, end.y-start.y);
-      const d=elbow(start, end, c.dir0, dist*c.f0, c.dir1, dist*c.f1);
+      const d=pathSTS(start, c.dir0, dist*c.f0, end, c.dir1, dist*c.f1, dist*c.bend);
       el.setAttribute('d', d);
       el.setAttribute('mask','url(#camMask-'+c.key+')');
       maskPath.setAttribute('d', d);
@@ -544,38 +570,52 @@ function initSolucao(root){
   const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
     scrub:1, invalidateOnRefresh:true, onRefresh:()=>{ updateVeins(); updateCaminhos(); } } });
 
-  // sequência por caminho (obrigatória, cada etapa só começa depois que a
-  // anterior "resolveu"): nó de origem → linha desenha (dasharray/
-  // dashoffset real, não fade) → CÍRCULO grande nasce no destino (sem o
-  // card ainda) → NÚMERO aparece dentro dele → pausa de leitura só com o
-  // círculo+número → SÓ ENTÃO o corpo do card se abre, crescendo a partir
-  // do círculo (scaleX, transform-origin do lado do círculo — ver CSS).
-  // O crachá (círculo) nunca se move — fica parado como âncora enquanto o
-  // corpo cresce ao lado dele. Tudo permanece visível depois (nada some).
-  const LINE_DUR=1.0;
-  const BADGE_AT=0.92, BADGE_DUR=0.22;   // fração de LINE_DUR em que o círculo nasce
-  const NUM_GAP=0.05, NUM_DUR=0.16;      // número entra logo depois do círculo assentar
-  const READ_PAUSE=0.28;                 // pausa só com círculo+número (pedido explícito)
-  const BOX_DUR=0.42;                    // corpo do card se abrindo
+  // Cada caminho é UMA sequência de 5 fases, estritamente consecutivas
+  // (a fase N só começa quando a fase N-1 termina, nunca em paralelo):
+  //   1. bola pequena nasce na borda do documento (fica visível, não se move)
+  //   2. a linha percorre o caminho a partir dela (dasharray/dashoffset real,
+  //      nunca fade da linha inteira)
+  //   3. ao chegar, a bola grande (crachá) nasce no destino
+  //   4. o número aparece dentro da bola grande
+  //   5. o card é revelado
+  const DOT_DUR=.15;   // fase 1 — bola pequena
+  const LINE_DUR=1.0;  // fase 2 — linha percorrendo o caminho
+  const BADGE_DUR=.22; // fase 3 — bola grande
+  const NUM_DUR=.16;   // fase 4 — número
+  const CARD_DUR=.5;   // fase 5 — card
   const buildCaminho=(cfg,at)=>{
     const maskPath=ensureCamMask(cfg.key);
     const nodeA=ensureCamNode(cfg.key+'-a');
     const cardEl=root.querySelector(cfg.card);
     const badge=cardEl.querySelector('small'), num=badge.querySelector('.badge-num'), box=cardEl.querySelector('.chip-box');
 
-    tl.fromTo(nodeA,{opacity:0,scale:.5},{opacity:1,scale:1,duration:.15,ease:'power1.out'},at);
+    // 1 — bola pequena
+    tl.addLabel(cfg.key+'-dotSmall',at);
+    tl.fromTo(nodeA,{opacity:0,scale:.5},{opacity:1,scale:1,duration:DOT_DUR,ease:'power1.out'},at);
 
+    // 2 — linha percorre o caminho, só depois da bola pequena estar visível
+    const lineAt=at+DOT_DUR;
+    tl.addLabel(cfg.key+'-line',lineAt);
     const lineP={p:0};
-    tl.to(lineP,{p:1,duration:LINE_DUR,ease:'power1.inOut',onUpdate(){ maskPath._p=lineP.p; applyDraw(maskPath); }},at);
+    tl.to(lineP,{p:1,duration:LINE_DUR,ease:'power1.inOut',onUpdate(){ maskPath._p=lineP.p; applyDraw(maskPath); }},lineAt);
 
-    const badgeAt=at+LINE_DUR*BADGE_AT;
-    tl.fromTo(badge,{opacity:0,scale:.4},{opacity:1,scale:1,duration:BADGE_DUR,ease:'back.out(2.2)'},badgeAt);
+    // 3 — bola grande, só quando a linha termina de chegar
+    const badgeAt=lineAt+LINE_DUR;
+    tl.addLabel(cfg.key+'-dotBig',badgeAt);
+    tl.fromTo(badge,{opacity:0,scale:.7},{opacity:1,scale:1,duration:BADGE_DUR,ease:'power2.out'},badgeAt);
 
-    const numAt=badgeAt+BADGE_DUR+NUM_GAP;
-    tl.fromTo(num,{opacity:0},{opacity:1,duration:NUM_DUR},numAt);
+    // 4 — número, só depois da bola grande estar completamente visível
+    const numAt=badgeAt+BADGE_DUR;
+    tl.addLabel(cfg.key+'-number',numAt);
+    tl.fromTo(num,{opacity:0,scale:.8},{opacity:1,scale:1,duration:NUM_DUR,ease:'power1.out'},numAt);
 
-    const boxAt=numAt+NUM_DUR+READ_PAUSE;
-    tl.fromTo(box,{opacity:0,scaleX:0},{opacity:1,scaleX:1,duration:BOX_DUR,ease:'power2.out'},boxAt);
+    // 5 — card, só depois do número estar completamente visível
+    const boxAt=numAt+NUM_DUR;
+    tl.addLabel(cfg.key+'-card',boxAt);
+    tl.fromTo(box,
+      {opacity:0, y:12, scale:.97, filter:'blur(4px)'},
+      {opacity:1, y:0, scale:1, filter:'blur(0px)', duration:CARD_DUR, ease:'power2.out'},
+      boxAt);
   };
 
   const activate=(key,svcSel,at)=>{
