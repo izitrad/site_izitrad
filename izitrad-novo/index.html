@@ -184,17 +184,31 @@
       </div>
 
       <div class="doc-stage">
-        <div class="doc" aria-label="Representação abstrata de um documento IZITRAD">
-          <div class="doc-top"><b>IZITRAD<span>▶</span></b><small>01 / DOC</small></div>
-          <div class="dash"></div>
-          <small>YOUR DOCUMENT</small>
-          <h3>DIPLOMA<br><span>DE GRADUAÇÃO</span></h3>
-          <div class="route"><b>BRASIL</b><i>→</i><b>PORTUGAL</b></div>
-          <div class="globe"></div>
-          <div class="meta">
-            <span>PURPOSE<b>ESTUDOS</b></span><span>YEAR<b>2026</b></span><span>STATUS<b>IN PROGRESS</b></span>
+        <!-- sombra dedicada à interação de mouse (foge do overflow:hidden do
+             .doc, por isso fica FORA dele) — reage discretamente na direção
+             oposta à inclinação, sem mexer no box-shadow estático do .doc. -->
+        <div class="doc-shadow" aria-hidden="true"></div>
+        <!-- .doc-mouse: envolve a FOLHA INTEIRA (.doc — moldura, fundo,
+             sombra, cantos, tira rosa e todo o conteúdo dentro). É o único
+             elemento que recebe os transforms do mouse (rotateX/rotateY/
+             translate) — a folha inclina como peça única, nada se move
+             independente por dentro dela. Isolado do scroll (.doc-stage,
+             que só translada/escala/rotaciona no 2D) e do breathing loop
+             de .doc (que continua fazendo scale nele mesmo, agora um nível
+             mais dentro) — três elementos, três transforms, zero disputa. -->
+        <div class="doc-mouse">
+          <div class="doc" aria-label="Representação abstrata de um documento IZITRAD">
+            <div class="doc-top"><b>IZITRAD<span>▶</span></b><small>01 / DOC</small></div>
+            <div class="dash"></div>
+            <small>YOUR DOCUMENT</small>
+            <h3>DIPLOMA<br><span>DE GRADUAÇÃO</span></h3>
+            <div class="route"><b>BRASIL</b><i>→</i><b>PORTUGAL</b></div>
+            <div class="globe"></div>
+            <div class="meta">
+              <span>PURPOSE<b>ESTUDOS</b></span><span>YEAR<b>2026</b></span><span>STATUS<b>IN PROGRESS</b></span>
+            </div>
+            <div class="doc-foot">WE HANDLE<br>THE COMPLEXITY.</div>
           </div>
-          <div class="doc-foot">WE HANDLE<br>THE COMPLEXITY.</div>
         </div>
       </div>
 

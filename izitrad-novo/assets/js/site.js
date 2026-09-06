@@ -165,6 +165,7 @@ function initWaves(canvas){
    no tempo pra começar depois que .s2-layer já está 100% posicionada).
    Nada de pin:true, nada de sticky aninhado, nada de 2º ScrollTrigger. */
 function initHeroS2Story(root){
+  let tl; // declarada aqui (atribuída mais abaixo) pra buildGrow poder re-sincronizá-la — ver buildGrow
   const wavesCanvas = root.querySelector('.hero-waves canvas');
   if(wavesCanvas) initWaves(wavesCanvas);
   const stage   = root.querySelector('.hero-layer');
@@ -266,6 +267,19 @@ function initHeroS2Story(root){
     triTargetWidth=(window.innerWidth+2*window.innerHeight/triAspect)*COVER_MARGIN;
     triHandoff=triW0*PHASE1_MULT;
     proxy.w=triW0; applyGrowth();
+    // buildGrow também roda como onRefresh (resize, fonts.ready...) — a
+    // qualquer momento do scroll, não só no carregamento. O reset acima
+    // (proxy.w=triW0) deixa o triângulo do tamanho de repouso; se o usuário
+    // já tiver rolado além do crescimento, isso "encolhe" o triângulo de
+    // volta e ele FICA assim (nada mais re-renderiza a timeline sozinho),
+    // expondo as ondas do fundo por trás do rosa — o bug da transição
+    // Hero→O Caminho. Corrige forçando um novo render da timeline na
+    // posição atual: isso chama de novo o onUpdate do tween de crescimento,
+    // que recalcula proxy.w certo pro ponto do scroll em que já estamos.
+    // Precisa do 3º argumento (force=true) — .time()/.time(mesmoValor)
+    // sozinho é ignorado pelo GSAP quando o tempo não muda, exatamente
+    // o caso aqui (só o valor de proxy.w mudou, não o tempo da timeline).
+    if(tl) tl.render(tl.time(), false, true);
   }
   buildGrow();
   wipe.style.visibility='visible';   // já posicionado → pode mostrar (sem flash)
@@ -282,7 +296,7 @@ function initHeroS2Story(root){
   const COMPACT_START=PHASE2_START+1.05+0.6;
   const nav = header ? header.querySelector('.main-nav') : null;
 
-  const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
+  tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
     scrub:0.4, invalidateOnRefresh:true, onRefresh:buildGrow },
     // compacto (hambúrguer) só liga depois que TODO o texto de O Caminho já
     // revelou (ver COMPACT_START acima). Fica na MESMA timeline que já
@@ -474,6 +488,49 @@ function initSolucao(root){
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});
 }
 
+/* ------------------- 03b · INTERAÇÃO DE MOUSE NO DOCUMENTO ------------ */
+/* Isolada de propósito: .doc-stage é 100% do scroll (initSolucao acima) e
+   .doc (a folha inteira: moldura, fundo, sombra, cantos, conteúdo) já roda
+   o breathing loop (scale) + o boxShadow do scroll — nenhum dos dois é
+   tocado aqui. O mouse escreve SÓ em .doc-mouse (rotação/translação 3D,
+   envolve a folha INTEIRA como peça única) e .doc-shadow (sombra), dois
+   elementos próprios — os três sistemas de transform nunca disputam a
+   mesma propriedade, e nada DENTRO da folha se move independente dela. */
+function initDocInteraction(root){
+  if(!matchMedia('(hover: hover) and (pointer: fine)').matches) return; // touch: sem tilt, só scroll
+  const stage = root.querySelector('.doc-stage');
+  const inner = root.querySelector('.doc-mouse');
+  if(!stage || !inner) return;
+  const shadow = root.querySelector('.doc-shadow');
+
+  const MAX_ROT_Y=10, MAX_ROT_X=8, MAX_T=6, MAX_SHADOW_T=4;
+  const EASE={duration:0.9,ease:'power3'};
+  const setRotY = gsap.quickTo(inner,'rotationY',EASE);
+  const setRotX = gsap.quickTo(inner,'rotationX',EASE);
+  const setTX   = gsap.quickTo(inner,'x',EASE);
+  const setTY   = gsap.quickTo(inner,'y',EASE);
+  const setShX  = shadow ? gsap.quickTo(shadow,'x',EASE) : null;
+  const setShY  = shadow ? gsap.quickTo(shadow,'y',EASE) : null;
+
+  function onMove(e){
+    const r = stage.getBoundingClientRect(); // .doc-stage se move no scroll — mede a cada evento, não por rAF
+    if(!r.width || !r.height) return;
+    const cx = Math.max(-1,Math.min(1, ((e.clientX-r.left)/r.width)*2-1));
+    const cy = Math.max(-1,Math.min(1, ((e.clientY-r.top)/r.height)*2-1));
+    setRotY(cx*MAX_ROT_Y);
+    setRotX(-cy*MAX_ROT_X);
+    setTX(cx*MAX_T);
+    setTY(cy*MAX_T);
+    if(setShX){ setShX(-cx*MAX_SHADOW_T); setShY(-cy*MAX_SHADOW_T); }
+  }
+  function onLeave(){
+    setRotY(0); setRotX(0); setTX(0); setTY(0);
+    if(setShX){ setShX(0); setShY(0); }
+  }
+  stage.addEventListener('pointermove', onMove, {passive:true});
+  stage.addEventListener('pointerleave', onLeave, {passive:true});
+}
+
 /* ------------------------------ ORQUESTRAÇÃO ------------------------- */
 (function(){
   document.documentElement.classList.remove('no-js');
@@ -506,7 +563,7 @@ function initSolucao(root){
     document.querySelectorAll('.sec[data-sec]').forEach(sec=>{
       const kind=sec.dataset.sec;
       if(kind==='hero-s2-story') initHeroS2Story(sec);
-      else if(kind==='solucao') initSolucao(sec);
+      else if(kind==='solucao'){ initSolucao(sec); initDocInteraction(sec); }
     });
     if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>ScrollTrigger.refresh()); }
   }

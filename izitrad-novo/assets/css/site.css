@@ -24,7 +24,7 @@ img,svg{display:block}
    CAIXA ALTA com separadores "|", botões "Meu pedido" + "Apostilar agora".
    Fixo, independente das timelines/sticky. Cores do site antigo (hardcoded
    pra não colidir com o --pink #FF0099 da solução). */
-.site-header{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.45);backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);border-bottom:1px solid rgba(233,233,239,.7);transition:background .3s,box-shadow .3s,transform .3s}
+.site-header{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(255,255,255,.28);backdrop-filter:blur(8px) saturate(160%);-webkit-backdrop-filter:blur(8px) saturate(160%);border-bottom:1px solid rgba(233,233,239,.7);transition:background .3s,box-shadow .3s,transform .3s}
 .site-header .header-inner{position:relative;display:flex;align-items:center;justify-content:space-between;height:65px;padding:0 clamp(32px,-141.78px + 15.111vw,100px)}
 .site-header .brand-logo{display:inline-flex;align-items:center;flex-shrink:0;transform:translateX(110px)}
 .site-header .brand-img{height:35px;width:auto;display:block}
@@ -187,7 +187,18 @@ img,svg{display:block}
 .copy{position:absolute;left:4%;top:21%;width:32%;z-index:4}
 .copy h2{font-size:clamp(46px,5vw,90px);margin:0 0 24px;text-transform:uppercase}
 .copy p{max-width:420px;font-size:18px;line-height:1.5}
-.doc-stage{position:absolute;left:50%;top:50%;width:min(31vw,470px);z-index:9;transform:translate(-50%,-50%) rotate(-4deg);will-change:transform}
+.doc-stage{position:absolute;left:50%;top:50%;width:min(31vw,470px);z-index:9;perspective:1000px;transform:translate(-50%,-50%) rotate(-4deg);will-change:transform}
+/* sombra reativa ao mouse — fica FORA do .doc (que tem overflow:hidden) pra
+   poder borrar/vazar livremente atrás dele. Some visualmente por baixo da
+   folha inteira, só ganha vida quando a interação move .doc-mouse (ver
+   initDocInteraction em site.js). Reage sozinha, na direção oposta. */
+.doc-shadow{position:absolute;inset:6% 4%;border-radius:30px;background:rgba(30,0,18,.24);filter:blur(28px);z-index:8;pointer-events:none;will-change:transform}
+/* .doc-mouse = a FOLHA INTEIRA como objeto físico único. Recebe SÓ os
+   transforms do mouse (rotationX/rotationY/x/y) — nada dentro dela (.doc e
+   seu conteúdo) ganha transform próprio por causa do mouse. .doc continua
+   sendo a moldura visual real (fundo, borda, cantos, sombra estática, tira
+   rosa) intacta; só passou a viver um nível mais dentro. */
+.doc-mouse{position:relative;z-index:9;width:100%;transform-style:preserve-3d;will-change:transform}
 .doc{position:relative;width:100%;aspect-ratio:.72;border:1px solid rgba(255,0,153,.18);border-radius:30px;background:linear-gradient(145deg,#fff,#fff6fb);box-shadow:0 35px 80px rgba(35,0,20,.16),0 0 70px rgba(255,0,153,.10);padding:8%;overflow:hidden;will-change:transform}
 .doc:after{content:'';position:absolute;inset:auto -20% -15% -20%;height:35%;background:var(--pink);transform:rotate(-4deg)}
 .doc-top{display:flex;justify-content:space-between;align-items:center}
