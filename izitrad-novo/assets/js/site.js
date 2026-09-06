@@ -172,6 +172,8 @@ function initHeroS2Story(root){
   const s2Layer = root.querySelector('.s2-layer');
   const logo    = root.querySelector('.logo');
   const logoImg = root.querySelector('.logo__img');
+  const logoWordWrap = root.querySelector('.hero-logo-word'); // reveal inicial (ver mais abaixo)
+  const triWrap = root.querySelector('.hero-logo-triangle');  // reveal inicial (mesma tween que logoWordWrap)
   const wipe    = root.querySelector('.wipe');
   const wipePath= wipe.querySelector('path');
   const apost = root.querySelector('.ht[data-k="apost"]');
@@ -244,12 +246,14 @@ function initHeroS2Story(root){
     wipe.setAttribute('viewBox','78 100 1257 507');
     const s=stage.getBoundingClientRect();
     const lr=logoImg.getBoundingClientRect();
-    // a entrada "Olá, somos a" → logo (heroGreetIn, ver site.css) desliza o
-    // .logo__img de translateY(14px) até 0 — se buildGrow rodar antes disso
-    // terminar, o retângulo medido vem deslocado. Descontamos o deslocamento
-    // ATUAL (0 se a entrada já terminou) pra sempre medir a posição final de
-    // repouso, sem depender de esperar a animação ou de um refresh tardio.
-    const entryY = new DOMMatrixReadOnly(getComputedStyle(logoImg).transform).m42;
+    // a apresentação inicial (.hero-logo-word/.hero-logo-triangle, ver a
+    // tween logo abaixo) desliza os dois em y — se buildGrow rodar antes
+    // disso terminar (ou de novo via onRefresh, com a apresentação ainda em
+    // curso), os retângulos medidos vêm deslocados. Descontamos o
+    // deslocamento ATUAL (0 se já terminou) pra sempre medir a posição
+    // final de repouso. logo e triângulo compartilham a MESMA tween, logo
+    // o MESMO entryY vale pros dois.
+    const entryY = new DOMMatrixReadOnly(getComputedStyle(logoWordWrap).transform).m42;
     wipe.style.left=(lr.left-s.left)+'px';
     wipe.style.top=(lr.top-s.top-entryY)+'px';
     wipe.style.width=lr.width+'px';
@@ -261,8 +265,12 @@ function initHeroS2Story(root){
     wipe.setAttribute('viewBox',`${b.x.toFixed(2)} ${b.y.toFixed(2)} ${b.width.toFixed(2)} ${b.height.toFixed(2)}`);
     triAspect=b.height/b.width;
     const logoRect=logo.getBoundingClientRect();
-    logo.style.transformOrigin=(triCX-logoRect.left).toFixed(1)+'px '+(triCY-logoRect.top+entryY).toFixed(1)+'px';
-    anchorX0=triCX-s.left; anchorY0=triCY-s.top;
+    // logo e triângulo deslizam pela MESMA tween (mesmo entryY) — a
+    // diferença entre os dois não muda com o deslocamento, por isso o
+    // transformOrigin não precisa de correção (diferente do anchorY0
+    // abaixo, que é uma posição ABSOLUTA em relação ao stage).
+    logo.style.transformOrigin=(triCX-logoRect.left).toFixed(1)+'px '+(triCY-logoRect.top).toFixed(1)+'px';
+    anchorX0=triCX-s.left; anchorY0=triCY-entryY-s.top;
     centerX=window.innerWidth/2-s.left; centerY=window.innerHeight/2-s.top;
     triTargetWidth=(window.innerWidth+2*window.innerHeight/triAspect)*COVER_MARGIN;
     triHandoff=triW0*PHASE1_MULT;
@@ -283,6 +291,15 @@ function initHeroS2Story(root){
   }
   buildGrow();
   wipe.style.visibility='visible';   // já posicionado → pode mostrar (sem flash)
+
+  // logo (.hero-logo-word) e triângulo (.hero-logo-triangle) entram como UM
+  // objeto só: uma ÚNICA tween GSAP escreve autoAlpha/y nos dois — mesmo
+  // valor, mesmo frame, sempre. Chamada DEPOIS do buildGrow() acima de
+  // propósito: a medição já rodou com os dois wrappers no estado neutro
+  // (sem transform), então o gsap.set abaixo não interfere na 1ª medição —
+  // só refreshes futuros (onRefresh) precisam da correção via entryY.
+  gsap.set([logoWordWrap, triWrap],{autoAlpha:0,y:14});
+  gsap.to([logoWordWrap, triWrap],{autoAlpha:1,y:0,duration:.9,ease:'power3.out',delay:1.25});
 
   // marcos de tempo (unidades locais da timeline, não vh/px):
   //  0 .. 4.23        → Hero (crescimento + textos), inalterado

@@ -138,25 +138,30 @@ img,svg{display:block}
    triângulo, que sobra à direita). % da largura da logo → escala em qualquer tamanho. */
 .hero-layer .logo__img{position:relative;left:6.9%;width:min(750px,74vw);height:auto;margin:0 auto}
 
-/* abertura "Olá, somos a" → logo: entra em sequência só no carregamento
-   (não é scroll-reveal, por isso usa @keyframes com animation-delay em vez
-   do sistema GSAP/ScrollTrigger). Anima as PALAVRAS, não o .logo__greet
-   (que já carrega o transform de posicionamento acima) — e o .logo__img
-   direto, já que o JS (buildGrow/applyGrowth) só escreve transform/opacity
-   inline no .logo pai, nunca no texto ou na img, então não há disputa. */
+/* abertura "Olá, somos a": entra em sequência só no carregamento (não é
+   scroll-reveal, por isso usa @keyframes com animation-delay em vez do
+   GSAP). Anima as PALAVRAS, não o .logo__greet (que já carrega o transform
+   de posicionamento acima). */
 .hero-layer .logo__greet-word{display:inline-block;opacity:0;transform:translateY(14px);animation:heroGreetIn .8s cubic-bezier(.16,1,.3,1) forwards}
 .hero-layer .logo__greet-word--1{animation-delay:.15s}
 .hero-layer .logo__greet-word--2{animation-delay:.7s}
-.hero-layer .logo__img{opacity:0;transform:translateY(14px);animation:heroGreetIn .9s cubic-bezier(.16,1,.3,1) forwards;animation-delay:1.25s}
 @keyframes heroGreetIn{to{opacity:1;transform:translateY(0)}}
+/* .hero-logo-word (em volta do .logo__img) e .hero-logo-triangle (em volta
+   do .wipe) entram como UM objeto só: a MESMA tween GSAP (initHeroS2Story
+   em site.js, chamada depois do primeiro buildGrow — ver comentário lá)
+   escreve opacity+y nos dois em sincronia, quadro a quadro. Nem a logo nem
+   o triângulo têm animação de entrada própria — por isso opacity:0 aqui é
+   só o estado de repouso ANTES do JS rodar (evita flash); quem revela é o
+   wrapper. O JS (buildGrow/applyGrowth) continua escrevendo transform/
+   opacity só no .logo pai e position/size só no .wipe — nunca nesses dois
+   wrappers novos, então não há disputa com a tween de entrada. */
+.hero-layer .hero-logo-word,.hero-layer .hero-logo-triangle{opacity:0}
 .hero-layer .wipe-fill{position:absolute;z-index:2;inset:0;background:var(--rosa);opacity:0}
-/* triângulo entra JUNTO com a logo (mesmo delay/duração do .logo__img acima)
-   — antes ele já ficava visível de cara e "flutuava" sozinho antes da logo
-   aparecer. visibility fica a cargo do JS (buildGrow posiciona antes de
-   mostrar, evita flash no canto errado); opacity+animation controla QUANDO
-   ele se revela, agora em sincronia. */
-.hero-layer .wipe{position:absolute;z-index:3;overflow:visible;visibility:hidden;opacity:0;animation:heroWipeIn .9s cubic-bezier(.16,1,.3,1) forwards;animation-delay:1.25s}
-@keyframes heroWipeIn{to{opacity:1}}
+/* preenche exatamente a área do .hero-layer (mesma referência que o JS já
+   usa pra medir/posicionar o .wipe) — a tween de entrada pode mover este
+   wrapper livremente sem afetar as contas de left/top do .wipe. */
+.hero-layer .hero-logo-triangle{position:absolute;inset:0;z-index:3}
+.hero-layer .wipe{position:absolute;overflow:visible;visibility:hidden}
 .hero-layer .wipe path{fill:var(--rosa)}
 .hero-layer .reveal-copy{position:absolute;z-index:6;left:50%;bottom:14%;transform:translateX(-50%);width:min(760px,86vw);text-align:center;pointer-events:none;font-family:var(--copy-font),'DM Sans',sans-serif}
 .hero-layer .reveal-copy p{opacity:0;color:#fff;font-weight:300;font-size:25px;line-height:1.5}
@@ -307,7 +312,8 @@ img,svg{display:block}
   .hero-s2-story .hero-layer{position:relative;height:100vh}
   .hero-s2-story .s2-layer{position:relative;height:100vh;transform:none}
   .hero-layer .wipe-fill{opacity:1}.hero-layer .logo{opacity:0}
-  .hero-layer .logo__greet-word,.hero-layer .logo__img{animation:none;opacity:1;transform:none}
+  .hero-layer .logo__greet-word{animation:none;opacity:1;transform:none}
+  .hero-layer .hero-logo-word,.hero-layer .hero-logo-triangle{opacity:1}
   .hero-layer .ht,.hero-layer .reveal-copy p,.hero-layer .reveal-copy .btn{opacity:1}
   .hero-layer .hint{display:none}
   .s2-layer .intro-h1 .il,.s2-layer .intro-copy,.s2-layer .intro-link{opacity:1;transform:none}

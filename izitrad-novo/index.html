@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=4">
+<link rel="stylesheet" href="assets/css/site.css?v=6">
 </head>
 <body class="pre-anim">
 
@@ -60,6 +60,11 @@
       <div class="hero-fade-bottom" aria-hidden="true"></div>
       <div class="logo">
         <span class="logo__greet"><span class="logo__greet-word logo__greet-word--1">Olá,</span> <span class="logo__greet-word logo__greet-word--2">somos a</span></span>
+        <!-- .hero-logo-word: só existe pra a logo (svg) e o triângulo
+             (.hero-logo-triangle, mais abaixo) entrarem como UM objeto só,
+             pela mesma tween GSAP (ver initHeroS2Story em site.js) — nem a
+             logo nem o triângulo têm mais animação de entrada própria. -->
+        <div class="hero-logo-word">
         <svg class="logo__img" viewBox="78 100 1257 507" role="img" aria-label="izitrad">
           <defs><style>
             .wm-z{fill:#FF0099;stroke:#FF0099}
@@ -76,12 +81,18 @@
             <path class="wm" d="M1120.81,331.03c5.35,0,10,1.91,13.94,5.74,3.94,3.94,5.9,8.64,5.9,14.1v142.32c-.11,26.02-9.4,48.15-27.87,66.4-18.47,18.36-40.66,27.55-66.57,27.55s-48.26-9.24-66.73-27.71c-18.47-18.47-27.71-40.72-27.71-66.73s9.24-48.26,27.71-66.73c18.47-18.47,40.72-27.71,66.73-27.71,23.72,0,41.81,5.47,54.27,16.4v-63.78c0-5.46,1.97-10.17,5.9-14.1,3.94-3.82,8.58-5.74,13.94-5.74h.49ZM1007.67,454.66c-10.49,10.6-15.74,23.45-15.74,38.53s5.25,27.77,15.74,38.37c10.6,10.6,23.45,15.9,38.53,15.9s27.76-5.3,38.37-15.9c10.6-10.6,15.9-23.39,15.9-38.37s-5.3-27.93-15.9-38.53c-10.6-10.6-23.39-15.9-38.37-15.9s-27.93,5.3-38.53,15.9Z"/>
           </g>
         </svg>
+        </div>
       </div>
 
       <div class="wipe-fill" aria-hidden="true"></div>
-      <svg class="wipe" viewBox="78 100 1257 507" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-        <path d="M1308.22,192.53l-121.65-70.24c-9.04-5.22-20.33,1.3-20.33,11.74v140.47c0,10.43,11.3,16.96,20.33,11.74l121.65-70.24c9.04-5.22,9.04-18.26,0-23.48Z"/>
-      </svg>
+      <!-- .hero-logo-triangle: par de .hero-logo-word acima — mesma tween,
+           mesmo y/opacity a cada frame, sem tocar no transform próprio do
+           .wipe (que continua 100% do JS de posicionamento/crescimento). -->
+      <div class="hero-logo-triangle">
+        <svg class="wipe" viewBox="78 100 1257 507" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <path d="M1308.22,192.53l-121.65-70.24c-9.04-5.22-20.33,1.3-20.33,11.74v140.47c0,10.43,11.3,16.96,20.33,11.74l121.65-70.24c9.04-5.22,9.04-18.26,0-23.48Z"/>
+        </svg>
+      </div>
 
       <!-- Reveal em TEXTO HTML (Outfit 900) — calibrado por JS p/ bater o layout. -->
       <div class="reveal-html" aria-label="Apostilamento de Haia, sem sair de casa">
@@ -244,6 +255,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="assets/js/site.js?v=4"></script>
+<script src="assets/js/site.js?v=6"></script>
 </body>
 </html>
