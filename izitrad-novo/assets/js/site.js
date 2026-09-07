@@ -950,8 +950,10 @@ function initDocDrag(root, tilt){
   }
   function onMove(e){
     if(!dragging) return;
-    const dx=Math.max(-MAX_DRAG, Math.min(MAX_DRAG, startDX+(e.clientX-startPX)));
-    const dy=Math.max(-MAX_DRAG, Math.min(MAX_DRAG, startDY+(e.clientY-startPY)));
+    let dx=startDX+(e.clientX-startPX);
+    let dy=startDY+(e.clientY-startPY);
+    const distance=Math.hypot(dx,dy); // clamp circular — preserva a direção, só limita o raio
+    if(distance>MAX_DRAG){ dx=(dx/distance)*MAX_DRAG; dy=(dy/distance)*MAX_DRAG; }
     ret.x=dx; ret.y=dy;
     tilt.setDragOffset(dx,dy);
   }
