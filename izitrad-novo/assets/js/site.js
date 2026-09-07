@@ -849,38 +849,125 @@ function initSolucao(root){
    elementos próprios — os três sistemas de transform nunca disputam a
    mesma propriedade, e nada DENTRO da folha se move independente dela. */
 function initDocInteraction(root){
-  if(!matchMedia('(hover: hover) and (pointer: fine)').matches) return; // touch: sem tilt, só scroll
+  if(!matchMedia('(hover: hover) and (pointer: fine)').matches) return null; // touch: sem tilt, só scroll
   const stage = root.querySelector('.doc-stage');
   const inner = root.querySelector('.doc-mouse');
-  if(!stage || !inner) return;
+  if(!stage || !inner) return null;
   const shadow = root.querySelector('.doc-shadow');
 
   const MAX_ROT_Y=10, MAX_ROT_X=8, MAX_T=6, MAX_SHADOW_T=4;
   const EASE={duration:0.9,ease:'power3'};
+  // canal de x/y tem duração PRÓPRIA (mais curta) — é o mesmo canal que o
+  // drag agora usa (soma tiltX+dragX), e precisa responder rápido/direto
+  // ao ponteiro; a rotação do tilt (dominante, visualmente) continua em
+  // 0.9s, inalterada.
+  const XY_EASE={duration:0.2,ease:'power3.out'};
   const setRotY = gsap.quickTo(inner,'rotationY',EASE);
   const setRotX = gsap.quickTo(inner,'rotationX',EASE);
-  const setTX   = gsap.quickTo(inner,'x',EASE);
-  const setTY   = gsap.quickTo(inner,'y',EASE);
+  const setTX   = gsap.quickTo(inner,'x',XY_EASE);
+  const setTY   = gsap.quickTo(inner,'y',XY_EASE);
   const setShX  = shadow ? gsap.quickTo(shadow,'x',EASE) : null;
   const setShY  = shadow ? gsap.quickTo(shadow,'y',EASE) : null;
 
+  // .doc-mouse continua sendo o ÚNICO dono do seu x/y — applyXY() é o ÚNICO
+  // canal de escrita, alimentado pela SOMA tiltX+dragX / tiltY+dragY (ver
+  // initDocDrag). Durante o drag (suspended) escreve DIRETO via gsap.set —
+  // setTX/setTY (quickTo, com a própria easing) já são a suavização do
+  // tilt; encadear os dois (drag → quickTo → tela) somava duas easings e
+  // fazia o documento "ultrapassar" visivelmente antes de assentar. Com
+  // tiltX/Y sempre 0 durante o drag, gsap.set aqui vira só o drag puro —
+  // nenhuma disputa de propriedade, nenhum elemento novo.
+  let tiltX=0, tiltY=0, dragX=0, dragY=0, suspended=false;
+  function applyXY(){
+    if(suspended) gsap.set(inner,{x:tiltX+dragX,y:tiltY+dragY});
+    else{ setTX(tiltX+dragX); setTY(tiltY+dragY); }
+  }
+
   function onMove(e){
+    if(suspended) return;
     const r = stage.getBoundingClientRect(); // .doc-stage se move no scroll — mede a cada evento, não por rAF
     if(!r.width || !r.height) return;
     const cx = Math.max(-1,Math.min(1, ((e.clientX-r.left)/r.width)*2-1));
     const cy = Math.max(-1,Math.min(1, ((e.clientY-r.top)/r.height)*2-1));
     setRotY(cx*MAX_ROT_Y);
     setRotX(-cy*MAX_ROT_X);
-    setTX(cx*MAX_T);
-    setTY(cy*MAX_T);
+    tiltX = cx*MAX_T; tiltY = cy*MAX_T;
+    applyXY();
     if(setShX){ setShX(-cx*MAX_SHADOW_T); setShY(-cy*MAX_SHADOW_T); }
   }
   function onLeave(){
-    setRotY(0); setRotX(0); setTX(0); setTY(0);
+    if(suspended) return;
+    setRotY(0); setRotX(0);
+    tiltX=0; tiltY=0; applyXY();
     if(setShX){ setShX(0); setShY(0); }
   }
   stage.addEventListener('pointermove', onMove, {passive:true});
   stage.addEventListener('pointerleave', onLeave, {passive:true});
+
+  return {
+    setSuspended(v){
+      suspended=v;
+      if(v){
+        // instantâneo (gsap.set, não a easing de 0.9s do tilt) — senão o
+        // tilt fica "desligando" devagar por cima do drag já em andamento.
+        gsap.set(inner,{rotationX:0,rotationY:0});
+        tiltX=0; tiltY=0; applyXY();
+        if(shadow) gsap.set(shadow,{x:0,y:0});
+      }
+    },
+    setDragOffset(dx,dy){ dragX=dx; dragY=dy; applyXY(); }
+  };
+}
+
+/* ------------------- 03c · DRAG NO DOCUMENTO ------------------------- */
+/* Nenhum elemento/wrapper novo — escreve só via tilt.setDragOffset, que
+   soma no MESMO x/y de .doc-mouse que o tilt já usa (ver initDocInteraction
+   acima). Versão mínima de validação: sem rotação por velocidade, sem
+   inércia — só acompanha o ponteiro (clamp ±70px) e volta com um gsap.to
+   simples. Se não houver tilt (touch/reduced-motion), o drag não faz nada
+   (return early) — a folha só reage a mouse fino, igual ao tilt hoje. */
+function initDocDrag(root, tilt){
+  if(!tilt) return;
+  const docEl = root.querySelector('.doc');
+  if(!docEl) return;
+
+  const MAX_DRAG=70;
+  let dragging=false, startPX=0, startPY=0, startDX=0, startDY=0;
+  const ret={x:0,y:0}; // proxy do retorno — onUpdate soma via tilt.setDragOffset
+
+  function onDown(e){
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    // sem isso, arrastar com mouse real seleciona o texto do documento por
+    // baixo (fica um destaque azul por cima da página, parece um bug visual).
+    e.preventDefault();
+    gsap.killTweensOf(ret); // interrompe o retorno em andamento, se houver
+    dragging=true;
+    try{ docEl.setPointerCapture(e.pointerId); }catch(err){}
+    startPX=e.clientX; startPY=e.clientY; // posição inicial do ponteiro
+    startDX=ret.x; startDY=ret.y;         // offset visual atual do documento
+    tilt.setSuspended(true);
+    docEl.classList.add('is-dragging');
+  }
+  function onMove(e){
+    if(!dragging) return;
+    const dx=Math.max(-MAX_DRAG, Math.min(MAX_DRAG, startDX+(e.clientX-startPX)));
+    const dy=Math.max(-MAX_DRAG, Math.min(MAX_DRAG, startDY+(e.clientY-startPY)));
+    ret.x=dx; ret.y=dy;
+    tilt.setDragOffset(dx,dy);
+  }
+  function onUp(e){
+    if(!dragging) return;
+    dragging=false;
+    docEl.classList.remove('is-dragging');
+    try{ docEl.releasePointerCapture(e.pointerId); }catch(err){}
+    gsap.to(ret,{x:0,y:0,duration:.6,ease:'power3.out',
+      onUpdate(){ tilt.setDragOffset(ret.x,ret.y); },
+      onComplete(){ tilt.setSuspended(false); }});
+  }
+  docEl.addEventListener('pointerdown', onDown);
+  docEl.addEventListener('pointermove', onMove);
+  docEl.addEventListener('pointerup', onUp);
+  docEl.addEventListener('pointercancel', onUp);
 }
 
 /* ------------------------------ ORQUESTRAÇÃO ------------------------- */
@@ -915,7 +1002,7 @@ function initDocInteraction(root){
     document.querySelectorAll('.sec[data-sec]').forEach(sec=>{
       const kind=sec.dataset.sec;
       if(kind==='hero-s2-story') initHeroS2Story(sec);
-      else if(kind==='solucao'){ initSolucao(sec); initDocInteraction(sec); }
+      else if(kind==='solucao'){ initSolucao(sec); initDocDrag(sec, initDocInteraction(sec)); }
     });
     if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>ScrollTrigger.refresh()); }
   }
