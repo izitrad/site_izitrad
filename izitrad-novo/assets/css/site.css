@@ -50,6 +50,7 @@ img,svg{display:block}
 .site-header .menu-toggle span{position:absolute;left:calc(50% - 8px);top:50%;display:block;width:20px;height:2px;background:#fff;border-radius:2px;transition:.3s;transform:translate(-50%,-50%)}
 .site-header .menu-toggle span:nth-of-type(1){margin-top:-6px}
 .site-header .menu-toggle span:nth-of-type(3){margin-top:6px}
+.site-header .nav-backdrop{position:fixed;inset:0;opacity:0;pointer-events:none;display:none}
 
 @media(max-width:900px){
   .site-header .main-nav{position:fixed;inset:0 0 0 auto;width:min(82vw,330px);height:100vh;flex-direction:column;align-items:flex-start;justify-content:center;gap:22px;margin:0;padding:96px 34px 34px;background:#fff;transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)}
@@ -69,7 +70,8 @@ img,svg{display:block}
    lista position:absolute logo abaixo, fade+slide de 8px via classe) ---- */
 .site-header[data-compact] .header-actions{display:none}
 .site-header[data-compact] .header-inner{height:112px;padding:0}
-.site-header[data-compact] .menu-toggle{display:block;margin-right:34px;pointer-events:auto}
+.site-header[data-compact] .menu-toggle{display:block;margin-right:34px;pointer-events:auto;animation:menuToggleIn .32s cubic-bezier(.16,1,.3,1) both}
+@keyframes menuToggleIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
 .site-header[data-compact] .brand-logo{display:none}
 /* sem faixa full-width: a "caixa" do header encolhe pro tamanho do próprio
    botão e flutua ancorada no canto — igual ao .corner-bar da referência
@@ -78,9 +80,22 @@ img,svg{display:block}
    do espaço vazio; volta a "auto" só nos elementos clicáveis. */
 .site-header[data-compact]{left:auto;right:0;width:max-content;background:none;backdrop-filter:none;border-bottom:none;box-shadow:none;pointer-events:none;opacity:1!important}
 .site-header[data-compact] .main-nav{pointer-events:auto}
-.site-header[data-compact] .main-nav{position:absolute;top:100%;right:20px;left:auto;height:auto;width:max-content;min-width:168px;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;margin:8px 0 0;padding:8px;background:#141416;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .25s,transform .25s,visibility .25s}
-.site-header[data-compact][data-nav-open] .main-nav{opacity:1;visibility:visible;transform:translateY(0)}
-.site-header[data-compact] .main-nav a{padding:9px 16px;font-size:13px;border-radius:10px;color:#fff;transition:background .2s,color .25s}
+.site-header[data-compact] .main-nav{position:absolute;top:100%;right:20px;left:auto;height:auto;width:max-content;min-width:168px;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;margin:8px 0 0;padding:8px;background:#141416;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .16s ease-in,transform .16s ease-in,visibility .16s}
+.site-header[data-compact][data-nav-open] .main-nav{opacity:1;visibility:visible;transform:translateY(0);transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1),visibility .3s}
+/* backdrop atrás do dropdown compacto — some/aparece independente do resto
+   do header (que tem pointer-events:none), fechar sempre mais rápido/direto
+   que abrir (pedido explícito). */
+.site-header[data-compact] .nav-backdrop{display:block;background:rgba(10,10,20,.4);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);transition:opacity .16s ease-in}
+.site-header[data-compact][data-nav-open] .nav-backdrop{opacity:1;transition:opacity .3s cubic-bezier(.16,1,.3,1)}
+.site-header[data-compact] .main-nav a{opacity:0;transform:translateY(6px);padding:9px 16px;font-size:13px;border-radius:10px;color:#fff;transition:opacity .14s ease,transform .14s ease,background .2s,color .25s}
+.site-header[data-compact][data-nav-open] .main-nav a{opacity:1;transform:translateY(0);transition:opacity .18s ease-out,transform .18s ease-out,background .2s,color .25s}
+.site-header[data-compact][data-nav-open] .main-nav a:nth-child(1){transition-delay:.05s}
+.site-header[data-compact][data-nav-open] .main-nav a:nth-child(2){transition-delay:.08s}
+.site-header[data-compact][data-nav-open] .main-nav a:nth-child(3){transition-delay:.11s}
+.site-header[data-compact][data-nav-open] .main-nav a:nth-child(4){transition-delay:.14s}
+.site-header[data-compact][data-nav-open] .main-nav a:nth-child(5){transition-delay:.17s}
+.site-header[data-compact][data-nav-open] .main-nav a:nth-child(6){transition-delay:.2s}
+.site-header[data-compact][data-nav-open] .main-nav a:nth-child(7){transition-delay:.23s}
 .site-header[data-compact] .main-nav a:hover{background:rgba(255,0,153,.18);color:#fff}
 .site-header[data-compact] .main-nav a:not(:first-child)::before{display:none}
 .site-header[data-compact] .main-nav a::after{display:none}
