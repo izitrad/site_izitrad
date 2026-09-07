@@ -479,11 +479,12 @@ function initSolucao(root){
     // bem visível → desce de volta → reta final. Duas transições de propósito.
     {key:'pc2', anchor:'lUpper', dir0:{x:-1,y:0}, dir1:{x:-1,y:0}, card:'.c2',
       stair:{f0:.20, f1:.40, f2:.64, f3:.84, over:-34}},
-    // 03 — a mais discreta: quebra curta concentrada na região CENTRAL do
-    // percurso (36%→68%, platô abaixo), com retas evidentes antes e depois
-    // — nunca uma curva grudada no card.
+    // 03 — quebra concentrada na região CENTRAL do percurso (32%→72%,
+    // platô abaixo), com retas evidentes antes e depois — plano maior e
+    // desnível mais visível que a versão anterior (estava enxuta demais),
+    // mas ainda sem uma curva grudada no card.
     {key:'pc3', anchor:'rMid',   dir0:{x:1,y:0}, dir1:{x:1,y:0}, card:'.c3',
-      stair:{f0:.36, f1:.46, f2:.56, f3:.68, over:24}},
+      stair:{f0:.32, f1:.44, f2:.60, f3:.72, over:38}},
     // 04 — espelho do 02: reta → desce (platô abaixo dos dois pontos) →
     // reta intermediária longa → sobe de volta → reta final.
     {key:'pc4', anchor:'lLower', dir0:{x:-1,y:0}, dir1:{x:-1,y:0}, card:'.c4',
