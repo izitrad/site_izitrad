@@ -163,13 +163,26 @@ img,svg{display:block}
 .hero-layer .hero-logo-triangle{position:absolute;inset:0;z-index:3}
 .hero-layer .wipe{position:absolute;overflow:visible;visibility:hidden}
 .hero-layer .wipe path{fill:var(--rosa)}
-.hero-layer .reveal-copy{position:absolute;z-index:6;left:50%;bottom:14%;transform:translateX(-50%);width:min(760px,86vw);text-align:center;pointer-events:none;font-family:var(--copy-font),'DM Sans',sans-serif}
+/* vazio à esquerda do bloco "SEM SAIR/DE CASA" (não mais centralizado nem
+   no rodapé) — na referência o parágrafo fica na MESMA altura vertical de
+   "DE CASA" (não embaixo de tudo), por isso top (não bottom) alinhado à
+   posição y de "decasa" no frame (489/1080≈45%); só POSIÇÃO mudou, fonte/
+   tamanho intocados. width para antes de onde "SEM"/"DE CASA" começam
+   (758/1920≈39%) pra nunca sobrepor o bloco branco. */
+.hero-layer .reveal-copy{position:absolute;z-index:6;left:6%;top:45%;width:min(380px,33vw);text-align:left;pointer-events:none;font-family:var(--copy-font),'DM Sans',sans-serif}
 .hero-layer .reveal-copy p{opacity:0;color:#fff;font-weight:300;font-size:25px;line-height:1.5}
 .hero-layer .reveal-copy .btn{opacity:0;display:inline-block;margin-top:2.2rem;background:#fff;color:var(--rosa);font-weight:700;padding:.85rem 1.7rem;border-radius:999px;text-decoration:none;pointer-events:auto;box-shadow:0 10px 30px rgba(0,0,0,.15)}
 .hero-layer .reveal-html{position:absolute;z-index:5;inset:0;overflow:hidden;pointer-events:none}
 .hero-layer .reveal-html .hr-frame{position:absolute;top:50%;left:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center}
 .hero-layer .ht{position:absolute;transform-origin:left top;opacity:0}
-.hero-layer .ht__in{display:inline-block;font-family:var(--reveal-font),sans-serif;font-weight:var(--reveal-weight,700);line-height:1;white-space:nowrap;transform-origin:left top;text-box-trim:trim-both;text-box-edge:cap alphabetic}
+/* letter-spacing negativo (não a fonte em si) DE PROPÓSITO: cada palavra é
+   esticada (scaleX) até bater a largura-alvo (ver calibrateHTML) — um
+   tracking mais fechado no texto de origem deixa a palavra "nua" mais
+   estreita, então o calibrador precisa esticar MAIS pra chegar na mesma
+   largura final: letras individualmente mais "largas/gordas", sem mudar o
+   tamanho final da palavra. Efeito visual pedido: letras mais largas, como
+   na referência. */
+.hero-layer .ht__in{display:inline-block;font-family:var(--reveal-font),sans-serif;font-weight:var(--reveal-weight,700);line-height:1;letter-spacing:-.03em;white-space:nowrap;transform-origin:left top;text-box-trim:trim-both;text-box-edge:cap alphabetic}
 .hero-layer .hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:#000;opacity:.55;animation:hintPulse 1.8s ease-in-out infinite}
 @keyframes hintPulse{50%{opacity:.15;transform:translate(-50%,4px)}}
 
