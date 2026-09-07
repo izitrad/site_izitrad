@@ -189,6 +189,31 @@ img,svg{display:block}
 .copy h2,.s3-headline,.s3-close h2{font-family:'Outfit';font-weight:900;line-height:.88;letter-spacing:-.045em}
 .copy em,.s3-headline span,.s3-close h2 span{color:var(--pink);font-style:normal}
 .section-id{position:absolute;top:5%;left:50%;transform:translateX(-50%);color:var(--pink);z-index:4}
+/* Efeito "rolling text" dos rótulos de seção (.section-id/.s3-id) — cada
+   letra é uma janela (.rl-window) que recorta uma coluna (.rl-track) com a
+   MESMA letra repetida N vezes (.rl-cell, 0.8em cada); o JS sobe essa
+   coluna N voltas via a custom property --k (ver buildRollingLabel em
+   site.js) até ela assentar de volta na mesma letra — dá um "giro" de
+   entrada sem nunca mostrar texto errado/embaralhado. .rl-sizer é uma
+   cópia invisível (line-height próprio) que define a caixa real do
+   caractere, pro layout (word/letter-spacing) ficar idêntico a texto puro. */
+.rl-wrap{display:inline-block;white-space:nowrap}
+.rl-char{position:relative;display:inline-block;vertical-align:top;line-height:.8;transform-origin:center}
+.rl-sizer{display:block;visibility:hidden}
+.rl-window{position:absolute;inset:0;overflow:hidden}
+.rl-track{display:block;will-change:transform;transform:translate3d(0,calc(-.8em*var(--k,0)),0)}
+.rl-cell{display:block;width:100%;height:.8em;text-align:center}
+/* só nos RÓTULOS DE CAPÍTULO (.section-id/.s3-id/.intro-eyebrow) a célula
+   precisa ser maior (1.6em, não 0.8em): medido via
+   Range.getBoundingClientRect() no navegador, o "Ã" de "A SOLUÇÃO" cortava
+   no topo com 0.8/1/1.3em — a caixa NATURAL da linha do texto (quem a
+   janela precisa cobrir) é maior que a tinta do glifo. NÃO generalizar pro
+   resto (ex.: "Seu documento/Seu destino/O caminho certo" na Hero) — lá o
+   0.8em original já é correto e qualquer aumento desalinha o layout
+   apertado daquelas linhas. */
+.section-id .rl-char, .s3-id .rl-char, .intro-eyebrow .rl-char{line-height:1.6}
+.section-id .rl-track, .s3-id .rl-track, .intro-eyebrow .rl-track{transform:translate3d(0,calc(-1.6em*var(--k,0)),0)}
+.section-id .rl-cell, .s3-id .rl-cell, .intro-eyebrow .rl-cell{height:1.6em}
 .copy{position:absolute;left:4%;top:21%;width:32%;z-index:4}
 .copy h2{font-size:clamp(46px,5vw,90px);margin:0 0 24px;text-transform:uppercase}
 /* headline nova (2 linhas, sem parágrafo) é mais curta E mais leve que a

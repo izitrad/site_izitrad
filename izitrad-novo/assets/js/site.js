@@ -187,6 +187,14 @@ function initHeroS2Story(root){
   const header= document.querySelector('[data-header]');
   const ilDoc=root.querySelector('.il--doc'), ilDest=root.querySelector('.il--dest'), ilCam=root.querySelector('.il--cam');
   const introCopy=root.querySelector('.intro-copy'), introLink=root.querySelector('.intro-link');
+  const introEyebrow=root.querySelector('.intro-eyebrow');
+  // giro de entrada das letras (rolling text — ver ROLLING TEXT acima),
+  // por CIMA do slide/fade que já existia (fromTo ilDoc/ilDest/ilCam mais
+  // abaixo) — não troca a animação de entrada, soma a ela. O rótulo
+  // "02 — O CAMINHO" (intro-eyebrow) nunca teve entrada nenhuma (só
+  // aparece junto com a camada) — aqui ele ganha a mesma, sozinho.
+  const ilDocReels=buildRollingLabel(ilDoc), ilDestReels=buildRollingLabel(ilDest), ilCamReels=buildRollingLabel(ilCam);
+  const introEyebrowReels=buildRollingLabel(introEyebrow);
 
   // calibra cada trecho HTML pro tamanho/posição exato medido no SVG original
   const DESKTOP_MIN = 900;
@@ -382,11 +390,82 @@ function initHeroS2Story(root){
     .fromTo(introCopy,{autoAlpha:0,y:40},IN2,PHASE2_START+0.90)
     .fromTo(introLink,{autoAlpha:0,y:40},IN2,PHASE2_START+1.05)
     .to({},{duration:0.7},PHASE2_START+1.4);
+  addRollingTween(tl, ilDocReels,  PHASE2_START+0.10);
+  addRollingTween(tl, ilDestReels, PHASE2_START+0.35);
+  addRollingTween(tl, ilCamReels,  PHASE2_START+0.60);
+  addRollingTween(tl, introEyebrowReels, PHASE2_START+0.10);
+}
+
+/* --------------- ROLLING TEXT (giro de entrada dos rótulos) ----------- */
+/* Portado de um componente React (rolling-text.tsx, GSAP) pra JS puro:
+   cada letra vira uma "janela" (.rl-window) que recorta uma coluna
+   (.rl-track) com a MESMA letra repetida N vezes (.rl-cell) — a coluna
+   sobe N voltas via a custom property --k e assenta de volta na letra
+   certa, dando um giro de entrada sem nunca mostrar texto errado/
+   embaralhado. PRNG determinístico (mulberry32) só pra variar
+   cycles/duration por letra de forma ESTÁVEL (mesmo resultado sempre,
+   sem Math.random) — mesma técnica do componente original. */
+const rlRand = seed => () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+// reconstrói o texto do elemento em spans (ver .rl-* no site.css) e
+// devolve um "carretel" por letra (sem mexer em espaços) pra animar depois.
+function buildRollingLabel(el, opts){
+  // rótulo tem só 14px — cycles/duration mais generosos que o componente
+  // original de propósito, senão o giro passa despercebido nesse tamanho.
+  const o = Object.assign({minCycles:4, cycleVariance:4, duration:.5, durationVariance:.35}, opts);
+  const chars = Array.from(el.textContent);
+  el.textContent = '';
+  const wrap = document.createElement('span');
+  wrap.className = 'rl-wrap';
+  const reels = [];
+  chars.forEach((ch,i)=>{
+    if(ch===' '){ wrap.appendChild(document.createTextNode(' ')); return; }
+    const rand = rlRand(i*1013+7);
+    const cycles = o.minCycles + Math.floor(rand()*o.cycleVariance);
+    const dur = o.duration + rand()*o.durationVariance;
+    const charEl=document.createElement('span'); charEl.className='rl-char';
+    const sizer=document.createElement('span'); sizer.className='rl-sizer'; sizer.textContent=ch;
+    const win=document.createElement('span'); win.className='rl-window';
+    const track=document.createElement('span'); track.className='rl-track';
+    track.style.setProperty('--k','0');
+    for(let c=0;c<=cycles;c++){ const cell=document.createElement('span'); cell.className='rl-cell'; cell.textContent=ch; track.appendChild(cell); }
+    win.appendChild(track); charEl.appendChild(sizer); charEl.appendChild(win); wrap.appendChild(charEl);
+    reels.push({track, char:charEl, to:cycles, duration:dur});
+  });
+  el.appendChild(wrap);
+  return reels;
+}
+// injeta os tweens (um "scroll.k" por letra, levemente escalonados) na
+// TIMELINE SCRUBADA já existente da seção — nada de tempo real, mesmo
+// motor (scrub ligado ao scroll) de todo o resto do site.
+function addRollingTween(tl, reels, at, stagger){
+  stagger = stagger||.045;
+  reels.forEach((r,i)=>{
+    const t0 = at+i*stagger;
+    const scroll={k:0};
+    tl.to(scroll,{k:r.to, duration:r.duration, ease:'expo.out',
+      onUpdate(){ r.track.style.setProperty('--k', String(scroll.k)); }
+    }, t0);
+    // no tamanho pequeno do rótulo (14px) o giro sozinho quase não se nota
+    // — a letra também cresce/borra um pouco enquanto gira e assenta de
+    // volta no tamanho normal junto com o fim do giro (mesma at/duration).
+    tl.fromTo(r.char,{scale:1.22,filter:'blur(3px)'},{scale:1,filter:'blur(0px)',duration:r.duration,ease:'expo.out'},t0);
+  });
 }
 
 /* ----------------------------- 03 · A SOLUÇÃO ------------------------ */
 function initSolucao(root){
   const q = gsap.utils.selector(root);
+  // rótulos "02 / O CAMINHO" e "03 / A SOLUÇÃO" (ver ROLLING TEXT acima) —
+  // sem giro em prefers-reduced-motion (fica só o texto puro, comportamento
+  // de antes).
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const idReels   = reduceMotion ? null : buildRollingLabel(root.querySelector('.section-id'));
+  const s3IdReels = reduceMotion ? null : buildRollingLabel(root.querySelector('.s3-id'));
   const veinsSvg = root.querySelector('.veins');
   const svgNS='http://www.w3.org/2000/svg';
   const FINAL_SCALE=0.55;
@@ -689,6 +768,9 @@ function initSolucao(root){
   gsap.set(q('.doc-stage'),{opacity:0,y:70,scale:.92});
   tl.to(q('.copy-a'),{opacity:1,y:0,duration:.42,ease:'power2.out'},0)
     .to(q('.doc-stage'),{opacity:1,y:0,scale:1,duration:.75,ease:'power2.out'},0.62);
+  // rótulo "02 / O CAMINHO" já nasce visível (sem gsap.set/opacity antes
+  // disso) — o giro das letras (rolling text) é a própria entrada dele.
+  if(idReels) addRollingTween(tl, idReels, 0);
   const INTRO=0.9;
 
   /* 02 — os 5 caminhos, um de cada vez: linha desenha → card nasce dela →
@@ -732,8 +814,11 @@ function initSolucao(root){
     .to(q('.chip, .caminhos-svg'),{opacity:0,duration:.4},4.4+INTRO+CAMINHOS_SHIFT);
 
   /* 03 — chegada + headline + halo */
-  tl.to(q('.s3-id'),{opacity:1,duration:.5},4.8+INTRO+CAMINHOS_SHIFT)
-    .fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9+INTRO+CAMINHOS_SHIFT)
+  // "03 / A SOLUÇÃO" ficava opacity 0→1 (fade simples); agora aparece de
+  // uma vez (set, sem tween) e o giro das letras é que faz a entrada.
+  tl.set(q('.s3-id'),{opacity:1},4.8+INTRO+CAMINHOS_SHIFT);
+  if(s3IdReels) addRollingTween(tl, s3IdReels, 4.8+INTRO+CAMINHOS_SHIFT);
+  tl.fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9+INTRO+CAMINHOS_SHIFT)
     .fromTo(q('.s3-sub'),{opacity:0,x:-30},{opacity:1,x:0,duration:.8},5.2+INTRO+CAMINHOS_SHIFT)
     .fromTo(q('.halo'),{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.0},5.3+INTRO+CAMINHOS_SHIFT);
 
