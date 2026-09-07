@@ -169,11 +169,11 @@ img,svg{display:block}
    posição y de "decasa" no frame (489/1080≈45%); só POSIÇÃO mudou, fonte/
    tamanho intocados. width para antes de onde "SEM"/"DE CASA" começam
    (758/1920≈39%) pra nunca sobrepor o bloco branco. */
-.hero-layer .reveal-copy{position:absolute;z-index:6;left:6%;top:45%;width:min(510px,33vw);text-align:left;pointer-events:none;font-family:var(--copy-font),'DM Sans',sans-serif}
+.hero-layer .reveal-copy{position:absolute;z-index:6;left:6%;top:50%;width:min(510px,33vw);text-align:left;pointer-events:none;font-family:var(--copy-font),'DM Sans',sans-serif}
 .hero-layer .reveal-copy p{opacity:0;color:#fff;font-weight:300;font-size:25px;line-height:1.5}
 .hero-layer .reveal-copy .btn{opacity:0;display:inline-block;margin-top:2.2rem;background:#fff;color:var(--rosa);font-weight:700;padding:.85rem 1.7rem;border-radius:999px;text-decoration:none;pointer-events:auto;box-shadow:0 10px 30px rgba(0,0,0,.15)}
 .hero-layer .reveal-html{position:absolute;z-index:5;inset:0;overflow:hidden;pointer-events:none}
-.hero-layer .reveal-html .hr-frame{position:absolute;top:50%;left:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center}
+.hero-layer .reveal-html .hr-frame{position:absolute;top:55%;left:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center}
 .hero-layer .ht{position:absolute;transform-origin:left top;opacity:0}
 /* letter-spacing negativo (não a fonte em si) DE PROPÓSITO: cada palavra é
    esticada (scaleX) até bater a largura-alvo (ver calibrateHTML) — um
