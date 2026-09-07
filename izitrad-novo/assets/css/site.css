@@ -187,7 +187,7 @@ img,svg{display:block}
 @keyframes hintPulse{50%{opacity:.15;transform:translate(-50%,4px)}}
 
 .s2-layer .intro-eyebrow{position:absolute;top:5%;left:50%;transform:translateX(-50%);font-size:14px;letter-spacing:.18em;font-weight:700;color:#fff}
-.s2-layer .intro-h1{font-family:var(--reveal-font),'Outfit',sans-serif;font-weight:900;font-size:clamp(58px,8.6vw,150px);line-height:.88;letter-spacing:-.045em;margin:25px 0;text-transform:uppercase}
+.s2-layer .intro-h1{font-family:var(--reveal-font),'Outfit',sans-serif;font-weight:900;font-size:clamp(58px,8.6vw,150px);line-height:.88;letter-spacing:-.02em;margin:25px 0;text-transform:uppercase}
 .s2-layer .intro-h1 .il{display:block;opacity:0;will-change:transform,opacity}
 .s2-layer .intro-h1 .il--dest{color:var(--rosa)}
 .s2-layer .intro-copy{font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:400;font-size:clamp(17px,1.5vw,24px);line-height:1.5;max-width:620px;opacity:0}
