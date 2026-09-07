@@ -243,7 +243,7 @@ img,svg{display:block}
 .chip .badge-num{opacity:0}
 .chip b{display:block;font-size:13px}
 .chip-desc{display:block;font-size:11px;margin-top:6px;color:#666}
-.c1{left:69%;top:20%}.c2{left:17%;top:37%}.c3{left:72%;top:47%}.c4{left:13%;top:69%}.c5{left:69%;top:73%}
+.c1{left:80%;top:20%}.c2{left:13%;top:37%}.c3{left:83%;top:47%}.c4{left:9%;top:69%}.c5{left:80%;top:73%}
 /* linhas orgânicas dos 5 caminhos — svg único, paths criados/atualizados
    por JS (mesma técnica das .veins da Solução: d calculado, comprimento
    real via getTotalLength, desenho via uma <mask> — ver site.js). Fino,

@@ -469,15 +469,29 @@ function initSolucao(root){
     // key usa prefixo "pc" (path-caminho) DE PROPÓSITO — "c1".."c5" puro
     // colide com a classe dos CARDS (.c1..c5) e, como o <path> vem antes
     // no DOM, root.querySelector('.c1') pegava a LINHA em vez do CARD.
-    // 01 — reta longa pra direita → curva suave aberta pra CIMA → reta final curta.
-    {key:'pc1', anchor:'rTop',   dir0:{x:1,y:0},    f0:.50, dir1:{x:1,y:0},    f1:.16, bend:.42, card:'.c1'},
-    // 02 — reta longa pra esquerda (o mais longo) → uma mudança suave de nível → reta final.
-    {key:'pc2', anchor:'lUpper', dir0:{x:-1,y:0},   f0:.56, dir1:{x:-1,y:0},   f1:.20, bend:.42, card:'.c2'},
-    // 03 — parecido com 01, mas curva mais discreta (menos variação vertical).
-    {key:'pc3', anchor:'rMid',   dir0:{x:1,y:0},    f0:.58, dir1:{x:1,y:0},    f1:.18, bend:.36, card:'.c3'},
-    {key:'pc4', anchor:'lLower', dir0:{x:-1,y:.08}, f0:.52, dir1:{x:-1,y:.04}, f1:.20, bend:.38, card:'.c4'},
-    // 05 — o mais longo/elaborado: reta ampla → curva larga descendente → reta final.
-    {key:'pc5', anchor:'rLower', dir0:{x:1,y:.05},  f0:.55, dir1:{x:1,y:.08},  f1:.18, bend:.48, card:'.c5'}
+    // 01 — muda de altura CEDO (18%→34%, platô acima), percorre um trecho
+    // longo nesse novo nível até quase o card (68%) e só então volta pra
+    // reta final curta. Mesma gramática do 02/04 (stair), mas a quebra
+    // principal acontece perto do documento, não do card.
+    {key:'pc1', anchor:'rTop',   dir0:{x:1,y:0}, dir1:{x:1,y:0}, card:'.c1',
+      stair:{f0:.18, f1:.34, f2:.68, f3:.85, over:-30}},
+    // 02 — reta → sobe (platô acima dos dois pontos) → reta intermediária
+    // bem visível → desce de volta → reta final. Duas transições de propósito.
+    {key:'pc2', anchor:'lUpper', dir0:{x:-1,y:0}, dir1:{x:-1,y:0}, card:'.c2',
+      stair:{f0:.20, f1:.40, f2:.64, f3:.84, over:-34}},
+    // 03 — a mais discreta: quebra curta concentrada na região CENTRAL do
+    // percurso (36%→68%, platô abaixo), com retas evidentes antes e depois
+    // — nunca uma curva grudada no card.
+    {key:'pc3', anchor:'rMid',   dir0:{x:1,y:0}, dir1:{x:1,y:0}, card:'.c3',
+      stair:{f0:.36, f1:.46, f2:.56, f3:.68, over:24}},
+    // 04 — espelho do 02: reta → desce (platô abaixo dos dois pontos) →
+    // reta intermediária longa → sobe de volta → reta final.
+    {key:'pc4', anchor:'lLower', dir0:{x:-1,y:0}, dir1:{x:-1,y:0}, card:'.c4',
+      stair:{f0:.18, f1:.38, f2:.62, f3:.82, over:34}},
+    // 05 — mudança de nível mais pronunciada (26%→48%, platô acima) e
+    // platô mais longo que 01/03: a trajetória mais "elaborada" da direita.
+    {key:'pc5', anchor:'rLower', dir0:{x:1,y:0}, dir1:{x:1,y:0}, card:'.c5',
+      stair:{f0:.26, f1:.48, f2:.70, f3:.88, over:-46}}
   ];
   const ensureCamPath=(cls)=>{ let el=caminhosSvg.querySelector('path.'+cls); if(!el){ el=document.createElementNS(svgNS,'path'); el.setAttribute('class','cam-line '+cls); caminhosSvg.appendChild(el); } return el; };
   const ensureCamNode=(cls)=>{ let el=caminhosSvg.querySelector('circle.'+cls); if(!el){ el=document.createElementNS(svgNS,'circle'); el.setAttribute('class','cam-node '+cls); el.setAttribute('r','3.4'); caminhosSvg.appendChild(el); } return el; };
@@ -507,6 +521,21 @@ function initSolucao(root){
     const c2={x:mid2.x-ux1*bendLen, y:mid2.y-uy1*bendLen};
     const f=n=>n.toFixed(1);
     return `M${f(start.x)},${f(start.y)} L${f(mid1.x)},${f(mid1.y)} C${f(c1.x)},${f(c1.y)} ${f(c2.x)},${f(c2.y)} ${f(mid2.x)},${f(mid2.y)} L${f(end.x)},${f(end.y)}`;
+  }
+  // RETA → CURVA → RETA → CURVA → RETA (3 níveis, 2 transições) — usado nos
+  // caminhos que precisam mudar de altura duas vezes (ver CAMINHOS[].stair).
+  // f0..f3 = posições (fração de start→end) onde cada trecho reto começa/
+  // termina; midY = altura do platô intermediário. Cada curva pega tangente
+  // horizontal nas duas pontas (mesmo princípio do pathSTS), então as duas
+  // emendas reta/curva ficam sempre suaves, sem "bico".
+  function pathStair(start,end,midY,f0,f1,f2,f3,t){
+    t = t||.55;
+    const dx=end.x-start.x;
+    const xA=start.x+dx*f0, xC=start.x+dx*f1, xD=start.x+dx*f2, xF=start.x+dx*f3;
+    const xB=xA+(xC-xA)*t, xBc=xC-(xC-xA)*t;
+    const xE=xD+(xF-xD)*t, xFc=xF-(xF-xD)*t;
+    const f=n=>n.toFixed(1);
+    return `M${f(start.x)},${f(start.y)} L${f(xA)},${f(start.y)} C${f(xB)},${f(start.y)} ${f(xBc)},${f(midY)} ${f(xC)},${f(midY)} L${f(xD)},${f(midY)} C${f(xE)},${f(midY)} ${f(xFc)},${f(end.y)} ${f(xF)},${f(end.y)} L${f(end.x)},${f(end.y)}`;
   }
   function camDocAnchors(){
     const s=caminhosSvg.getBoundingClientRect();
@@ -555,7 +584,14 @@ function initSolucao(root){
       const n1=Math.hypot(c.dir1.x,c.dir1.y)||1;
       const end={x:center.x-c.dir1.x/n1*center.r, y:center.y-c.dir1.y/n1*center.r};
       const dist=Math.hypot(end.x-start.x, end.y-start.y);
-      const d=pathSTS(start, c.dir0, dist*c.f0, end, c.dir1, dist*c.f1, dist*c.bend);
+      let d;
+      if(c.stair){
+        const st=c.stair;
+        const midY = st.over<0 ? Math.min(start.y,end.y)+st.over : Math.max(start.y,end.y)+st.over;
+        d = pathStair(start, end, midY, st.f0, st.f1, st.f2, st.f3);
+      } else {
+        d = pathSTS(start, c.dir0, dist*c.f0, end, c.dir1, dist*c.f1, dist*c.bend);
+      }
       el.setAttribute('d', d);
       el.setAttribute('mask','url(#camMask-'+c.key+')');
       maskPath.setAttribute('d', d);
