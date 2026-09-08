@@ -309,7 +309,8 @@ img,svg{display:block}
 .doc__qr-cap{font-family:Outfit;font-weight:600;font-size:6.5px;letter-spacing:.1em;color:#15224c;text-transform:uppercase;text-align:center;line-height:1.3}
 
 .doc__map{padding:0 0 2%;position:relative}
-.doc__map>img:not(.doc__seal){display:block;width:100%;height:auto}
+.doc__map-crop{overflow:hidden;aspect-ratio:1774/1050}
+.doc__map-crop img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
 .doc__seal{position:absolute;z-index:2;pointer-events:none;left:90%;top:88%;transform:translate(-50%,-50%) rotate(15deg);width:74%;height:auto;display:block}
 
 .doc__meta{display:grid;grid-template-columns:1.1fr .7fr 1.55fr;padding:3% 0}
