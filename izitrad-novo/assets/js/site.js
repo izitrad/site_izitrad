@@ -574,7 +574,7 @@ function initSolucao(root){
       stair:{f0:.26, f1:.48, f2:.70, f3:.88, over:-46}}
   ];
   const ensureCamPath=(cls)=>{ let el=caminhosSvg.querySelector('path.'+cls); if(!el){ el=document.createElementNS(svgNS,'path'); el.setAttribute('class','cam-line '+cls); caminhosSvg.appendChild(el); } return el; };
-  const ensureCamNode=(cls)=>{ let el=caminhosSvg.querySelector('circle.'+cls); if(!el){ el=document.createElementNS(svgNS,'circle'); el.setAttribute('class','cam-node '+cls); el.setAttribute('r','3.4'); caminhosSvg.appendChild(el); } return el; };
+  const ensureCamNode=(cls)=>{ let el=caminhosSvg.querySelector('circle.'+cls); if(!el){ el=document.createElementNS(svgNS,'circle'); el.setAttribute('class','cam-node '+cls); el.setAttribute('r','7.2'); caminhosSvg.appendChild(el); } return el; };
   const ensureCamMask=(key)=>{
     let mask=caminhosDefs.querySelector('#camMask-'+key), path;
     if(!mask){
@@ -629,7 +629,7 @@ function initSolucao(root){
       lUpper:{x:L, y:cy-dr.height*0.14},  // 02 — esquerda, região de conteúdo/texto
       rMid:  {x:R, y:cy+dr.height*0.03},  // 03 — direita, centro
       lLower:{x:L, y:cy+dr.height*0.30},  // 04 — esquerda, etapa posterior
-      rLower:{x:R, y:cy+dr.height*0.40}   // 05 — direita, perto do rodapé rosa
+      rLower:{x:R+10, y:cy+dr.height*0.40} // 05 — direita, perto do rodapé rosa (canto arredondado: +10px pra fora)
     };
   }
   // centro do CRACHÁ numerado (.chip small), não o centro do card — é ele
