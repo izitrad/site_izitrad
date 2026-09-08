@@ -840,6 +840,27 @@ function initSolucao(root){
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});
 }
 
+/* ------------------- 03a2 · QR FAKE DO DOCUMENTO ---------------------- */
+/* Só visual (port do proto-doc.html) — padrão determinístico com os 3
+   "finder patterns" nos cantos, pra parecer um QR de verdade. Trocar por
+   um QR funcional depois. */
+function initDocQR(){
+  const svg = document.getElementById('docQr'); if(!svg) return;
+  const N = 21, NS = 'http://www.w3.org/2000/svg';
+  const finder = (ox,oy)=>{
+    for(let y=0;y<7;y++)for(let x=0;x<7;x++){
+      const edge = x===0||x===6||y===0||y===6;
+      const core = x>=2&&x<=4&&y>=2&&y<=4;
+      if(edge||core) put(ox+x,oy+y);
+    }
+  };
+  function put(x,y){const r=document.createElementNS(NS,'rect');r.setAttribute('x',x);r.setAttribute('y',y);r.setAttribute('width',1);r.setAttribute('height',1);r.setAttribute('fill','#0e0e12');svg.appendChild(r);}
+  let seed=1337; const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  const inFinder=(x,y)=>((x<8&&y<8)||(x>=N-8&&y<8)||(x<8&&y>=N-8));
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(inFinder(x,y))continue; if(rnd()>0.55)put(x,y); }
+  finder(0,0); finder(N-7,0); finder(0,N-7);
+}
+
 /* ------------------- 03b · INTERAÇÃO DE MOUSE NO DOCUMENTO ------------ */
 /* Isolada de propósito: .doc-stage é 100% do scroll (initSolucao acima) e
    .doc (a folha inteira: moldura, fundo, sombra, cantos, conteúdo) já roda
@@ -996,6 +1017,8 @@ function initDocDrag(root, tilt){
     // Hero→O Caminho (ver initHeroS2Story) — nada aqui, evita 2 sistemas
     // brigando pelo mesmo atributo (era a causa do bug corrigido antes).
   }
+
+  initDocQR();
 
   // Inits por seção — independentes. Sem GSAP ou reduced-motion → CSS estático.
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
