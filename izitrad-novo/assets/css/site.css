@@ -345,7 +345,7 @@ img,svg{display:block}
    abaixo), então a posição do crachá e a linha tracejada (que mede o
    crachá, não o box) não se movem. */
 .chip{position:absolute;width:300px;z-index:3;perspective:1100px}
-.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 22px 44px rgba(0,0,0,.20), 0 6px 16px rgba(0,0,0,.14);backface-visibility:hidden;width:fit-content;max-width:100%}
+.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 22px 44px rgba(0,0,0,.20), 0 6px 16px rgba(0,0,0,.14);backface-visibility:hidden;width:fit-content;max-width:100%;margin-top:26px}
 /* cards à esquerda do documento (02/04): o crachá fica do lado que
    encosta no documento (direita do card, não esquerda) e o corpo se abre
    pra esquerda — espelhado em relação a 01/03/05. Mesmo espelhamento vale
@@ -358,7 +358,7 @@ img,svg{display:block}
    ganham translateZ + parallax independentes no hover (initChipTilt) pra
    parecer que flutuam à frente do card, sem o card em si se deformar. */
 .chip-box b,.chip-box .chip-desc{will-change:transform;backface-visibility:hidden}
-.chip small{position:absolute;top:-38px;left:14px;width:50px;height:50px;border-radius:50%;background:transparent;color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2;overflow:visible}
+.chip small{position:absolute;top:-38px;left:14px;width:60px;height:60px;border-radius:50%;background:transparent;color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2;overflow:visible}
 .c2 small,.c4 small{left:auto;right:14px}
 /* crachá = esfera 3D (chip-spheres.js). Canvas preenche o mesmo círculo
    de 50px que .chip small já ocupava — nenhuma posição/tamanho mudou,
