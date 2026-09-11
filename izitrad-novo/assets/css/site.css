@@ -261,7 +261,7 @@ img,svg{display:block}
 .copy-a{top:8%;width:34%}
 .copy-a h2{font-size:clamp(28px,2.6vw,46px);font-weight:500;letter-spacing:-.01em;line-height:1.08}
 .copy-a h2 span{color:var(--pink);font-weight:600}
-.copy-a__subtitle{margin:12px 0 0 24px;font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:350;font-size:clamp(16px,1.35vw,20px);line-height:1.2;letter-spacing:.08em;text-transform:uppercase;color:#6a6a72}
+.copy-a__subtitle{margin:12px 0 0 24px;font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:350;font-size:clamp(16px,1.35vw,20px);line-height:1.2;letter-spacing:.08em;text-transform:uppercase;color:#1a1a1e}
 .copy-a__subtitle--2{margin-top:0}
 .doc-stage{position:absolute;left:50%;top:50%;width:min(31vw,470px);z-index:9;perspective:1000px;transform:translate(-50%,-50%) rotate(-4deg);will-change:transform}
 /* sombra reativa ao mouse — fica FORA do .doc (que tem overflow:hidden) pra
