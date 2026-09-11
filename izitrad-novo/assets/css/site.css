@@ -358,8 +358,17 @@ img,svg{display:block}
    ganham translateZ + parallax independentes no hover (initChipTilt) pra
    parecer que flutuam à frente do card, sem o card em si se deformar. */
 .chip-box b,.chip-box .chip-desc{will-change:transform;backface-visibility:hidden}
-.chip small{position:absolute;top:-38px;left:14px;width:50px;height:50px;border-radius:50%;background:var(--pink);color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2}
+.chip small{position:absolute;top:-38px;left:14px;width:50px;height:50px;border-radius:50%;background:transparent;color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2;overflow:visible}
 .c2 small,.c4 small{left:auto;right:14px}
+/* crachá = esfera 3D (chip-spheres.js). Canvas preenche o mesmo círculo
+   de 50px que .chip small já ocupava — nenhuma posição/tamanho mudou,
+   só quem desenha o rosa e o número (antes CSS+texto, agora a esfera). */
+.chip small canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;display:block;touch-action:none}
+/* fallback (WebGL indisponível, ver chip-spheres.js): volta ao crachá
+   plano de antes — círculo rosa em CSS + número em HTML normal. */
+.chip small.sphere-fallback{background:var(--pink)}
+.chip small.sphere-fallback canvas{display:none}
+.chip small.sphere-fallback .badge-num{display:block!important}
 .chip .badge-num{opacity:0}
 .chip b{display:block;font-family:'Outfit';font-weight:800;font-size:18px;letter-spacing:.01em;color:#15224c;line-height:1.15}
 .chip-desc{display:block;font-family:var(--copy-font),'DM Sans',sans-serif;font-size:14px;line-height:1.45;margin-top:7px;color:#4a4a52}
