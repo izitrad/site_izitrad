@@ -339,8 +339,8 @@ img,svg{display:block}
 /* .chip = só posicionamento (sem visual próprio, sem opacity). O crachá
    (small) e o corpo (chip-box) são IRMÃOS dentro dele e revelam em
    momentos diferentes — ver a sequência em buildCaminho, site.js. */
-.chip{position:absolute;width:230px;z-index:3;perspective:800px}
-.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.chip{position:absolute;width:230px;z-index:3;perspective:1700px}
+.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 6px 18px rgba(0,0,0,.12);backface-visibility:hidden}
 /* cards à esquerda do documento (02/04): o crachá fica do lado que
    encosta no documento (direita do card, não esquerda) e o corpo se abre
    pra esquerda — espelhado em relação a 01/03/05. Mesmo espelhamento vale
@@ -350,7 +350,7 @@ img,svg{display:block}
 /* título/descrição = camadas PRÓPRIAS dentro da placa rígida do card —
    ganham translateZ + parallax independentes no hover (initChipTilt) pra
    parecer que flutuam à frente do card, sem o card em si se deformar. */
-.chip-box b,.chip-box .chip-desc{will-change:transform}
+.chip-box b,.chip-box .chip-desc{will-change:transform;backface-visibility:hidden}
 .chip small{position:absolute;top:-38px;left:14px;width:50px;height:50px;border-radius:50%;background:var(--pink);color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2}
 .c2 small,.c4 small{left:auto;right:14px}
 .chip .badge-num{opacity:0}

@@ -1091,7 +1091,14 @@ function initChipTilt(root){
     const setDescX  = desc && gsap.quickTo(desc,'x',EASE);
     const setDescY  = desc && gsap.quickTo(desc,'y',EASE);
 
-    function onMove(e){
+    // pointermove dispara a cada poucos px de movimento (bem mais rápido
+    // que a tela desenha) — cada disparo retargeta os quickTo, forçando o
+    // Chrome a rerasterizar o texto (sob rotação 3D) mais vezes do que
+    // qualquer frame consegue mostrar, e é isso que borra o texto EM
+    // MOVIMENTO (assentado fica nítido). Agrupar num rAF (no máx. 1 update
+    // por frame real) resolve sem mudar a sensação do tilt.
+    let rafId=null, lastEvent=null;
+    function applyMove(e){
       const r = box.getBoundingClientRect();
       if(!r.width || !r.height) return;
       const x = Math.max(-1,Math.min(1, ((e.clientX-r.left)/r.width)*2-1));
@@ -1102,6 +1109,11 @@ function initChipTilt(root){
       if(setTitleX){ setTitleX(x*14); setTitleY(y*10); }
       if(setDescX){ setDescX(x*8); setDescY(y*6); }
     }
+    function onMove(e){
+      lastEvent=e;
+      if(rafId) return;
+      rafId=requestAnimationFrame(()=>{ rafId=null; applyMove(lastEvent); });
+    }
     function onEnter(){
       setZ(42); setScale(1.026);
       if(setTitleZ) setTitleZ(80);
@@ -1111,6 +1123,7 @@ function initChipTilt(root){
       if(desc) gsap.to(desc,{textShadow:HOVER_DESC_SHADOW,duration:.4,ease:'power2.out'});
     }
     function onLeave(){
+      if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
       setRotY(baseY); setRotX(baseX); setRotZ(baseZRot);
       setZ(0); setScale(1);
       if(setTitleZ){ setTitleZ(0); setTitleX(0); setTitleY(0); }
