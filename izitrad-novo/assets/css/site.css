@@ -339,8 +339,8 @@ img,svg{display:block}
 /* .chip = só posicionamento (sem visual próprio, sem opacity). O crachá
    (small) e o corpo (chip-box) são IRMÃOS dentro dele e revelam em
    momentos diferentes — ver a sequência em buildCaminho, site.js. */
-.chip{position:absolute;width:230px;z-index:3;perspective:1700px}
-.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 6px 18px rgba(0,0,0,.12);backface-visibility:hidden}
+.chip{position:absolute;width:300px;z-index:3;perspective:1100px}
+.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 22px 44px rgba(0,0,0,.20), 0 6px 16px rgba(0,0,0,.14);backface-visibility:hidden}
 /* cards à esquerda do documento (02/04): o crachá fica do lado que
    encosta no documento (direita do card, não esquerda) e o corpo se abre
    pra esquerda — espelhado em relação a 01/03/05. Mesmo espelhamento vale
@@ -354,9 +354,9 @@ img,svg{display:block}
 .chip small{position:absolute;top:-38px;left:14px;width:50px;height:50px;border-radius:50%;background:var(--pink);color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2}
 .c2 small,.c4 small{left:auto;right:14px}
 .chip .badge-num{opacity:0}
-.chip b{display:block;font-family:'Outfit';font-weight:800;font-size:14.5px;letter-spacing:.01em;color:#15224c;line-height:1.15}
-.chip-desc{display:block;font-family:var(--copy-font),'DM Sans',sans-serif;font-size:12px;line-height:1.45;margin-top:7px;color:#4a4a52}
-.c1{left:80%;top:20%}.c2{left:10%;top:37%}.c3{left:83%;top:40%}.c4{left:6%;top:69%}.c5{left:80%;top:73%}
+.chip b{display:block;font-family:'Outfit';font-weight:800;font-size:18px;letter-spacing:.01em;color:#15224c;line-height:1.15}
+.chip-desc{display:block;font-family:var(--copy-font),'DM Sans',sans-serif;font-size:14px;line-height:1.45;margin-top:7px;color:#4a4a52}
+.c1{left:76%;top:20%}.c2{left:10%;top:37%}.c3{left:79%;top:40%}.c4{left:6%;top:69%}.c5{left:76%;top:73%}
 /* linhas orgânicas dos 5 caminhos — svg único, paths criados/atualizados
    por JS (mesma técnica das .veins da Solução: d calculado, comprimento
    real via getTotalLength, desenho via uma <mask> — ver site.js). Fino,

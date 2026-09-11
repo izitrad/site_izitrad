@@ -772,9 +772,14 @@ function initSolucao(root){
     // 5 — card, só depois do número estar completamente visível
     const boxAt=numAt+NUM_DUR;
     tl.addLabel(cfg.key+'-card',boxAt);
+    // ease com leve overshoot (back.out) — o card "salta" um pouco além do
+    // tamanho final antes de assentar, em vez de só desacelerar suave.
+    // opacity/filter também herdam essa ease (GSAP aplica por tween, não
+    // por propriedade) mas o overshoot nelas é imperceptível — quem
+    // realmente "salta" é o scale/y.
     tl.fromTo(box,
       {opacity:0, y:12, scale:.97, filter:'blur(4px)'},
-      {opacity:1, y:0, scale:1, filter:'blur(0px)', duration:CARD_DUR, ease:'power2.out'},
+      {opacity:1, y:0, scale:1, filter:'blur(0px)', duration:CARD_DUR, ease:'back.out(1.6)'},
       boxAt);
   };
 
@@ -1060,10 +1065,16 @@ function initChipTilt(root){
   // color não são propriedades numéricas puras — não dá pra usar quickTo
   // (que é só pra número), então uma gsap.to() normal por vez (mesmo padrão
   // já usado no boxShadow de .doc, mais acima em initSolucao).
-  const REST_SHADOW='0 6px 18px rgba(0,0,0,.12)';
-  const HOVER_SHADOW='0 26px 50px rgba(0,0,0,.22), 0 0 30px rgba(255,0,153,.30)';
+  const REST_SHADOW='0 22px 44px rgba(0,0,0,.20), 0 6px 16px rgba(0,0,0,.14)';
+  const HOVER_SHADOW='0 34px 64px rgba(0,0,0,.26), 0 0 36px rgba(255,0,153,.32)';
   const REST_BORDER='rgba(255,0,153,.45)';
   const HOVER_BORDER='rgba(255,0,153,.9)';
+  // título/descrição ganham uma separação PERMANENTE (pequena) já no
+  // repouso — antes só existia Z no hover, então o card parecia "chapado"
+  // o resto do tempo. Sutil de propósito: o grosso da profundidade
+  // continua reservado pro hover (REST != 0, mas bem menor que HOVER).
+  const REST_TITLE_Z=8, REST_DESC_Z=4;
+  const HOVER_TITLE_Z=96, HOVER_DESC_Z=62, HOVER_CARD_Z=68;
   // mesma lógica pro texto: sem sombra própria, o título/descrição em Z
   // mais alto ainda parecem "colados" no card — a sombra reforça que estão
   // soltos, flutuando à frente dele (mesmo padrão do boxShadow acima).
@@ -1079,6 +1090,8 @@ function initChipTilt(root){
     const baseX=4, baseY=isLeft?24:-24, baseZRot=isLeft?4.5:-4.5;
 
     gsap.set(box,{rotationX:baseX,rotationY:baseY,rotationZ:baseZRot,z:0,scale:1});
+    if(title) gsap.set(title,{z:REST_TITLE_Z});
+    if(desc) gsap.set(desc,{z:REST_DESC_Z});
     const setRotY = gsap.quickTo(box,'rotationY',EASE);
     const setRotX = gsap.quickTo(box,'rotationX',EASE);
     const setRotZ = gsap.quickTo(box,'rotationZ',EASE);
@@ -1115,9 +1128,9 @@ function initChipTilt(root){
       rafId=requestAnimationFrame(()=>{ rafId=null; applyMove(lastEvent); });
     }
     function onEnter(){
-      setZ(42); setScale(1.026);
-      if(setTitleZ) setTitleZ(80);
-      if(setDescZ) setDescZ(50);
+      setZ(HOVER_CARD_Z); setScale(1.09);
+      if(setTitleZ) setTitleZ(HOVER_TITLE_Z);
+      if(setDescZ) setDescZ(HOVER_DESC_Z);
       gsap.to(box,{boxShadow:HOVER_SHADOW,borderColor:HOVER_BORDER,duration:.4,ease:'power2.out'});
       if(title) gsap.to(title,{textShadow:HOVER_TITLE_SHADOW,duration:.4,ease:'power2.out'});
       if(desc) gsap.to(desc,{textShadow:HOVER_DESC_SHADOW,duration:.4,ease:'power2.out'});
@@ -1126,8 +1139,8 @@ function initChipTilt(root){
       if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
       setRotY(baseY); setRotX(baseX); setRotZ(baseZRot);
       setZ(0); setScale(1);
-      if(setTitleZ){ setTitleZ(0); setTitleX(0); setTitleY(0); }
-      if(setDescZ){ setDescZ(0); setDescX(0); setDescY(0); }
+      if(setTitleZ){ setTitleZ(REST_TITLE_Z); setTitleX(0); setTitleY(0); }
+      if(setDescZ){ setDescZ(REST_DESC_Z); setDescX(0); setDescY(0); }
       gsap.to(box,{boxShadow:REST_SHADOW,borderColor:REST_BORDER,duration:.5,ease:'power2.out'});
       if(title) gsap.to(title,{textShadow:REST_TEXT_SHADOW,duration:.5,ease:'power2.out'});
       if(desc) gsap.to(desc,{textShadow:REST_TEXT_SHADOW,duration:.5,ease:'power2.out'});
