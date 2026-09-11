@@ -339,14 +339,21 @@ img,svg{display:block}
 /* .chip = só posicionamento (sem visual próprio, sem opacity). O crachá
    (small) e o corpo (chip-box) são IRMÃOS dentro dele e revelam em
    momentos diferentes — ver a sequência em buildCaminho, site.js. */
+/* .chip continua com uma largura FIXA — vira só o "slot" que ancora a
+   posição (left/top) e o crachá (small, right/left:14px dentro dele);
+   quem realmente encolhe rente ao texto é o .chip-box (width:fit-content
+   abaixo), então a posição do crachá e a linha tracejada (que mede o
+   crachá, não o box) não se movem. */
 .chip{position:absolute;width:300px;z-index:3;perspective:1100px}
-.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 22px 44px rgba(0,0,0,.20), 0 6px 16px rgba(0,0,0,.14);backface-visibility:hidden}
+.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 22px 44px rgba(0,0,0,.20), 0 6px 16px rgba(0,0,0,.14);backface-visibility:hidden;width:fit-content;max-width:100%}
 /* cards à esquerda do documento (02/04): o crachá fica do lado que
    encosta no documento (direita do card, não esquerda) e o corpo se abre
    pra esquerda — espelhado em relação a 01/03/05. Mesmo espelhamento vale
    pro pivot do tilt 3D (initChipTilt, site.js): pivot perto da borda que
-   encosta no documento. */
-.c2 .chip-box,.c4 .chip-box{transform-origin:82% 50%}
+   encosta no documento. margin-left:auto gruda o box encolhido na borda
+   DIREITA do slot (a que encosta no documento) em vez da esquerda
+   (padrão do bloco), espelhando o comportamento de 01/03/05. */
+.c2 .chip-box,.c4 .chip-box{transform-origin:82% 50%;margin-left:auto}
 /* título/descrição = camadas PRÓPRIAS dentro da placa rígida do card —
    ganham translateZ + parallax independentes no hover (initChipTilt) pra
    parecer que flutuam à frente do card, sem o card em si se deformar. */
