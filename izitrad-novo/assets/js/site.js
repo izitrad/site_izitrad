@@ -1037,6 +1037,94 @@ function initDocDrag(root, tilt){
   docEl.addEventListener('pointercancel', onUp);
 }
 
+/* ------------------- 03d · TILT 3D DOS CARDS (chips) ------------------ */
+/* Sensação de profundidade/tilt 3D (referência: card com perspective +
+   preserve-3d), portada pra GSAP puro — sem lib nova. Cada .chip-box
+   mantém uma inclinação BASE de repouso, espelhada esquerda/direita (ver
+   .c2/.c4 vs .c1/.c3/.c5 no CSS), e o mouse soma um delta por cima
+   (rotationY/X/Z) enquanto o ponteiro está sobre o card — ao sair, tudo
+   volta suavemente pra base. .chip-box gira como PLACA RÍGIDA (uma
+   rotação só, sem deformação); título e descrição são camadas
+   INDEPENDENTES (translateZ + parallax x/y próprios) que parecem flutuar
+   à frente da placa. Escreve só rotationX/Y/Z, z, scale e x/y nos filhos
+   — canais de propriedade GSAP que o scroll (buildCaminho/updateCaminhos)
+   nunca toca (ele escreve opacity/y/scale/filter em .chip/.chip-box/
+   small/num), mesmo padrão de convivência que initDocInteraction acima. */
+function initChipTilt(root){
+  if(!matchMedia('(hover: hover) and (pointer: fine)').matches) return; // touch: sem tilt
+  const LEFT = new Set(['c2','c4']);
+  const EASE = {duration:.55, ease:'power3'};
+  // sombra/borda de repouso vêm do CSS (.chip-box) — aqui só os valores do
+  // estado de hover, pra reforçar visualmente a elevação (z:42 sozinho não
+  // "vende" profundidade sem uma sombra crescendo junto). boxShadow/border-
+  // color não são propriedades numéricas puras — não dá pra usar quickTo
+  // (que é só pra número), então uma gsap.to() normal por vez (mesmo padrão
+  // já usado no boxShadow de .doc, mais acima em initSolucao).
+  const REST_SHADOW='0 6px 18px rgba(0,0,0,.12)';
+  const HOVER_SHADOW='0 26px 50px rgba(0,0,0,.22), 0 0 30px rgba(255,0,153,.30)';
+  const REST_BORDER='rgba(255,0,153,.45)';
+  const HOVER_BORDER='rgba(255,0,153,.9)';
+  // mesma lógica pro texto: sem sombra própria, o título/descrição em Z
+  // mais alto ainda parecem "colados" no card — a sombra reforça que estão
+  // soltos, flutuando à frente dele (mesmo padrão do boxShadow acima).
+  const REST_TEXT_SHADOW='0 0 0 rgba(0,0,0,0)';
+  const HOVER_TITLE_SHADOW='0 10px 18px rgba(0,0,0,.28)';
+  const HOVER_DESC_SHADOW='0 6px 12px rgba(0,0,0,.20)';
+  root.querySelectorAll('.chip').forEach(chip=>{
+    const box = chip.querySelector('.chip-box');
+    if(!box) return;
+    const title = box.querySelector('b');
+    const desc  = box.querySelector('.chip-desc');
+    const isLeft = [...chip.classList].some(c=>LEFT.has(c));
+    const baseX=4, baseY=isLeft?24:-24, baseZRot=isLeft?4.5:-4.5;
+
+    gsap.set(box,{rotationX:baseX,rotationY:baseY,rotationZ:baseZRot,z:0,scale:1});
+    const setRotY = gsap.quickTo(box,'rotationY',EASE);
+    const setRotX = gsap.quickTo(box,'rotationX',EASE);
+    const setRotZ = gsap.quickTo(box,'rotationZ',EASE);
+    const setZ    = gsap.quickTo(box,'z',EASE);
+    const setScale= gsap.quickTo(box,'scale',EASE);
+    const setTitleZ = title && gsap.quickTo(title,'z',EASE);
+    const setTitleX = title && gsap.quickTo(title,'x',EASE);
+    const setTitleY = title && gsap.quickTo(title,'y',EASE);
+    const setDescZ  = desc && gsap.quickTo(desc,'z',EASE);
+    const setDescX  = desc && gsap.quickTo(desc,'x',EASE);
+    const setDescY  = desc && gsap.quickTo(desc,'y',EASE);
+
+    function onMove(e){
+      const r = box.getBoundingClientRect();
+      if(!r.width || !r.height) return;
+      const x = Math.max(-1,Math.min(1, ((e.clientX-r.left)/r.width)*2-1));
+      const y = Math.max(-1,Math.min(1, ((e.clientY-r.top)/r.height)*2-1));
+      setRotY(baseY + x*8.5);
+      setRotX(baseX - y*6.5);
+      setRotZ(baseZRot + x*0.8);
+      if(setTitleX){ setTitleX(x*14); setTitleY(y*10); }
+      if(setDescX){ setDescX(x*8); setDescY(y*6); }
+    }
+    function onEnter(){
+      setZ(42); setScale(1.026);
+      if(setTitleZ) setTitleZ(80);
+      if(setDescZ) setDescZ(50);
+      gsap.to(box,{boxShadow:HOVER_SHADOW,borderColor:HOVER_BORDER,duration:.4,ease:'power2.out'});
+      if(title) gsap.to(title,{textShadow:HOVER_TITLE_SHADOW,duration:.4,ease:'power2.out'});
+      if(desc) gsap.to(desc,{textShadow:HOVER_DESC_SHADOW,duration:.4,ease:'power2.out'});
+    }
+    function onLeave(){
+      setRotY(baseY); setRotX(baseX); setRotZ(baseZRot);
+      setZ(0); setScale(1);
+      if(setTitleZ){ setTitleZ(0); setTitleX(0); setTitleY(0); }
+      if(setDescZ){ setDescZ(0); setDescX(0); setDescY(0); }
+      gsap.to(box,{boxShadow:REST_SHADOW,borderColor:REST_BORDER,duration:.5,ease:'power2.out'});
+      if(title) gsap.to(title,{textShadow:REST_TEXT_SHADOW,duration:.5,ease:'power2.out'});
+      if(desc) gsap.to(desc,{textShadow:REST_TEXT_SHADOW,duration:.5,ease:'power2.out'});
+    }
+    box.addEventListener('pointerenter', onEnter, {passive:true});
+    box.addEventListener('pointermove', onMove, {passive:true});
+    box.addEventListener('pointerleave', onLeave, {passive:true});
+  });
+}
+
 /* ------------------------------ ORQUESTRAÇÃO ------------------------- */
 (function(){
   document.documentElement.classList.remove('no-js');
@@ -1075,7 +1163,7 @@ function initDocDrag(root, tilt){
     document.querySelectorAll('.sec[data-sec]').forEach(sec=>{
       const kind=sec.dataset.sec;
       if(kind==='hero-s2-story') initHeroS2Story(sec);
-      else if(kind==='solucao'){ initSolucao(sec); initDocDrag(sec, initDocInteraction(sec)); }
+      else if(kind==='solucao'){ initSolucao(sec); initDocDrag(sec, initDocInteraction(sec)); initChipTilt(sec); }
     });
     if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>ScrollTrigger.refresh()); }
   }
