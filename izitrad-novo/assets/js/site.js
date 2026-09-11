@@ -183,6 +183,7 @@ function initHeroS2Story(root){
   const decasa= root.querySelector('.ht[data-k="decasa"]');
   const copyP = root.querySelector('.reveal-copy p');
   const copyBtn = root.querySelector('.reveal-copy .btn');
+  const focusChars = buildFocusChars(copyP); // ver FOCUS TEXT acima
   const hint  = root.querySelector('.hint');
   const header= document.querySelector('[data-header]');
   const ilDoc=root.querySelector('.il--doc'), ilDest=root.querySelector('.il--dest'), ilCam=root.querySelector('.il--cam');
@@ -353,9 +354,23 @@ function initHeroS2Story(root){
     .fromTo(haia,{autoAlpha:0,x:320},IN,2.43)
     .fromTo(sem,{autoAlpha:0,y:90},IN,2.58)
     .fromTo(sair,{autoAlpha:0,y:90},IN,2.68)
-    .fromTo(decasa,{autoAlpha:0,y:90},IN,2.78)
-    .fromTo(copyP,{autoAlpha:0,y:40},IN,2.93)
-    .fromTo(copyBtn,{autoAlpha:0,y:40},IN,3.03);
+    .fromTo(decasa,{autoAlpha:0,y:90},IN,2.78);
+  // revelação caractere a caractere do parágrafo (ver FOCUS TEXT acima) —
+  // ocupa a MESMA janela que antes era só o fade em bloco (2.93 → hold em
+  // 3.63), redistribuindo o tempo internamente: não mexe em ENTRY_START/
+  // PHASE2_START nem na duração total da timeline (nem cria ScrollTrigger
+  // novo — tudo dentro do `tl` já existente, escrubado pelo scroll).
+  const FOCUS_START=2.93, FOCUS_STAGGER=0.0032, FOCUS_CHAR_DUR=0.14;
+  const focusEase = window.CustomEase ? 'focusTextEase' : 'power3.out';
+  tl.fromTo(focusChars,
+    {opacity:0,scale:.88,filter:'blur(6px)'},
+    {opacity:1,scale:1,filter:'blur(0px)',stagger:FOCUS_STAGGER,duration:FOCUS_CHAR_DUR,ease:focusEase},
+    FOCUS_START);
+  // botão só entra depois que ~85% do texto já revelou ("somente depois
+  // que a maior parte do texto já estiver legível") — duration própria
+  // (mais curta que IN) pra caber antes do hold em 3.63.
+  const focusSpread = FOCUS_STAGGER*(focusChars.length-1)+FOCUS_CHAR_DUR;
+  tl.fromTo(copyBtn,{autoAlpha:0,y:40},{autoAlpha:1,x:0,y:0,ease:'power2.out',duration:0.3},FOCUS_START+focusSpread*0.85);
   tl.to({},{duration:0.6},3.63);
 
   // FASE 1 — a seção 2 REAL sobe cobrindo a Hero. Borda reta, ease:none
@@ -455,6 +470,35 @@ function addRollingTween(tl, reels, at, stagger){
     // volta no tamanho normal junto com o fim do giro (mesma at/duration).
     tl.fromTo(r.char,{scale:1.22,filter:'blur(3px)'},{scale:1,filter:'blur(0px)',duration:r.duration,ease:'expo.out'},t0);
   });
+}
+
+/* ------------- FOCUS TEXT (revelação caractere a caractere) ---------- */
+/* Portado de um componente React (focus-text.tsx, GSAP+CustomEase) pra JS
+   puro: cada caractere vira um <span class="fc-char"> animável (blur+
+   escala+opacidade individuais); agrupados em <span class="fc-word"> (ver
+   .fc-word no CSS) só pra nunca quebrar uma palavra no meio do reveal —
+   os espaços entre palavras ficam como texto normal, fora dos spans.
+   Devolve a lista de chars, na ordem do texto, pra a timeline scrubada já
+   existente animar (ver initHeroS2Story) — sem ScrollTrigger próprio,
+   mesmo motor do resto do site (nada de tween/scrub isolado). */
+function buildFocusChars(el){
+  const words = el.textContent.trim().split(/\s+/);
+  el.textContent = '';
+  const chars = [];
+  words.forEach((word, wi)=>{
+    const wordEl = document.createElement('span');
+    wordEl.className = 'fc-word';
+    Array.from(word).forEach(ch=>{
+      const charEl = document.createElement('span');
+      charEl.className = 'fc-char';
+      charEl.textContent = ch;
+      wordEl.appendChild(charEl);
+      chars.push(charEl);
+    });
+    el.appendChild(wordEl);
+    if(wi < words.length-1) el.appendChild(document.createTextNode(' '));
+  });
+  return chars;
 }
 
 /* ----------------------------- 03 · A SOLUÇÃO ------------------------ */
@@ -1024,6 +1068,10 @@ function initDocDrag(root, tilt){
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(window.gsap && window.ScrollTrigger && !reduce){
     gsap.registerPlugin(ScrollTrigger);
+    if(window.CustomEase){
+      gsap.registerPlugin(CustomEase);
+      CustomEase.create('focusTextEase','0.16,1,0.3,1'); // ver FOCUS TEXT acima
+    }
     document.querySelectorAll('.sec[data-sec]').forEach(sec=>{
       const kind=sec.dataset.sec;
       if(kind==='hero-s2-story') initHeroS2Story(sec);

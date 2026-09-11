@@ -185,8 +185,15 @@ img,svg{display:block}
    tamanho intocados. width para antes de onde "SEM"/"DE CASA" começam
    (758/1920≈39%) pra nunca sobrepor o bloco branco. */
 .hero-layer .reveal-copy{position:absolute;z-index:6;left:6%;top:50%;width:min(510px,33vw);text-align:left;pointer-events:none;font-family:var(--copy-font),'DM Sans',sans-serif}
-.hero-layer .reveal-copy p{opacity:0;color:#fff;font-weight:300;font-size:25px;line-height:1.5}
+.hero-layer .reveal-copy p{color:#fff;font-weight:300;font-size:25px;line-height:1.5}
 .hero-layer .reveal-copy .btn{opacity:0;display:inline-block;margin-top:2.2rem;background:#fff;color:var(--rosa);font-weight:700;padding:.85rem 1.7rem;border-radius:999px;text-decoration:none;pointer-events:auto;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+/* revelação caractere a caractere do parágrafo (buildFocusChars, site.js) —
+   o <p> fica sempre visível; cada letra controla a própria opacidade/blur/
+   escala, então NÃO herda o opacity:0 que o <p> tinha antes (senão some
+   tudo). .fc-word mantém cada palavra inteira numa "caixa" só (nowrap) pra
+   o wrap de linha nunca cortar no meio de uma palavra. */
+.fc-word{display:inline-block;white-space:nowrap}
+.fc-char{display:inline-block;opacity:0;transform-origin:50% 50%;backface-visibility:hidden;will-change:transform,filter,opacity}
 .hero-layer .reveal-html{position:absolute;z-index:5;inset:0;overflow:hidden;pointer-events:none}
 .hero-layer .reveal-html .hr-frame{position:absolute;top:55%;left:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center}
 .hero-layer .ht{position:absolute;transform-origin:left top;opacity:0}
