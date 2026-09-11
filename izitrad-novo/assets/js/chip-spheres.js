@@ -53,12 +53,15 @@ class NumberSphere {
     const texture = this.createTexture(label);
 
     const geometry = new THREE.SphereGeometry(1.5,72,72);
+    // sem clearcoat (era o principal responsável pelo reflexo tipo Fresnel/
+    // "bola de bilhar") e roughness maior (mais fosca, menos espelhada) —
+    // ajuste pedido depois de ver ao vivo: brilho excessivo nas luzes
+    // abaixo, não previsto ao portar o protótipo aprovado.
     const material = new THREE.MeshPhysicalMaterial({
       map:texture,
-      roughness:.38,
+      roughness:.62,
       metalness:.01,
-      clearcoat:.18,
-      clearcoatRoughness:.34
+      clearcoat:0
     });
 
     this.sphere = new THREE.Mesh(geometry,material);
@@ -70,17 +73,20 @@ class NumberSphere {
     this.autoDir = 1;
     this.group.rotation.y = this.frontY;
 
-    this.scene.add(new THREE.HemisphereLight(0xffffff,0x640038,1.18));
+    // HemisphereLight é luz difusa/ambiente (sem brilho pontual) — subir
+    // ela é o jeito seguro de deixar o rosa mais vivo sem voltar a criar
+    // pontos de reflexo fortes.
+    this.scene.add(new THREE.HemisphereLight(0xffffff,0x640038,2.8));
 
-    this.key = new THREE.DirectionalLight(0xffffff,3.8);
+    this.key = new THREE.DirectionalLight(0xffffff,2.8);
     this.key.position.set(-3.4,4.2,5);
     this.scene.add(this.key);
 
-    const rim = new THREE.PointLight(0xff4db5,10,9);
+    const rim = new THREE.PointLight(0xff4db5,2.2,9);
     rim.position.set(3,-.8,2.5);
     this.scene.add(rim);
 
-    const fill = new THREE.PointLight(0xffd4ec,5.5,8);
+    const fill = new THREE.PointLight(0xffd4ec,2,8);
     fill.position.set(-2,-2.2,3);
     this.scene.add(fill);
 
