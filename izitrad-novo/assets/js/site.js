@@ -976,14 +976,18 @@ function initDocInteraction(root){
 
   return {
     setSuspended(v){
+      // Só alterna a flag — NUNCA gsap.set/kill em rotationX/rotationY (ou
+      // x/y da sombra) aqui. Os dois já quebraram o tilt por motivos
+      // diferentes: gsap.set(...,{rotationX:0,...}) causava o salto (a folha
+      // "endireitava" ao ser agarrada); gsap.killTweensOf nos mesmos canais
+      // mata a tween PERSISTENTE que o gsap.quickTo(setRotX/setRotY/setShX/
+      // setShY) mantém internamente — depois disso o quickTo fica "morto" e
+      // para de animar pro resto da sessão (era o bug do drag travando o
+      // tilt). onMove() já tem `if(suspended) return`, então basta não
+      // chamar mais setRotX/setRotY/tiltX/tiltY durante o drag — a rotação
+      // simplesmente pára de ser redirecionada e o quickTo continua intacto
+      // pro próximo movimento real do mouse.
       suspended=v;
-      if(v){
-        // instantâneo (gsap.set, não a easing de 0.9s do tilt) — senão o
-        // tilt fica "desligando" devagar por cima do drag já em andamento.
-        gsap.set(inner,{rotationX:0,rotationY:0});
-        tiltX=0; tiltY=0; applyXY();
-        if(shadow) gsap.set(shadow,{x:0,y:0});
-      }
     },
     setDragOffset(dx,dy){ dragX=dx; dragY=dy; applyXY(); }
   };
@@ -1031,7 +1035,19 @@ function initDocDrag(root, tilt){
     if(!dragging) return;
     dragging=false;
     docEl.classList.remove('is-dragging');
-    try{ docEl.releasePointerCapture(e.pointerId); }catch(err){}
+    try{
+      if(e?.pointerId!==undefined && docEl.hasPointerCapture?.(e.pointerId)){
+        docEl.releasePointerCapture(e.pointerId);
+      }
+    }catch(err){}
+    // setSuspended(false) só no onComplete, DEPOIS do retorno terminar —
+    // reativar cedo (antes do gsap.to abaixo) parecia melhor, mas troca o
+    // gsap.set direto (usado enquanto suspended) pelo setTX/setTY (quickTo,
+    // com sua própria easing de .2s): o retorno passa a ser suavizado DUAS
+    // VEZES em cadeia (a tween do retorno + a easing do tilt por cima),
+    // um movimento elástico/trêmulo em vez de reto — exatamente o problema
+    // que o comentário abaixo (na criação de setTX/setTY) já descreve.
+    // Custo aceito: ~0.6s de pausa do tilt após soltar, sem nenhum tremor.
     gsap.to(ret,{x:0,y:0,duration:.6,ease:'power3.out',
       onUpdate(){ tilt.setDragOffset(ret.x,ret.y); },
       onComplete(){ tilt.setSuspended(false); }});
@@ -1040,6 +1056,7 @@ function initDocDrag(root, tilt){
   docEl.addEventListener('pointermove', onMove);
   docEl.addEventListener('pointerup', onUp);
   docEl.addEventListener('pointercancel', onUp);
+  docEl.addEventListener('lostpointercapture', onUp);
 }
 
 /* ------------------- 03d · TILT 3D DOS CARDS (chips) ------------------ */
