@@ -862,6 +862,19 @@ function initSolucao(root){
     maskFront.style.transform = 'translateY(' + (-travel) + 'px)'; // congelado
   }
 
+  /* SAÍDA em BLOCO de TODA a composição da 02 — sem fade. Dirigida por onUpdate
+     com innerHeight AO VIVO (recomputa todo frame; robusto a resize e ao
+     momento de avaliação). TODO o conjunto — os 5 cards + esferas, o texto
+     "UM DOCUMENTO / VÁRIOS CAMINHOS" (.copy-a), as linhas (.caminhos-svg) e o
+     rótulo "02 — O CAMINHO" (.section-id) — recebe o MESMO y e sobe junto como
+     UMA peça só, saindo de cena por cima. O documento é o ÚNICO que NÃO entra
+     aqui (cai independente pra dentro da 03). */
+  const riseGroup = root.querySelectorAll('.chip, .copy-a, .caminhos-svg, .section-id');
+  const riseProxy = {p:0};
+  function applyRise(){
+    gsap.set(riseGroup, {y: -riseProxy.p * innerHeight * 1.3});
+  }
+
   /* 01b — apresentação: texto entra primeiro, uma pequena pausa de
      leitura, só DEPOIS a folha entra (de baixo, um pouco menor, ganhando
      opacidade — chega na MESMA pose de repouso de sempre, só o y/scale
@@ -910,21 +923,25 @@ function initSolucao(root){
      mesma âncora que o resto do bloco (3.0+INTRO+CAMINHOS_SHIFT), não o
      "0.7+INTRO" antigo (que era do início da exploração, antes de existir
      a sequência dos caminhos — deixaria o headline sumir no meio dela). */
-  tl.to(q('.copy-a'),{opacity:0,y:-50,duration:1},3.0+INTRO+CAMINHOS_SHIFT)
-    .to(q('.chip'),{opacity:.12,y:10,duration:.7},3.0+INTRO+CAMINHOS_SHIFT)
-    .to(q('.caminhos-svg'),{opacity:.1,duration:.6},3.0+INTRO+CAMINHOS_SHIFT)
-    .to(q('.section-id'),{opacity:0,duration:.5},3.2+INTRO+CAMINHOS_SHIFT)
-    .to(maskProxy,{p:1,duration:1.4,ease:'none',onUpdate:applyMaskV5},3.2+INTRO+CAMINHOS_SHIFT)
+  tl.to(maskProxy,{p:1,duration:1.4,ease:'none',onUpdate:applyMaskV5},3.2+INTRO+CAMINHOS_SHIFT)
     // fase de cover: começa EXATAMENTE quando a v5 chega em p=1 (4.6) e sela o
     // escuro; mesmo scrub, sem autoplay. Ver applyCover acima.
     .to(coverProxy,{c:1,duration:COVER,ease:'none',onUpdate:applyCover},4.6+INTRO+CAMINHOS_SHIFT)
+    // SAÍDA EM BLOCO de TODA a 02 (cards+esferas+texto+linhas+rótulo) — SEM
+    // FADE: todos o MESMO y, sobem juntos como uma peça só e saem de quadro por
+    // cima (clipado pelo overflow:hidden do .sol-stage). Sincronizado com o
+    // MESMO progresso da transição: começa em p=0 (3.2), sobe durante a máscara
+    // (p=0→1) e continua durante o cover, ficando totalmente fora do
+    // enquadramento no fim (5.4). opacity fica 1 o tempo todo (sem blur/scale/
+    // fade). Ver applyRise/riseGroup acima. 1ª versão com deslocamento BEM
+    // perceptível (-1.3*vh) pra avaliar a direção.
+    .to(riseProxy,{p:1,duration:1.4+COVER,ease:'none',onUpdate:applyRise},3.2+INTRO+CAMINHOS_SHIFT)
     .to(q('.doc-stage'),{y:90,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2+INTRO+CAMINHOS_SHIFT)
     // queda do documento prolongada: agora assenta só no FIM do cover (5.4),
     // reforçando o documento caindo da 02 pra dentro da 03 enquanto o escuro
     // termina de cobrir (era duração 1.0, terminando em 5.05).
     .to(q('.doc-stage'),{y:0,rotation:-1.5,scale:.55,duration:0.55+COVER,ease:'power2.out'},4.05+INTRO+CAMINHOS_SHIFT)
-    .to(q('.doc'),{boxShadow:'0 30px 80px rgba(0,0,0,.55), 0 0 62px rgba(255,0,153,.42)',duration:1.2},3.6+INTRO+CAMINHOS_SHIFT)
-    .to(q('.chip, .caminhos-svg'),{opacity:0,duration:.4},4.4+INTRO+CAMINHOS_SHIFT);
+    .to(q('.doc'),{boxShadow:'0 30px 80px rgba(0,0,0,.55), 0 0 62px rgba(255,0,153,.42)',duration:1.2},3.6+INTRO+CAMINHOS_SHIFT);
 
   /* 03 — chegada + headline + halo */
   // "03 / A SOLUÇÃO" ficava opacity 0→1 (fade simples); agora aparece de
