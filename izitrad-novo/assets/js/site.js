@@ -802,7 +802,35 @@ function initSolucao(root){
   };
 
   gsap.set(q('.doc-stage'),{x:0,y:0,xPercent:-50,yPercent:-50,rotation:-4,scale:1});
-  gsap.set(q('.s3-bg'),{y:0,yPercent:100});
+
+  /* --- Transição 02→03: transporte LITERAL da máscara aprovada (v5) ---
+     .s3-mask-front (camada de 200vh, era o .intro da v5) carrega o FURO; a
+     .s3-bg é a camada revelada atrás. O MESMO `progress` (proxy p, escrubado
+     pelo ScrollTrigger) controla a matemática da máscara E o translateY da
+     caixa de 200vh — preservando a relação geométrica da v5. Valores
+     CONGELADOS: base 1440/375, radius 360→1440 / 100→450, pos 1000→2000 /
+     500→730, escala innerWidth/base, lerp linear, borda dura `#000 0`. Nada é
+     compensado nem refinado. A ÚNICA substituição é scrollY+rAF → scrub.
+     Antes do slot da transição, radius=0 (a frente cobre o escuro). */
+  const maskFront = root.querySelector('.s3-mask-front');
+  const maskProxy = {p:0};
+  function applyMaskV5(){
+    const p = maskProxy.p;
+    const mobile = innerWidth <= 600;
+    const scale  = innerWidth / (mobile ? 375 : 1440);
+    const radiusStart = scale * (mobile ? 100 : 360);
+    const radiusEnd   = scale * (mobile ? 450 : 1440);
+    const posStart    = scale * (mobile ? 500 : 1000);
+    const posEnd      = scale * (mobile ? 730 : 2000);
+    const radius = radiusStart + (radiusEnd - radiusStart) * p; // lerp linear
+    const pos    = posStart    + (posEnd    - posStart)    * p; // lerp linear
+    maskFront.style.setProperty('--mask-radius', radius + 'px');
+    maskFront.style.setProperty('--mask-position', pos + 'px');
+    // window-travel da v5: a caixa de 200vh(150vh) sobe (offsetHeight -
+    // innerHeight) ao longo de p — o mesmo (maskEnd-maskStart) da v5.
+    const travel = innerHeight * (mobile ? 0.5 : 1);
+    maskFront.style.transform = 'translateY(' + (-p * travel) + 'px)';
+  }
 
   /* 01b — apresentação: texto entra primeiro, uma pequena pausa de
      leitura, só DEPOIS a folha entra (de baixo, um pouco menor, ganhando
@@ -856,7 +884,7 @@ function initSolucao(root){
     .to(q('.chip'),{opacity:.12,y:10,duration:.7},3.0+INTRO+CAMINHOS_SHIFT)
     .to(q('.caminhos-svg'),{opacity:.1,duration:.6},3.0+INTRO+CAMINHOS_SHIFT)
     .to(q('.section-id'),{opacity:0,duration:.5},3.2+INTRO+CAMINHOS_SHIFT)
-    .to(q('.s3-bg'),{yPercent:0,duration:1.4,ease:'power2.inOut'},3.2+INTRO+CAMINHOS_SHIFT)
+    .to(maskProxy,{p:1,duration:1.4,ease:'none',onUpdate:applyMaskV5},3.2+INTRO+CAMINHOS_SHIFT)
     .to(q('.doc-stage'),{y:90,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2+INTRO+CAMINHOS_SHIFT)
     .to(q('.doc-stage'),{y:0,rotation:-1.5,scale:.55,duration:1.0,ease:'power2.out'},4.05+INTRO+CAMINHOS_SHIFT)
     .to(q('.doc'),{boxShadow:'0 30px 80px rgba(0,0,0,.55), 0 0 62px rgba(255,0,153,.42)',duration:1.2},3.6+INTRO+CAMINHOS_SHIFT)

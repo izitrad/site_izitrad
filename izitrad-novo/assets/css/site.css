@@ -389,10 +389,23 @@ img,svg{display:block}
 .cam-node{fill:#FF0099;opacity:0}
 .progress{position:absolute;right:3%;top:20%;height:60%;width:1px;background:rgba(120,120,120,.28);z-index:10}
 .progress i{display:block;width:5px;height:0;background:var(--pink);transform:translateX(-2px)}
-.s3-bg{position:absolute;left:0;right:0;top:-160px;height:calc(100% + 160px);z-index:6;transform:translateY(100%);will-change:transform;pointer-events:none}
-.s3-seam{position:absolute;top:0;left:0;width:100%;height:120px;display:block}
-.s3-seam path{fill:var(--s3-bg)}
-.s3-fill{position:absolute;left:0;right:0;bottom:0;top:96px;background:radial-gradient(90% 70% at 52% 44%,rgba(255,0,153,.10),transparent 60%),var(--s3-bg)}
+/* ---- Transição 02→03 = transporte LITERAL da máscara aprovada (v5) ----
+   .s3-bg        = camada REVELADA (era .reveal-bg da v5): fundo escuro, atrás.
+   .s3-mask-front= camada da FRENTE, 200vh, com o FURO (era .intro da v5):
+                   opaca, cobre o escuro; o buraco transparente cresce e o
+                   revela. Única troca vs v5: o motor scrollY+rAF virou GSAP
+                   ScrollTrigger scrub (ver initSolucao em site.js). Máscara,
+                   geometria, borda e valores CONGELADOS. */
+.s3-bg{position:absolute;inset:0;z-index:1;pointer-events:none}
+.s3-seam{display:none}
+.s3-fill{position:absolute;inset:0;background:radial-gradient(90% 70% at 52% 44%,rgba(255,0,153,.10),transparent 60%),var(--s3-bg)}
+.s3-mask-front{position:absolute;left:0;top:0;width:100%;height:200vh;z-index:2;pointer-events:none;
+  background:radial-gradient(circle at 55% 52%,#fff 0,#faf9f8 50%,#f0efed 100%);
+  --mask-position:1000px;--mask-radius:0px;
+  -webkit-mask-image:radial-gradient(circle at 50% var(--mask-position), transparent var(--mask-radius), #000 0);
+  mask-image:radial-gradient(circle at 50% var(--mask-position), transparent var(--mask-radius), #000 0);
+  will-change:transform,mask-image,-webkit-mask-image}
+@media(max-width:600px){.s3-mask-front{height:150vh}}
 .s3{position:absolute;inset:0;z-index:7;pointer-events:none}
 .s3-id{position:absolute;top:5%;left:50%;transform:translateX(-50%);color:var(--pink);opacity:0}
 .s3-intro{position:absolute;left:6%;top:13%;max-width:34%;z-index:3}
@@ -487,7 +500,7 @@ img,svg{display:block}
   .copy,.chip{position:relative;left:auto!important;top:auto!important;right:auto;opacity:1!important;transform:none!important;width:auto;margin:14px 0}
   .chip small,.chip .badge-num,.chip-box{opacity:1!important;transform:none!important}
   .chip small{position:static;margin-bottom:8px}
-  .caminhos-svg,.progress,.veins,.halo,.s3-seam{display:none}
+  .caminhos-svg,.progress,.veins,.halo,.s3-seam,.s3-mask-front{display:none}
   .doc-stage{position:relative;left:auto;top:auto;transform:rotate(-3deg);margin:48px auto;width:min(72vw,340px)}
   .s3-bg{position:relative;inset:auto;transform:none;margin-top:56px}
   .s3-fill{position:relative;top:auto;padding:64px 7%;min-height:auto}
