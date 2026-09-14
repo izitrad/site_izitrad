@@ -832,6 +832,36 @@ function initSolucao(root){
     maskFront.style.transform = 'translateY(' + (-p * travel) + 'px)';
   }
 
+  /* FASE DE COVER (depois de p=1, controlada pelo MESMO scrub, sem autoplay).
+     A v5 fica INTACTA até p=1. Aqui o MESMO raio da máscara continua crescendo
+     a partir de radiusEnd (valor final da v5) até ULTRAPASSAR matematicamente o
+     canto mais distante da viewport — garantindo cobertura 100% do fundo
+     escuro. pos e translateY ficam CONGELADOS no valor de p=1 (só o raio muda).
+     Nada da geometria/comportamento da v5 antes de p=1 é tocado. */
+  const coverProxy = {c:0};
+  const COVER = 0.8; // duração (unidades da timeline) desta fase
+  function applyCover(){
+    const c = coverProxy.c;
+    const mobile = innerWidth <= 600;
+    const scale  = innerWidth / (mobile ? 375 : 1440);
+    const radiusEnd = scale * (mobile ? 450 : 1440); // raio da v5 em p=1
+    const posEnd    = scale * (mobile ? 730 : 2000); // pos congelada (p=1)
+    const travel    = innerHeight * (mobile ? 0.5 : 1); // translateY congelado
+    // centro da máscara NA TELA em p=1 (o translateY move a origem)
+    const cx = innerWidth / 2, cy = -travel + posEnd;
+    // raio que ultrapassa o canto mais distante (+6% de margem de garantia);
+    // nunca menor que radiusEnd (não encolhe se a v5 já cobria).
+    let maxD = 0;
+    for(const [x,y] of [[0,0],[innerWidth,0],[0,innerHeight],[innerWidth,innerHeight]]){
+      const d = Math.hypot(x-cx, y-cy); if(d>maxD) maxD=d;
+    }
+    const rCover = Math.max(radiusEnd, maxD * 1.06);
+    const radius = radiusEnd + (rCover - radiusEnd) * c; // lerp linear
+    maskFront.style.setProperty('--mask-radius', radius + 'px');
+    maskFront.style.setProperty('--mask-position', posEnd + 'px'); // congelado
+    maskFront.style.transform = 'translateY(' + (-travel) + 'px)'; // congelado
+  }
+
   /* 01b — apresentação: texto entra primeiro, uma pequena pausa de
      leitura, só DEPOIS a folha entra (de baixo, um pouco menor, ganhando
      opacidade — chega na MESMA pose de repouso de sempre, só o y/scale
@@ -885,33 +915,42 @@ function initSolucao(root){
     .to(q('.caminhos-svg'),{opacity:.1,duration:.6},3.0+INTRO+CAMINHOS_SHIFT)
     .to(q('.section-id'),{opacity:0,duration:.5},3.2+INTRO+CAMINHOS_SHIFT)
     .to(maskProxy,{p:1,duration:1.4,ease:'none',onUpdate:applyMaskV5},3.2+INTRO+CAMINHOS_SHIFT)
+    // fase de cover: começa EXATAMENTE quando a v5 chega em p=1 (4.6) e sela o
+    // escuro; mesmo scrub, sem autoplay. Ver applyCover acima.
+    .to(coverProxy,{c:1,duration:COVER,ease:'none',onUpdate:applyCover},4.6+INTRO+CAMINHOS_SHIFT)
     .to(q('.doc-stage'),{y:90,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2+INTRO+CAMINHOS_SHIFT)
-    .to(q('.doc-stage'),{y:0,rotation:-1.5,scale:.55,duration:1.0,ease:'power2.out'},4.05+INTRO+CAMINHOS_SHIFT)
+    // queda do documento prolongada: agora assenta só no FIM do cover (5.4),
+    // reforçando o documento caindo da 02 pra dentro da 03 enquanto o escuro
+    // termina de cobrir (era duração 1.0, terminando em 5.05).
+    .to(q('.doc-stage'),{y:0,rotation:-1.5,scale:.55,duration:0.55+COVER,ease:'power2.out'},4.05+INTRO+CAMINHOS_SHIFT)
     .to(q('.doc'),{boxShadow:'0 30px 80px rgba(0,0,0,.55), 0 0 62px rgba(255,0,153,.42)',duration:1.2},3.6+INTRO+CAMINHOS_SHIFT)
     .to(q('.chip, .caminhos-svg'),{opacity:0,duration:.4},4.4+INTRO+CAMINHOS_SHIFT);
 
   /* 03 — chegada + headline + halo */
   // "03 / A SOLUÇÃO" ficava opacity 0→1 (fade simples); agora aparece de
   // uma vez (set, sem tween) e o giro das letras é que faz a entrada.
-  tl.set(q('.s3-id'),{opacity:1},4.8+INTRO+CAMINHOS_SHIFT);
-  if(s3IdReels) addRollingTween(tl, s3IdReels, 4.8+INTRO+CAMINHOS_SHIFT);
-  tl.fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9+INTRO+CAMINHOS_SHIFT)
-    .fromTo(q('.s3-sub'),{opacity:0,x:-30},{opacity:1,x:0,duration:.8},5.2+INTRO+CAMINHOS_SHIFT)
-    .fromTo(q('.halo'),{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.0},5.3+INTRO+CAMINHOS_SHIFT);
+  // +COVER em TODAS as âncoras da 03: a entrada só começa DEPOIS que a máscara
+  // cobriu 100% da viewport (fim da fase de cover). Ritmo interno da 03
+  // preservado — o bloco inteiro só desloca no tempo.
+  tl.set(q('.s3-id'),{opacity:1},4.8+COVER+INTRO+CAMINHOS_SHIFT);
+  if(s3IdReels) addRollingTween(tl, s3IdReels, 4.8+COVER+INTRO+CAMINHOS_SHIFT);
+  tl.fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9+COVER+INTRO+CAMINHOS_SHIFT)
+    .fromTo(q('.s3-sub'),{opacity:0,x:-30},{opacity:1,x:0,duration:.8},5.2+COVER+INTRO+CAMINHOS_SHIFT)
+    .fromTo(q('.halo'),{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.0},5.3+COVER+INTRO+CAMINHOS_SHIFT);
 
   /* serviços ativados em sequência (linha → pulso → nó → rótulo) */
-  activate('jur','.o-jur',5.7+INTRO+CAMINHOS_SHIFT);
-  activate('haia','.o-haia',7.1+INTRO+CAMINHOS_SHIFT);
-  activate('cert','.o-cert',8.1+INTRO+CAMINHOS_SHIFT);
-  activate('tec','.o-tec',9.1+INTRO+CAMINHOS_SHIFT);
-  activate('simp','.o-simp',10.1+INTRO+CAMINHOS_SHIFT);
+  activate('jur','.o-jur',5.7+COVER+INTRO+CAMINHOS_SHIFT);
+  activate('haia','.o-haia',7.1+COVER+INTRO+CAMINHOS_SHIFT);
+  activate('cert','.o-cert',8.1+COVER+INTRO+CAMINHOS_SHIFT);
+  activate('tec','.o-tec',9.1+COVER+INTRO+CAMINHOS_SHIFT);
+  activate('simp','.o-simp',10.1+COVER+INTRO+CAMINHOS_SHIFT);
 
   /* fechamento: composição recua, coração sobe, CTA centrado */
-  tl.to(q('.s3-headline, .s3-sub'),{opacity:0,y:-20,duration:.6},11.6+INTRO+CAMINHOS_SHIFT)
-    .to(q('.svc, .vein'),{opacity:0,duration:.7},11.6+INTRO+CAMINHOS_SHIFT)
-    .to(q('.doc-stage'),{y:-60,scale:.5,rotation:0,duration:.9,ease:'power2.out'},11.6+INTRO+CAMINHOS_SHIFT)
-    .fromTo(q('.s3-close'),{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power2.out'},12.0+INTRO+CAMINHOS_SHIFT)
-    .to({},{duration:.9},13.0+INTRO+CAMINHOS_SHIFT);
+  tl.to(q('.s3-headline, .s3-sub'),{opacity:0,y:-20,duration:.6},11.6+COVER+INTRO+CAMINHOS_SHIFT)
+    .to(q('.svc, .vein'),{opacity:0,duration:.7},11.6+COVER+INTRO+CAMINHOS_SHIFT)
+    .to(q('.doc-stage'),{y:-60,scale:.5,rotation:0,duration:.9,ease:'power2.out'},11.6+COVER+INTRO+CAMINHOS_SHIFT)
+    .fromTo(q('.s3-close'),{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power2.out'},12.0+COVER+INTRO+CAMINHOS_SHIFT)
+    .to({},{duration:.9},13.0+COVER+INTRO+CAMINHOS_SHIFT);
 
   gsap.to(q('.progress i'),{height:'100%',ease:'none',
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});
