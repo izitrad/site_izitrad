@@ -406,6 +406,13 @@ img,svg{display:block}
   mask-image:radial-gradient(circle at 50% var(--mask-position), transparent var(--mask-radius), #000 0);
   will-change:transform,mask-image,-webkit-mask-image}
 @media(max-width:600px){.s3-mask-front{height:150vh}}
+/* PLACEHOLDER (por enquanto): seção 03 em PRETO PURO — esconde o conteúdo
+   antigo (rótulo/headline/sub/halo/veias/serviços/fechamento, todos dentro de
+   .s3) e zera o fundo revelado pra #000. O documento NÃO está dentro de .s3,
+   então continua caindo/pousando normalmente. Remover este bloco quando a nova
+   03 entrar. */
+.s3{display:none}
+.s3-fill{background:#000}
 .s3{position:absolute;inset:0;z-index:7;pointer-events:none}
 .s3-id{position:absolute;top:5%;left:50%;transform:translateX(-50%);color:var(--pink);opacity:0}
 .s3-intro{position:absolute;left:6%;top:13%;max-width:34%;z-index:3}
