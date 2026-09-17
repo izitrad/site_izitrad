@@ -53,15 +53,17 @@ class NumberSphere {
     const texture = this.createTexture(label);
 
     const geometry = new THREE.SphereGeometry(1.5,72,72);
-    // sem clearcoat (era o principal responsável pelo reflexo tipo Fresnel/
-    // "bola de bilhar") e roughness maior (mais fosca, menos espelhada) —
-    // ajuste pedido depois de ver ao vivo: brilho excessivo nas luzes
-    // abaixo, não previsto ao portar o protótipo aprovado.
+    // clearcoat bem baixo + clearcoatRoughness alto: devolve um highlight
+    // suave num ponto só (leitura de volume/material), sem repetir o
+    // reflexo forte tipo "bola de bilhar" que motivou zerar o clearcoat
+    // antes. roughness um pouco menor pra não dissolver de vez o brilho
+    // que a key light já está posicionada pra criar.
     const material = new THREE.MeshPhysicalMaterial({
       map:texture,
-      roughness:.62,
+      roughness:.50,
       metalness:.01,
-      clearcoat:0
+      clearcoat:.18,
+      clearcoatRoughness:.55
     });
 
     this.sphere = new THREE.Mesh(geometry,material);
@@ -242,8 +244,21 @@ document.querySelectorAll(".chip small").forEach(badge=>{
   if(numEl && sphere.renderer) numEl.style.display = "none";
 });
 
+// PERF #1 (gating por visibilidade): só renderiza as esferas dos crachás
+// quando algum .chip está (perto de) visível na viewport — eles sobem para
+// fora na transição 02→03 e ficam fora nas outras seções. NÃO destrói
+// renderer/textura/estado; só suspende o render e retoma. rootMargin pré-ativa.
+let chipsVisible = true;
+if('IntersectionObserver' in window){
+  const seen = new Set();
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting) seen.add(e.target); else seen.delete(e.target); });
+    chipsVisible = seen.size > 0;
+  }, {rootMargin:'300px'});
+  document.querySelectorAll('.chip').forEach(el=>io.observe(el));
+}
 function renderAll(){
-  sphereMap.forEach(s=>s.render());
+  if(chipsVisible) sphereMap.forEach(s=>s.render());
   requestAnimationFrame(renderAll);
 }
 renderAll();

@@ -258,10 +258,10 @@ img,svg{display:block}
    linha só, e o documento é quem tem que protagonizar, não o texto. Vem
    DEPOIS de ".copy h2" no arquivo de propósito — mesma especificidade,
    quem vem depois ganha. */
-.copy-a{top:8%;width:34%}
-.copy-a h2{font-size:clamp(28px,2.6vw,46px);font-weight:500;letter-spacing:-.01em;line-height:1.08}
+.copy-a{top:8%;left:10px;width:34%}
+.copy-a h2{font-size:clamp(32px,3vw,52px);font-weight:500;letter-spacing:-.01em;line-height:1.08;margin-bottom:14px}
 .copy-a h2 span{color:var(--pink);font-weight:600}
-.copy-a__subtitle{margin:12px 0 0 24px;font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:350;font-size:clamp(16px,1.35vw,20px);line-height:1.2;letter-spacing:.08em;text-transform:uppercase;color:#1a1a1e}
+.copy-a__subtitle{margin:8px 0 0 0;font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:300;font-size:clamp(16px,1.35vw,20px);line-height:1.4;letter-spacing:.005em;text-transform:none;color:#1a1a1e}
 .copy-a__subtitle--2{margin-top:0}
 .doc-stage{position:absolute;left:50%;top:50%;width:min(31vw,470px);z-index:9;perspective:1000px;transform:translate(-50%,-50%) rotate(-4deg);will-change:transform}
 /* sombra reativa ao mouse — fica FORA do .doc (que tem overflow:hidden) pra
@@ -345,7 +345,7 @@ img,svg{display:block}
    abaixo), então a posição do crachá e a linha tracejada (que mede o
    crachá, não o box) não se movem. */
 .chip{position:absolute;width:300px;z-index:3;perspective:1100px}
-.chip-box{border:1px solid rgba(255,0,153,.45);border-radius:14px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 22px 44px rgba(0,0,0,.20), 0 6px 16px rgba(0,0,0,.14);backface-visibility:hidden;width:fit-content;max-width:100%;margin-top:26px}
+.chip-box{border:1px solid rgba(20,0,12,.08);border-radius:12px;background:rgba(255,255,255,.86);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 1px 2px rgba(20,0,12,.05), 0 3px 8px rgba(20,0,12,.05), 0 18px 36px -14px rgba(30,0,18,.26);backface-visibility:hidden;width:fit-content;max-width:100%;margin-top:26px}
 /* cards à esquerda do documento (02/04): o crachá fica do lado que
    encosta no documento (direita do card, não esquerda) e o corpo se abre
    pra esquerda — espelhado em relação a 01/03/05. Mesmo espelhamento vale
@@ -364,6 +364,11 @@ img,svg{display:block}
    de 50px que .chip small já ocupava — nenhuma posição/tamanho mudou,
    só quem desenha o rosa e o número (antes CSS+texto, agora a esfera). */
 .chip small canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;display:block;touch-action:none}
+/* sombra de contato — a esfera Three.js não recebe/projeta sombra própria
+   (sem plano de chão na cena); esse blur elíptico embaixo dela é quem "cola"
+   o objeto no card, dando peso/profundidade real em vez de um círculo
+   flutuando sem referência de baixo. */
+.chip small::after{content:"";position:absolute;left:50%;bottom:-9px;width:64%;height:13px;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(120,0,60,.38) 0%,rgba(120,0,60,.16) 48%,transparent 75%);filter:blur(3px);z-index:-1;pointer-events:none}
 /* fallback (WebGL indisponível, ver chip-spheres.js): volta ao crachá
    plano de antes — círculo rosa em CSS + número em HTML normal. */
 .chip small.sphere-fallback{background:var(--pink)}
@@ -372,7 +377,7 @@ img,svg{display:block}
 .chip .badge-num{opacity:0}
 .chip b{display:block;font-family:'Outfit';font-weight:800;font-size:18px;letter-spacing:.01em;color:#15224c;line-height:1.15}
 .chip-desc{display:block;font-family:var(--copy-font),'DM Sans',sans-serif;font-size:14px;line-height:1.45;margin-top:7px;color:#4a4a52}
-.c1{left:76%;top:20%}.c2{left:10%;top:37%}.c3{left:79%;top:40%}.c4{left:6%;top:69%}.c5{left:76%;top:73%}
+.c1{left:76%;top:20%}.c2{left:10%;top:46%}.c3{left:79%;top:40%}.c4{left:6%;top:69%}.c5{left:76%;top:73%}
 /* linhas orgânicas dos 5 caminhos — svg único, paths criados/atualizados
    por JS (mesma técnica das .veins da Solução: d calculado, comprimento
    real via getTotalLength, desenho via uma <mask> — ver site.js). Fino,
@@ -383,7 +388,7 @@ img,svg{display:block}
    alinhada aos eixos que o JS mede — sem isso ficaria escondido atrás do
    documento/card em vez de tocá-lo. */
 .caminhos-svg{position:absolute;inset:0;width:100%;height:100%;z-index:10;overflow:visible;pointer-events:none}
-.cam-line{fill:none;stroke:#FF0099;stroke-width:2.3;stroke-dasharray:9 7;opacity:.85}
+.cam-line{fill:none;stroke:#FF0099;stroke-width:1.4;stroke-linecap:round;stroke-dasharray:2.4 7;opacity:.62}
 /* pontos de conexão sólidos — pequenos, sem glow, encostados na borda do
    documento e na borda do card (ver cardEdgePoint/camDocAnchors em site.js). */
 .cam-node{fill:#FF0099;opacity:0}
@@ -446,6 +451,37 @@ img,svg{display:block}
 .s3-close h2{margin:0 0 14px;font-size:clamp(28px,3.4vw,56px);color:#fff;line-height:.92;letter-spacing:-.04em;text-transform:uppercase}
 .s3-close p{margin:0 auto 22px;font-size:clamp(13px,1vw,16px);line-height:1.5;color:rgba(255,255,255,.72);max-width:440px}
 .s3-close button{border:0;border-radius:999px;background:var(--pink);color:#fff;font-weight:700;padding:14px 22px;font-size:15px;cursor:pointer;pointer-events:auto}
+
+/* ===================== SEÇÃO 03 (v29N orbital) — Opção B ===============
+   ETAPA 1: wrapper do deslize centro→direita + camadas de oclusão (vazias)
+   + intro da esquerda. Namespacing s3o- (isolamento técnico, sem colidir
+   com .doc/.node/.orbit/.intro/... do site). Anéis/nós vêm depois. ======= */
+/* wrapper EXTERNO do documento na Seção 03. Em repouso inset:0 → não muda
+   nada (o .doc-stage continua centralizando em left/top:50%). O deslize
+   centro→direita é um translate escrito SÓ aqui (GSAP), nunca no .doc-stage. */
+.doc-orbit-wrap{position:absolute;inset:0;z-index:9;pointer-events:none;will-change:transform}
+.doc-orbit-wrap .doc-stage{pointer-events:auto}
+/* camadas de oclusão: NÃO criam stacking context próprio (sem transform/
+   opacity/filter/isolation no container) → seus filhos convivem com o
+   .doc-stage (z9) no stacking do .sol-stage: back(z6) atrás, front(z11) frente. */
+.s3o-back{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:visible;opacity:0}
+.s3o-front{position:absolute;inset:0;z-index:11;pointer-events:none;overflow:visible;opacity:0}
+/* intro da coluna esquerda — oculta até a abertura da 03 (autoAlpha via JS). */
+.s3o-intro{position:absolute;left:6%;top:24%;width:min(360px,30%);z-index:12;color:#fff;opacity:0;pointer-events:none;font-family:'DM Sans',sans-serif}
+.s3o-kicker{font-size:13px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:22px;opacity:.85}
+.s3o-kicker b{display:block;font-size:16px;letter-spacing:.04em;margin-bottom:8px;color:var(--pink)}
+.s3o-title{font-family:'Outfit';font-weight:900;font-size:clamp(30px,3vw,54px);line-height:.98;letter-spacing:-.045em;margin:0 0 20px}
+.s3o-title span{opacity:.55;font-weight:400}
+.s3o-lead{font-size:15px;line-height:1.55;max-width:340px;color:rgba(255,255,255,.78);margin:0}
+.s3o-micro{margin-top:30px;display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.5);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.s3o-micro::before{content:"";width:40px;height:1px;background:rgba(255,255,255,.6)}
+@media(prefers-reduced-motion:reduce){
+  .doc-orbit-wrap{position:static;transform:none!important}
+  .s3o-back,.s3o-front{display:none}
+  .s3o-intro{position:relative;left:auto;top:auto;width:auto;opacity:1;color:var(--ink);margin:24px auto;max-width:640px}
+  .s3o-title{color:var(--ink)}.s3o-lead{color:#555}
+  .s3o-kicker,.s3o-micro{color:#777}.s3o-kicker b{color:var(--pink)}
+}
 
 /* ============================== MOBILE ============================== */
 @media(max-width:900px){

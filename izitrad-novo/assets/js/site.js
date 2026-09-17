@@ -53,6 +53,13 @@ function initWaves(canvas){
 
   const container=canvas.parentElement;
   const ctx=canvas.getContext('2d');
+  // PERF #1 (gating por visibilidade): só anima/desenha as ondas quando o
+  // hero está (perto de) visível. NÃO destrói canvas/estado — só suspende o
+  // trabalho do loop e retoma. rootMargin pré-ativa antes de aparecer.
+  let wavesVisible=true;
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(es=>{ wavesVisible = es.some(e=>e.isIntersecting); }, {rootMargin:'300px'}).observe(container);
+  }
   const noise=new Noise(Math.random());
   const mouse={x:-10,y:0,lx:0,ly:0,sx:0,sy:0,v:0,vs:0,a:0,set:false};
   const lineColor='rgba(255,0,153,.55)';
@@ -126,16 +133,18 @@ function initWaves(canvas){
     ctx.stroke();
   }
   function tick(time){
-    mouse.sx+=(mouse.x-mouse.sx)*CFG.MOUSE_SMOOTHING_FACTOR;
-    mouse.sy+=(mouse.y-mouse.sy)*CFG.MOUSE_SMOOTHING_FACTOR;
-    const dx=mouse.sx-mouse.lx, dy=mouse.sy-mouse.ly, d=Math.hypot(dx,dy);
-    mouse.v=d;
-    mouse.vs+=(d-mouse.vs)*CFG.MOUSE_SMOOTHING_FACTOR;
-    mouse.vs=Math.min(CFG.MAX_MOUSE_VELOCITY, mouse.vs);
-    mouse.a=Math.atan2(dy,dx);
-    mouse.lx=mouse.sx; mouse.ly=mouse.sy;
-    movePoints(time);
-    drawLines();
+    if(wavesVisible){
+      mouse.sx+=(mouse.x-mouse.sx)*CFG.MOUSE_SMOOTHING_FACTOR;
+      mouse.sy+=(mouse.y-mouse.sy)*CFG.MOUSE_SMOOTHING_FACTOR;
+      const dx=mouse.sx-mouse.lx, dy=mouse.sy-mouse.ly, d=Math.hypot(dx,dy);
+      mouse.v=d;
+      mouse.vs+=(d-mouse.vs)*CFG.MOUSE_SMOOTHING_FACTOR;
+      mouse.vs=Math.min(CFG.MAX_MOUSE_VELOCITY, mouse.vs);
+      mouse.a=Math.atan2(dy,dx);
+      mouse.lx=mouse.sx; mouse.ly=mouse.sy;
+      movePoints(time);
+      drawLines();
+    }
     rafId=requestAnimationFrame(tick);
   }
   function updateMousePosition(x,y){
@@ -601,7 +610,7 @@ function initSolucao(root){
     // 02 — reta → sobe (platô acima dos dois pontos) → reta intermediária
     // bem visível → desce de volta → reta final. Duas transições de propósito.
     {key:'pc2', anchor:'lUpper', dir0:{x:-1,y:0}, dir1:{x:-1,y:0}, card:'.c2',
-      stair:{f0:.20, f1:.40, f2:.64, f3:.84, over:-34}},
+      stair:{f0:.20, f1:.40, f2:.64, f3:.84, over:-14}},
     // 03 — quebra concentrada na região CENTRAL do percurso (32%→72%,
     // platô abaixo), com retas evidentes antes e depois — plano maior e
     // desnível mais visível que a versão anterior (estava enxuta demais),
@@ -653,7 +662,7 @@ function initSolucao(root){
   // horizontal nas duas pontas (mesmo princípio do pathSTS), então as duas
   // emendas reta/curva ficam sempre suaves, sem "bico".
   function pathStair(start,end,midY,f0,f1,f2,f3,t){
-    t = t||.55;
+    t = t||.72;
     const dx=end.x-start.x;
     const xA=start.x+dx*f0, xC=start.x+dx*f1, xD=start.x+dx*f2, xF=start.x+dx*f3;
     const xB=xA+(xC-xA)*t, xBc=xC-(xC-xA)*t;
@@ -965,9 +974,18 @@ function initSolucao(root){
   /* fechamento: composição recua, coração sobe, CTA centrado */
   tl.to(q('.s3-headline, .s3-sub'),{opacity:0,y:-20,duration:.6},11.6+COVER+INTRO+CAMINHOS_SHIFT)
     .to(q('.svc, .vein'),{opacity:0,duration:.7},11.6+COVER+INTRO+CAMINHOS_SHIFT)
-    .to(q('.doc-stage'),{y:-60,scale:.5,rotation:0,duration:.9,ease:'power2.out'},11.6+COVER+INTRO+CAMINHOS_SHIFT)
+    // (removido: o fechamento da 03-VEIAS movia o documento — y:-60/scale:.5.
+    //  Na Seção 03 ORBITAL o documento permanece assentado na coluna direita
+    //  (ver solucao-orbital.js). A transição 02→03 continua intacta.)
     .fromTo(q('.s3-close'),{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power2.out'},12.0+COVER+INTRO+CAMINHOS_SHIFT)
     .to({},{duration:.9},13.0+COVER+INTRO+CAMINHOS_SHIFT);
+
+  /* --- ETAPA 1 · abertura da composição orbital (Opção B) ---------------
+     Começa DEPOIS do cover da transição (documento já no CENTRO). Motor
+     separado em solucao-orbital.js, injetando no MESMO timeline scrubado
+     (100% reversível). Anéis/nós/interações entram nas próximas etapas. */
+  const ORBITAL_OPEN_AT = 4.6 + COVER + INTRO + CAMINHOS_SHIFT + 0.5;
+  if(window.SolucaoOrbital) window.SolucaoOrbital.init(root, tl, {openAt: ORBITAL_OPEN_AT});
 
   gsap.to(q('.progress i'),{height:'100%',ease:'none',
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});
@@ -1166,10 +1184,10 @@ function initChipTilt(root){
   // color não são propriedades numéricas puras — não dá pra usar quickTo
   // (que é só pra número), então uma gsap.to() normal por vez (mesmo padrão
   // já usado no boxShadow de .doc, mais acima em initSolucao).
-  const REST_SHADOW='0 22px 44px rgba(0,0,0,.20), 0 6px 16px rgba(0,0,0,.14)';
-  const HOVER_SHADOW='0 34px 64px rgba(0,0,0,.26), 0 0 36px rgba(255,0,153,.32)';
-  const REST_BORDER='rgba(255,0,153,.45)';
-  const HOVER_BORDER='rgba(255,0,153,.9)';
+  const REST_SHADOW='0 1px 2px rgba(20,0,12,.05), 0 3px 8px rgba(20,0,12,.05), 0 18px 36px -14px rgba(30,0,18,.26)';
+  const HOVER_SHADOW='0 2px 4px rgba(20,0,12,.06), 0 8px 20px rgba(20,0,12,.08), 0 34px 64px -12px rgba(30,0,18,.32), 0 0 30px rgba(255,0,153,.20)';
+  const REST_BORDER='rgba(20,0,12,.08)';
+  const HOVER_BORDER='rgba(255,0,153,.55)';
   // título/descrição ganham uma separação PERMANENTE (pequena) já no
   // repouso — antes só existia Z no hover, então o card parecia "chapado"
   // o resto do tempo. Sutil de propósito: o grosso da profundidade
