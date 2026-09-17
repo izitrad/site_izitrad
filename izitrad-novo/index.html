@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=59">
+<link rel="stylesheet" href="assets/css/site.css?v=66">
 <link rel="stylesheet" href="assets/css/solucao-orbital.css?v=6">
 </head>
 <body class="pre-anim">
@@ -164,17 +164,18 @@
 
       <!-- .chip = só posicionamento. .chip small (crachá) e .chip-box (corpo)
            revelam em momentos DIFERENTES (ver buildCaminho em site.js) —
-           por isso viraram irmãos, não um bloco só como antes. O crachá
-           agora é uma esfera 3D (Three.js, ver chip-spheres.js): o
-           <canvas> é quem desenha a esfera+número; .badge-num vira só a
-           fonte do texto (lido pelo JS) e fallback se o WebGL falhar
-           (ver .sphere-fallback no CSS) — opacity/scale do crachá
-           continuam controlados pela MESMA timeline de sempre, em <small>. -->
-      <div class="chip c1"><small><canvas aria-hidden="true"></canvas><span class="badge-num">01</span></small><div class="chip-box"><b>APOSTILAMENTO</b><span class="chip-desc">Original → Apostila</span></div></div>
-      <div class="chip c2"><small><canvas aria-hidden="true"></canvas><span class="badge-num">02</span></small><div class="chip-box"><b>TRADUÇÃO</b><span class="chip-desc">Original → Tradução</span></div></div>
-      <div class="chip c3"><small><canvas aria-hidden="true"></canvas><span class="badge-num">03</span></small><div class="chip-box"><b>APOSTILA + TRADUÇÃO</b><span class="chip-desc">Original → Apostila → Tradução</span></div></div>
-      <div class="chip c4"><small><canvas aria-hidden="true"></canvas><span class="badge-num">04</span></small><div class="chip-box"><b>TRADUÇÃO + APOSTILA</b><span class="chip-desc">Original → Tradução → Apostila</span></div></div>
-      <div class="chip c5"><small><canvas aria-hidden="true"></canvas><span class="badge-num">05</span></small><div class="chip-box"><b>PROCESSO COMPLETO</b><span class="chip-desc">Apostila → Tradução → Apostila</span></div></div>
+           por isso viraram irmãos, não um bloco só como antes. O crachá era
+           uma esfera 3D via Three.js (chip-spheres.js) — trocado por uma
+           esfera FALSA em CSS puro (gradientes simulando luz/sombra, ver
+           .chip small no site.css) pra tirar 5 contextos WebGL da seção 02
+           e deixar esse orçamento de GPU pra seção 03. opacity/scale do
+           crachá e do número continuam controlados pela MESMA timeline de
+           sempre, em <small>/.badge-num. -->
+      <div class="chip c1"><small><span class="badge-num">01</span></small><div class="chip-box"><b>APOSTILAMENTO</b><span class="chip-desc">Original → Apostila</span></div></div>
+      <div class="chip c2"><small><span class="badge-num">02</span></small><div class="chip-box"><b>TRADUÇÃO</b><span class="chip-desc">Original → Tradução</span></div></div>
+      <div class="chip c3"><small><span class="badge-num">03</span></small><div class="chip-box"><b>APOSTILA + TRADUÇÃO</b><span class="chip-desc">Original → Apostila → Tradução</span></div></div>
+      <div class="chip c4"><small><span class="badge-num">04</span></small><div class="chip-box"><b>TRADUÇÃO + APOSTILA</b><span class="chip-desc">Original → Tradução → Apostila</span></div></div>
+      <div class="chip c5"><small><span class="badge-num">05</span></small><div class="chip-box"><b>PROCESSO COMPLETO</b><span class="chip-desc">Apostila → Tradução → Apostila</span></div></div>
 
       <div class="s3-bg" aria-hidden="true">
         <svg class="s3-seam" viewBox="0 0 1440 120" preserveAspectRatio="none">
@@ -349,7 +350,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
 <script src="assets/js/solucao-orbital.js?v=10"></script>
 <script src="assets/js/site.js?v=60"></script>
-<script type="module" src="assets/js/chip-spheres.js?v=3"></script>
 <script type="module" src="assets/js/solucao-nodes.js?v=8"></script>
 </body>
 </html>

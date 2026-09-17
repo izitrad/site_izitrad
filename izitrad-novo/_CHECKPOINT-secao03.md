@@ -1,5 +1,5 @@
 # CHECKPOINT — Seção 03 ORBITAL (izitrad-novo)
-_Último update: 2026-09-16_
+_Último update: 2026-09-17_
 
 > Este arquivo viaja com o projeto (OneDrive), independente da conta/máquina do Claude.
 > **Na retomada:** leia este arquivo + os arquivos listados antes de mexer em qualquer coisa.
@@ -50,10 +50,28 @@ No ambiente do agente Claude **não dá pra renderizar/print/profilar** (viewpor
 - **Opção 2 (PAUSADA):** documento passando pelos **triângulos VIVOS** durante o deslize sem travar → exige **consolidar os 4 renderers WebGL num só**. Catch: a oclusão (nós atrás/na frente do doc) provavelmente pede **2 canvases** (front/back), não 1 → 2 contextos em vez de 4. Esforço médio-alto, risco visual temporário.
 - **Calibração fina (A1) — NÃO decidida:** ainda não escolhemos se a geometria final segue a **v29N** ou a da **integração atual**. **NÃO fazer A1 antes dessa decisão.**
 - **Mobile/responsividade** e ajuste do **tom do rosa** da descarga → depois.
-- **Proposta de copy (narrativa das seções) — PENDENTE DE DECISÃO, não implementada.**
-  Diagnóstico: `.copy-a`, `.s3-headline` e `.s3o-intro` repetem a mesma ideia ("você sabe o que precisa / a gente resolve") em sequência rápida dentro da mesma seção 03, e `.s3-headline` ainda contradiz `.copy-a`. `.s3-close` também duplica quase literalmente a promessa do Hero. Proposta: separar os eixos — **02 = qual COMBINAÇÃO/ordem** (os 5 chips) e **03 = qual TIPO de tradução** (os nós orbitais) — e parar de repetir a mesma frase-guarda-chuva.
-  - `.copy-a` → h2: "Um documento. Cinco jeitos de chegar lá." / sub1: "Apostila, tradução, ou os dois — a ordem muda o resultado." / sub2: "Veja qual combinação é a sua."
-  - `.s3-headline` → "Isso resolve a ordem. Falta o tipo de tradução." / `.s3-sub`: "Juramentada, certificada, técnica ou simples — cada uma serve pra um caso diferente."
-  - `.s3o-title` → "CADA TRIÂNGULO É UM TIPO DE TRADUÇÃO." (alt: "TOQUE E DESCUBRA QUAL É O SEU."); `.s3o-lead` mantém como está.
-  - `.s3-close` → h2: "Já sabe o que precisa? Manda pra gente." (parágrafo mantém).
+- **Proposta de copy (narrativa das seções) — PARCIALMENTE implementada.**
+  Diagnóstico: `.copy-a`, `.s3-headline` e `.s3o-intro` repetiam a mesma ideia ("você sabe o que precisa / a gente resolve") em sequência rápida dentro da mesma seção 03, e `.s3-headline` ainda contradizia `.copy-a`. `.s3-close` também duplicava quase literalmente a promessa do Hero. Eixo proposto: **02 = qual COMBINAÇÃO/ordem** (os 5 chips) e **03 = qual TIPO de tradução** (os nós orbitais).
+  - ✅ `.copy-a` → h2: "Um documento. Cinco jeitos de chegar lá." / sub1: "Apostila, tradução, ou os dois — a ordem muda o resultado." / sub2: "Veja qual combinação é a sua." — **feito** (2026-09-17).
+  - ⬜ `.s3-headline` → "Isso resolve a ordem. Falta o tipo de tradução." / `.s3-sub`: "Juramentada, certificada, técnica ou simples — cada uma serve pra um caso diferente." — ainda não aplicado.
+  - ⬜ `.s3o-title` → "CADA TRIÂNGULO É UM TIPO DE TRADUÇÃO." (alt: "TOQUE E DESCUBRA QUAL É O SEU."); `.s3o-lead` mantém como está — ainda não aplicado.
+  - ⬜ `.s3-close` → h2: "Já sabe o que precisa? Manda pra gente." (parágrafo mantém) — ainda não aplicado.
   - Hero e `.s2-layer` (intro da 02) mantêm como estão.
+
+## Sessão 2026-09-17 — Polish visual + performance da Seção 02 ("O Caminho")
+Fora do escopo da 03 orbital, mas registrado aqui por ser a mesma frente de trabalho. Tudo já commitado localmente (não publicado).
+
+**Visual (feito):**
+- `.copy-a` (texto antes dos 5 chips): copy nova (ver acima), tipografia sem uppercase/tracking largo, peso 300, `left:10px`, fonte maior; card `.c2` movido de `top:37%` → `46%` pra não sobrepor o texto.
+- `.chip-box` (cards): borda hairline neutra (era rosa forte), sombra em 3 camadas mais sutis, `border-radius` 14→12px. Valores de hover em `initChipTilt` (site.js) sincronizados com o novo visual (estavam hardcoded com o estilo antigo, causando "voltar pro rosa" ao tirar o mouse — corrigido).
+- Linhas conectoras (`.cam-line`): traço mais fino (2.3→1.4px), dash mais discreto, `stroke-linecap:round`; curva dos degraus suavizada (`pathStair` default `t` 0.55→0.72). Ajuste extra: `pc2.stair.over` -34→-14 (a curva subia perto demais do texto do `.copy-a`).
+- Esferas numeradas dos chips: **trocadas de Three.js/WebGL pra CSS puro** (ver Performance abaixo) — gradientes radiais simulando luz/sombra + brilho pequeno animado (`::before`, deriva lenta) + sombra de contato (`::after`). Número (`.badge-num`) voltou a ser texto real, timing controlado pela mesma timeline GSAP que já existia (fase "4 — número" em `buildCaminho`).
+- Barra de progresso (`.progress`) da seção inteira (02+03): já era funcional (scrub 0→100%, site.js:990), só não parecia. Ganhou trilho arredondado + preenchimento em pílula + ponto com glow marcando a posição — depois deixado mais discreto (trilho/preenchimento mais finos, glow mais fraco) a pedido.
+- **Tentado e revertido:** glow ambiente atrás do documento (`.s2-glow`, radial-gradient+blur estático) — causou um bug não-descrito na inclinação/interação do mouse com o documento. Removido por completo (HTML+CSS). Não tentar de novo sem investigar a causa primeiro, ou esperar o fundo definitivo que a usuária pretende adicionar.
+
+**Performance (feito):**
+- `chip-spheres.js` **removido do projeto** (arquivo deletado) — 5 contextos WebGL a menos na seção 02.
+- `.chip-box`: removido `backdrop-filter:blur(8px)` (caro, quase imperceptível num fundo estático como o atual), compensado com opacidade do fundo .86→.97.
+
+**Ainda pendente (perf), mesmo padrão já aplicado aqui:**
+- Consolidar os 4 renderers WebGL dos triângulos da seção 03 orbital (a "Opção 2" acima) — mesmo raciocínio das 5 esferas, ainda não feito lá.

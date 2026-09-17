@@ -345,7 +345,7 @@ img,svg{display:block}
    abaixo), então a posição do crachá e a linha tracejada (que mede o
    crachá, não o box) não se movem. */
 .chip{position:absolute;width:300px;z-index:3;perspective:1100px}
-.chip-box{border:1px solid rgba(20,0,12,.08);border-radius:12px;background:rgba(255,255,255,.86);backdrop-filter:blur(8px);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 1px 2px rgba(20,0,12,.05), 0 3px 8px rgba(20,0,12,.05), 0 18px 36px -14px rgba(30,0,18,.26);backface-visibility:hidden;width:fit-content;max-width:100%;margin-top:26px}
+.chip-box{border:1px solid rgba(20,0,12,.08);border-radius:12px;background:rgba(255,255,255,.97);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 1px 2px rgba(20,0,12,.05), 0 3px 8px rgba(20,0,12,.05), 0 18px 36px -14px rgba(30,0,18,.26);backface-visibility:hidden;width:fit-content;max-width:100%;margin-top:26px}
 /* cards à esquerda do documento (02/04): o crachá fica do lado que
    encosta no documento (direita do card, não esquerda) e o corpo se abre
    pra esquerda — espelhado em relação a 01/03/05. Mesmo espelhamento vale
@@ -358,23 +358,36 @@ img,svg{display:block}
    ganham translateZ + parallax independentes no hover (initChipTilt) pra
    parecer que flutuam à frente do card, sem o card em si se deformar. */
 .chip-box b,.chip-box .chip-desc{will-change:transform;backface-visibility:hidden}
-.chip small{position:absolute;top:-38px;left:14px;width:60px;height:60px;border-radius:50%;background:transparent;color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;z-index:2;overflow:visible}
+/* crachá = esfera FALSA em CSS puro (era Three.js/WebGL — trocado por
+   camadas de gradiente pra tirar 5 contextos WebGL da seção 02 e deixar
+   esse orçamento de GPU pra seção 03, que é o momento 3D de verdade do
+   site). Base = degradê rosa; a 1ª camada simula o highlight (luz vindo de
+   cima-esquerda), a 2ª simula sombra própria (canto oposto); os insets
+   reforçam o volume sem precisar de geometria real. */
+.chip small{
+  position:absolute;top:-38px;left:14px;width:60px;height:60px;border-radius:50%;
+  color:#fff;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  opacity:0;z-index:2;overflow:visible;
+  background:
+    radial-gradient(circle at 32% 26%,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 24%),
+    radial-gradient(circle at 68% 80%,rgba(110,0,58,.48) 0%,rgba(110,0,58,0) 48%),
+    radial-gradient(circle at 38% 36%,#ff4fb4 0%,#ff0099 55%,#c2006f 100%);
+  box-shadow:inset 0 -7px 11px rgba(110,0,58,.35),inset 0 5px 9px rgba(255,255,255,.28),0 6px 14px rgba(120,0,60,.24);
+}
 .c2 small,.c4 small{left:auto;right:14px}
-/* crachá = esfera 3D (chip-spheres.js). Canvas preenche o mesmo círculo
-   de 50px que .chip small já ocupava — nenhuma posição/tamanho mudou,
-   só quem desenha o rosa e o número (antes CSS+texto, agora a esfera). */
-.chip small canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;display:block;touch-action:none}
-/* sombra de contato — a esfera Three.js não recebe/projeta sombra própria
-   (sem plano de chão na cena); esse blur elíptico embaixo dela é quem "cola"
-   o objeto no card, dando peso/profundidade real em vez de um círculo
-   flutuando sem referência de baixo. */
+/* brilho especular — mancha clara pequena, levemente animada (deriva lenta),
+   pra não ficar 100% estática/morta; custo: uma transform composta na GPU. */
+.chip small::before{content:"";position:absolute;left:22%;top:18%;width:26%;height:17%;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.58) 0%,rgba(255,255,255,0) 72%);filter:blur(.5px);animation:s2SphereShine 5.6s ease-in-out infinite;pointer-events:none}
+@keyframes s2SphereShine{0%,100%{transform:translate(0,0)}50%{transform:translate(3px,-2.5px)}}
+/* sombra de contato — "cola" a esfera no card, dando peso/profundidade
+   real em vez de um círculo flutuando sem referência de baixo. */
 .chip small::after{content:"";position:absolute;left:50%;bottom:-9px;width:64%;height:13px;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(120,0,60,.38) 0%,rgba(120,0,60,.16) 48%,transparent 75%);filter:blur(3px);z-index:-1;pointer-events:none}
-/* fallback (WebGL indisponível, ver chip-spheres.js): volta ao crachá
-   plano de antes — círculo rosa em CSS + número em HTML normal. */
-.chip small.sphere-fallback{background:var(--pink)}
-.chip small.sphere-fallback canvas{display:none}
-.chip small.sphere-fallback .badge-num{display:block!important}
-.chip .badge-num{opacity:0}
+/* opacity:0 de repouso — o próprio site.js (buildCaminho, fase "4 — número")
+   já tem um fromTo(num,{opacity:0}→{opacity:1}) na timeline de scroll,
+   sequenciado logo depois da esfera aparecer; antes o número vinha
+   escondido via display:none (chip-spheres.js escrevia na textura), agora
+   ele É o número — não pode nascer visível antes da vez dele. */
+.chip small .badge-num{opacity:0;position:relative;z-index:1;text-shadow:0 2px 5px rgba(90,0,48,.4)}
 .chip b{display:block;font-family:'Outfit';font-weight:800;font-size:18px;letter-spacing:.01em;color:#15224c;line-height:1.15}
 .chip-desc{display:block;font-family:var(--copy-font),'DM Sans',sans-serif;font-size:14px;line-height:1.45;margin-top:7px;color:#4a4a52}
 .c1{left:76%;top:20%}.c2{left:10%;top:46%}.c3{left:79%;top:40%}.c4{left:6%;top:69%}.c5{left:76%;top:73%}
@@ -392,8 +405,14 @@ img,svg{display:block}
 /* pontos de conexão sólidos — pequenos, sem glow, encostados na borda do
    documento e na borda do card (ver cardEdgePoint/camDocAnchors em site.js). */
 .cam-node{fill:#FF0099;opacity:0}
-.progress{position:absolute;right:3%;top:20%;height:60%;width:1px;background:rgba(120,120,120,.28);z-index:10}
-.progress i{display:block;width:5px;height:0;background:var(--pink);transform:translateX(-2px)}
+/* trilho de progresso da seção inteira (02+03) — já era funcional
+   (scrub 0→100% em site.js), só faltava LER como indicador de posição.
+   Trilho arredondado + preenchimento em pílula + um ponto com glow na
+   ponta (::after em .progress i) marcando "você está aqui", em vez de só
+   uma linha crescendo sem nenhuma pista do que ela representa. */
+.progress{position:absolute;right:3%;top:20%;height:60%;width:1.5px;border-radius:2px;background:rgba(120,120,120,.18);z-index:10}
+.progress i{display:block;position:relative;width:3px;height:0;border-radius:2px;background:rgba(255,0,153,.7);transform:translateX(-.75px)}
+.progress i::after{content:"";position:absolute;left:50%;bottom:-2px;width:6px;height:6px;border-radius:50%;background:var(--pink);box-shadow:0 0 5px rgba(255,0,153,.45);transform:translateX(-50%)}
 /* ---- Transição 02→03 = transporte LITERAL da máscara aprovada (v5) ----
    .s3-bg        = camada REVELADA (era .reveal-bg da v5): fundo escuro, atrás.
    .s3-mask-front= camada da FRENTE, 200vh, com o FURO (era .intro da v5):
