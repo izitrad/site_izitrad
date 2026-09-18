@@ -515,7 +515,7 @@ img,svg{display:block}
 .s3{display:none}
 .s3-fill{background:#000}
 .s3{position:absolute;inset:0;z-index:7;pointer-events:none}
-.s3-id{position:absolute;top:5%;left:50%;transform:translateX(-50%);color:var(--pink);opacity:0;z-index:7}
+.s3-id{position:absolute;top:5%;left:50%;transform:translateX(-50%);color:#00FF66;opacity:0;z-index:7}
 .s3-intro{position:absolute;left:6%;top:13%;max-width:34%;z-index:3}
 .s3-headline{margin:0;font-size:clamp(30px,4.2vw,70px);color:#fff;opacity:0;text-transform:uppercase}
 .s3-sub{margin:22px 0 0;font-size:clamp(13px,1.1vw,17px);line-height:1.55;color:rgba(255,255,255,.68);opacity:0}
@@ -563,10 +563,11 @@ img,svg{display:block}
 .s3o-back{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:visible;opacity:0}
 .s3o-front{position:absolute;inset:0;z-index:11;pointer-events:none;overflow:visible;opacity:0}
 /* intro da coluna esquerda — oculta até a abertura da 03 (autoAlpha via JS). */
-.s3o-intro{position:absolute;left:10px;top:24%;width:min(460px,34%);z-index:12;color:#fff;opacity:0;pointer-events:none;font-family:'DM Sans',sans-serif}
-.s3o-title{font-family:'Outfit';font-weight:900;font-size:clamp(34px,3.6vw,60px);line-height:.98;letter-spacing:-.045em;margin:0 0 20px}
-.s3o-title span{opacity:.55;font-weight:400;font-size:.78em;display:inline-block}
-.s3o-lead{font-size:17px;line-height:1.55;max-width:420px;color:rgba(255,255,255,.78);margin:0}
+.s3o-intro{position:absolute;left:10px;top:24%;width:min(560px,38%);z-index:12;color:#fff;opacity:0;pointer-events:none;font-family:'DM Sans',sans-serif}
+.s3o-title{font-family:'Outfit';font-weight:900;font-size:clamp(53px,5.9vw,95px);line-height:.98;letter-spacing:-.045em;margin:0 0 20px;color:#00FF66}
+.s3o-title span{font-weight:400;font-size:clamp(40px,4.51vw,72px);display:inline-block;color:#fff}
+.s3o-lead{font-size:20px;line-height:1.55;max-width:520px;color:rgba(255,255,255,.78);margin:0}
+.s3o-lead .s3o-hl{color:var(--pink)}
 .s3o-micro{margin-top:30px;display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.5);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
 .s3o-micro::before{content:"";width:40px;height:1px;background:rgba(255,255,255,.6)}
 @media(prefers-reduced-motion:reduce){
