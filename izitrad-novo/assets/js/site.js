@@ -1154,7 +1154,12 @@ function initSolucao(root){
      separado em solucao-orbital.js, injetando no MESMO timeline scrubado
      (100% reversível). Anéis/nós/interações entram nas próximas etapas. */
   const ORBITAL_OPEN_AT = 4.6 + COVER + INTRO + CAMINHOS_SHIFT + 0.5;
-  if(window.SolucaoOrbital) window.SolucaoOrbital.init(root, tl, {openAt: ORBITAL_OPEN_AT});
+  // introAt = LABEL_HIDE_AT: mesmo instante em que o rótulo "03 — A Solução"
+  // nasce atrás do documento — sincroniza a entrada do texto da coluna
+  // esquerda (.s3o-intro) com esse momento, reforçando a leitura de
+  // "documento descendo" em vários elementos ao mesmo tempo, não só no
+  // rótulo (pedido da usuária).
+  if(window.SolucaoOrbital) window.SolucaoOrbital.init(root, tl, {openAt: ORBITAL_OPEN_AT, introAt: LABEL_HIDE_AT});
 
   gsap.to(q('.progress i'),{height:'100%',ease:'none',
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});
