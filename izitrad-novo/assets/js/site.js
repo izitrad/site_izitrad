@@ -1018,11 +1018,28 @@ function initSolucao(root){
   /* 03 — chegada + headline + halo */
   // "03 / A SOLUÇÃO" ficava opacity 0→1 (fade simples); agora aparece de
   // uma vez (set, sem tween) e o giro das letras é que faz a entrada.
-  // +COVER em TODAS as âncoras da 03: a entrada só começa DEPOIS que a máscara
-  // cobriu 100% da viewport (fim da fase de cover). Ritmo interno da 03
-  // preservado — o bloco inteiro só desloca no tempo.
-  tl.set(q('.s3-id'),{opacity:1},4.8+COVER+INTRO+CAMINHOS_SHIFT);
-  if(s3IdReels) addRollingTween(tl, s3IdReels, 4.8+COVER+INTRO+CAMINHOS_SHIFT);
+  // ⚠️ .s3-id é EXCEÇÃO ao padrão "+COVER em todas as âncoras da 03": o
+  // movimento (cruzar o documento, subindo) precisa estar sincronizado
+  // com a QUEDA de verdade — por isso amarrado na MESMA janela do 1º
+  // tween de .doc-stage (y:0→90, 3.2→4.1, INTRO+CAMINHOS_SHIFT à parte):
+  // é o único trecho em que o documento realmente DESCE na tela (o tween
+  // seguinte é ele voltando/assentando pro centro, não caindo). Só nessa
+  // janela existe movimento oposto de verdade (documento descendo + rótulo
+  // subindo ao mesmo tempo) — colocar em qualquer outro momento (preto já
+  // selado, deslize lateral, ou depois de tudo assentado) faz a sensação
+  // de queda desaparecer, porque não tem mais nada se movendo pra comparar.
+  // Sobe até a posição de REPOUSO normal (y:0, top:5% do CSS — a MESMA
+  // usada por .section-id/todos os rótulos de capítulo) e FICA lá, não
+  // continua subindo até sair de quadro.
+  // MESMOS start/duration/ease do 1º tween de .doc-stage (y:0→90,
+  // 'power1.in') — não é só "começar e terminar junto", é a MESMA forma de
+  // curva, pra que em qualquer ponto intermediário do scroll a proporção
+  // entre "quanto o documento já desceu" e "quanto o rótulo já subiu" se
+  // mantenha consistente (um evento só, não duas animações coincidindo).
+  const FALL_AT = 3.2+INTRO+CAMINHOS_SHIFT, FALL_DUR = 0.9, FALL_EASE = 'power1.in';
+  tl.set(q('.s3-id'),{y:400,opacity:1},FALL_AT); // nasce atrás/na altura do documento, já visível
+  if(s3IdReels) addRollingTween(tl, s3IdReels, FALL_AT);
+  tl.to(q('.s3-id'),{y:0,ease:FALL_EASE,duration:FALL_DUR},FALL_AT);
   // .s3-headline/.s3-sub/.halo removidos do HTML (não usados — substituídos
   // pelo .s3o-intro do orbital). O sistema de linhas (.veins/.svc) abaixo
   // continua intacto, DORMENTE (.s3 tem display:none), preservado de

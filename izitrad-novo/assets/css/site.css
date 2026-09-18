@@ -564,8 +564,6 @@ img,svg{display:block}
 .s3o-front{position:absolute;inset:0;z-index:11;pointer-events:none;overflow:visible;opacity:0}
 /* intro da coluna esquerda — oculta até a abertura da 03 (autoAlpha via JS). */
 .s3o-intro{position:absolute;left:6%;top:24%;width:min(360px,30%);z-index:12;color:#fff;opacity:0;pointer-events:none;font-family:'DM Sans',sans-serif}
-.s3o-kicker{font-size:13px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:22px;opacity:.85}
-.s3o-kicker b{display:block;font-size:16px;letter-spacing:.04em;margin-bottom:8px;color:var(--pink)}
 .s3o-title{font-family:'Outfit';font-weight:900;font-size:clamp(30px,3vw,54px);line-height:.98;letter-spacing:-.045em;margin:0 0 20px}
 .s3o-title span{opacity:.55;font-weight:400}
 .s3o-lead{font-size:15px;line-height:1.55;max-width:340px;color:rgba(255,255,255,.78);margin:0}
@@ -576,7 +574,7 @@ img,svg{display:block}
   .s3o-back,.s3o-front{display:none}
   .s3o-intro{position:relative;left:auto;top:auto;width:auto;opacity:1;color:var(--ink);margin:24px auto;max-width:640px}
   .s3o-title{color:var(--ink)}.s3o-lead{color:#555}
-  .s3o-kicker,.s3o-micro{color:#777}.s3o-kicker b{color:var(--pink)}
+  .s3o-micro{color:#777}
 }
 
 /* ============================== MOBILE ============================== */
