@@ -1155,11 +1155,17 @@ function initSolucao(root){
      (100% reversível). Anéis/nós/interações entram nas próximas etapas. */
   const ORBITAL_OPEN_AT = 4.6 + COVER + INTRO + CAMINHOS_SHIFT + 0.5;
   // introAt = LABEL_HIDE_AT: mesmo instante em que o rótulo "03 — A Solução"
-  // nasce atrás do documento — sincroniza a entrada do texto da coluna
-  // esquerda (.s3o-intro) com esse momento, reforçando a leitura de
-  // "documento descendo" em vários elementos ao mesmo tempo, não só no
-  // rótulo (pedido da usuária).
-  if(window.SolucaoOrbital) window.SolucaoOrbital.init(root, tl, {openAt: ORBITAL_OPEN_AT, introAt: LABEL_HIDE_AT});
+  // nasce atrás do documento — a entrada do texto da coluna esquerda
+  // (.s3o-intro) fica ATRELADA a esse momento (mesma origem), mas com uma
+  // folga de +0.6: LABEL_HIDE_AT sozinho (14.6) cai bem no meio da máscara
+  // 02→03 ainda abrindo (fundo ainda claro, cards da 02 ainda visíveis) —
+  // o texto aparecia ali com contraste ruim, brigando com o resto da
+  // composição que ainda não tinha fechado em preto. +0.6 pousa por volta
+  // de t≈15.2, quando a máscara já fechou 100% (fundo já preto), mantendo
+  // a mesma "origem" de sincronização mas com o fundo pronto pra receber o
+  // texto.
+  const INTRO_DELAY_AFTER_LABEL = 0.6;
+  if(window.SolucaoOrbital) window.SolucaoOrbital.init(root, tl, {openAt: ORBITAL_OPEN_AT, introAt: LABEL_HIDE_AT+INTRO_DELAY_AFTER_LABEL});
 
   gsap.to(q('.progress i'),{height:'100%',ease:'none',
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});

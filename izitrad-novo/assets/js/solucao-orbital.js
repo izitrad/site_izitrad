@@ -186,8 +186,13 @@
     // sempre um bloco de texto específico.
     if(intro) tl.set(intro, { autoAlpha: 1 }, introAt);
     const INTRO_STAGGER = 0.18;
+    // ease:'none' de propósito — já fazia parte da timeline escrubada (presa
+    // ao scroll, não a um timer), mas 'power2.out' desacelerava no final,
+    // dando uma sensação de suavização própria, meio dissociada da
+    // velocidade real do scroll. 'none' é proporcional 1:1: anda exatamente
+    // na medida em que a pessoa rola, para exatamente onde ela parar.
     introBlocks.forEach((el, i)=>{
-      tl.fromTo(el, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'power2.out', duration:OPEN_DUR*0.55 }, introAt + i*INTRO_STAGGER);
+      tl.fromTo(el, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:OPEN_DUR*0.55 }, introAt + i*INTRO_STAGGER);
     });
     // 3) Saturno materializa no centro final (fade + scale-in PROVISÓRIO),
     //    cronometrado com a chegada do documento.
