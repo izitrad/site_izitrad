@@ -790,6 +790,20 @@ function initSolucao(root){
       {opacity:0, y:12, scale:.97, filter:'blur(4px)'},
       {opacity:1, y:0, scale:1, filter:'blur(0px)', duration:CARD_DUR, ease:'back.out(1.6)'},
       boxAt);
+    // TESTE — carimbo do selo, síncrono com o card de Apostilamento assentando.
+    // .doc tem overflow:hidden (acabamento da folha) — como o selo nasce
+    // MAIOR que o final, a sobra passava da borda e ficava cortada. Destrava
+    // só durante os .5s da animação (nada mais sai dos limites nesse
+    // intervalo) e trava de novo assim que o selo assenta.
+    if(cfg.key==='pc1'){
+      const SEAL_DUR=.5;
+      tl.set(q('.doc'),{overflow:'visible'},boxAt)
+        .fromTo(q('.doc__seal'),
+          {opacity:0, scale:2.2, rotation:-30},
+          {opacity:1, scale:1, rotation:15, duration:SEAL_DUR, ease:'back.out(2.4)'},
+          boxAt)
+        .set(q('.doc'),{overflow:'hidden'},boxAt+SEAL_DUR);
+    }
   };
 
   const activate=(key,svcSel,at)=>{
@@ -811,6 +825,12 @@ function initSolucao(root){
   };
 
   gsap.set(q('.doc-stage'),{x:0,y:0,xPercent:-50,yPercent:-50,rotation:-4,scale:1});
+  // TESTE — selo "carimba" no documento (em vez de nascer já pronto),
+  // sincronizado com o card "01 — APOSTILAMENTO" assentando (ver boxAt em
+  // buildCaminho, cfg.key==='pc1'). Base xPercent/yPercent replica o
+  // translate(-50%,-50%) que já existia no CSS — precisa ir pro GSAP porque
+  // ele passa a controlar o transform inteiro do elemento.
+  gsap.set(q('.doc__seal'),{xPercent:-50,yPercent:-50,scale:2.2,rotation:-30,opacity:0,transformOrigin:'50% 50%'});
 
   /* --- Transição 02→03: transporte LITERAL da máscara aprovada (v5) ---
      .s3-mask-front (camada de 200vh, era o .intro da v5) carrega o FURO; a

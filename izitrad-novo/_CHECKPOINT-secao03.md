@@ -93,3 +93,20 @@ Usuária trouxe uma referência Three.js bem elaborada (`_izi-GPT/efeito card vi
 **Ainda pendente:**
 - **Mobile**: `initChipTilt` desliga inteiro em touch (`matchMedia('(hover:hover)...')`), mas o `::after` (espessura) é CSS puro sempre ativo — sem a rotação 3D combinando, provavelmente aparece quebrado/estranho no mobile. Precisa de fallback (provavelmente esconder `::after` e simplificar no media query mobile existente do site.css).
 - Atmosfera de fundo (glow atrás do documento) segue revertida (ver sessão parte 1) — não retomada ainda.
+
+## Sessão 2026-09-17 (parte 3) — Glow nas linhas (revertido) + carimbo do selo (feito)
+
+**Glow nas linhas conectoras (`.cam-line`) — TENTADO E REVERTIDO:**
+- Testado só em `pc2`/`pc4` (linhas dos cards c2/c4) pra comparar com o resto.
+- `filter:drop-shadow` via CSS **não renderizava** — nem no `.cam-line` (que tem `mask` pro desenho progressivo por scroll) nem no `.cam-node` (círculo, sem mask nenhum). Causa mais provável: `filter`+`mask` no mesmo elemento SVG é instável entre navegadores; o motivo do `.cam-node` falhar também ficou sem explicação certa.
+- Corrigido trocando pra um **`<filter>` SVG nativo** (`feGaussianBlur`, aplicado via atributo, não CSS) num `<path>` separado sem `mask` — essa técnica **funcionou** (confirmado visualmente). Fica registrado como a técnica certa pra glow em elementos com mask, caso seja retomado.
+- Usuária não gostou do resultado visual → **removido por completo** (JS: `ensureCamGlow`/filter def/tweens; CSS: comentário residual). Linhas voltaram ao estado normal, sem glow, nos 5 caminhos.
+
+**Carimbo do selo "BRASIL/APOSTILA" (`.doc__seal`) — FEITO, mantido:**
+Ideia da usuária: em vez do selo nascer pronto no documento, ele "carimba" (aparece com efeito, tipo carimbo caindo) sincronizado com o card **"01 — APOSTILAMENTO"** assentando (`boxAt` de `pc1` em `buildCaminho`, site.js).
+- `gsap.set('.doc__seal', {xPercent:-50,yPercent:-50,scale:2.2,rotation:-30,opacity:0,...})` — estado inicial escondido (perto do início de `initSolucao`).
+- `tl.fromTo('.doc__seal', {opacity:0,scale:2.2,rotation:-30}, {opacity:1,scale:1,rotation:15,duration:.5,ease:'back.out(2.4)'}, boxAt)` — o "carimbo" propriamente dito.
+- **Bug encontrado e corrigido:** `.doc` tem `overflow:hidden` (dá o acabamento de canto arredondado da folha); como o selo nasce maior que o tamanho final, a sobra ficava cortada na borda. Solução atual: `tl.set('.doc',{overflow:'visible'})` no início do carimbo e `overflow:'hidden'` de volta ao final (`boxAt+SEAL_DUR`).
+  ⚠️ **Trade-off conhecido:** destravar o `overflow` do `.doc` inteiro (não só do selo) faz TODO o card perder o recorte arredondado durante essa janela — se a escala do selo for grande/o movimento for maior (testado com `scale:3.4` + `y:-70`), os cantos do card ficam visivelmente QUADRADOS por um instante (bug visual real, já visto e revertido uma vez). Com `scale:2.2` (valor atual) o problema existe pelo mesmo motivo, só que mais rápido/sutil — **prestar atenção nisso ao validar**.
+  Solução "correta" mas não implementada (mais trabalho, precisa de medição via JS): tirar o `.doc__seal` de dentro de `.doc` (mover pra um elemento irmão fora do clip) e posicionar via `getBoundingClientRect` — evitaria depender de destravar o `overflow` do card inteiro.
+- Testado empurrar mais o efeito (`scale:3.4`, `y:-70`, `rotation:-40`) — causou o bug dos cantos quadrados de forma bem visível, revertido de volta pro valor atual (`scale:2.2`, sem `y`, `rotation:-30`).
