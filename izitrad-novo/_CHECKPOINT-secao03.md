@@ -75,3 +75,21 @@ Fora do escopo da 03 orbital, mas registrado aqui por ser a mesma frente de trab
 
 **Ainda pendente (perf), mesmo padrão já aplicado aqui:**
 - Consolidar os 4 renderers WebGL dos triângulos da seção 03 orbital (a "Opção 2" acima) — mesmo raciocínio das 5 esferas, ainda não feito lá.
+
+## Sessão 2026-09-17 (parte 2) — Cards "vidro premium" (.chip-box--glass)
+Usuária trouxe uma referência Three.js bem elaborada (`_izi-GPT/efeito card vidro/_1-NOVO PONTO DE PARTIDA.html` — vidro com transmissão real, fresnel em shader, aberração cromática via 2 passes de render, RectAreaLight). Avaliado como caro demais pra produção (2 renders/frame + shaders custom) — decisão: usar só como referência de ARTE, recriar em CSS puro.
+
+**Resultado — aplicado nos 5 chips (`.chip-box--glass` no site.css, ~linha 349-410):**
+- Fundo "vidro": gradiente diagonal simulando reflexo + insets simulando espessura de borda (sem `backdrop-filter`).
+- Brilho seguindo o mouse: reaproveita o x/y que `initChipTilt` (site.js) já calcula por `pointermove` — só escreve 2 custom properties (`--mx`/`--my`) a mais, sem listener/loop novo.
+- Título sólido/nítido (testamos serigrafia com `text-shadow` em camadas — prejudicava legibilidade, revertido pro estilo limpo).
+- Fluxo origem→destino com hierarquia de peso (etapas intermediárias leves `.cd-a`, última forte `.cd-b`), conectadas por setas com leve brilho (`.cd-band`).
+- **"Espessura" física falsa**: pseudo-elemento `::after`, retângulo estreito (20px) articulado na borda do card e girado 90° em Y — como o card já gira de verdade via GSAP (`preserve-3d`), a face aparece como profundidade real. Fica sempre do lado que "abre" (onde o crachá NÃO está): direita em c1/c3/c5, **espelhada pra esquerda** em c2/c4 (`.c2 .chip-box--glass::after,.c4 .chip-box--glass::after`) — esses têm `baseY` de rotação POSITIVO (mirror), então a lógica do lado que abre é invertida.
+  ⚠️ **Limitação conhecida (avisada à usuária):** é um truque 2D calibrado pro ângulo atual, não um sólido 3D de verdade — só tem espessura num lado, não reage à luz, e pode "quebrar" (mostrar costura) se o ângulo mudar demais. NÃO é equivalente à geometria real do arquivo de referência.
+- Hover exagerado (Z/escala/tilt bem mais fortes que os outros elementos do site) pra vender a sensação de "saindo da tela": `GLASS_HOVER_CARD_Z=170` (vs `HOVER_CARD_Z=68` padrão), `GLASS_HOVER_SCALE=1.18` (vs `1.09`), `GLASS_TILT_MULT=1.8`. `baseY` de repouso também mais forte (`±27°` vs `±24°`).
+- Bug corrigido durante o trabalho: o crachá numerado (`<small>`, elemento IRMÃO do card, não filho) não acompanhava o crescimento do hover — lia como "o texto cresce e briga com a animação". Agora sobe/escala junto (`gsap.to(badge,{z,scale,...})` sincronizado, mesma duração/easing do resto).
+- `chip-desc` reestruturado em HTML: de texto plano (`Original → Apostila`) pra spans semânticos (`<i class="cd-a">`/`.cd-band`/`.cd-b`) — necessário pra hierarquia de peso funcionar.
+
+**Ainda pendente:**
+- **Mobile**: `initChipTilt` desliga inteiro em touch (`matchMedia('(hover:hover)...')`), mas o `::after` (espessura) é CSS puro sempre ativo — sem a rotação 3D combinando, provavelmente aparece quebrado/estranho no mobile. Precisa de fallback (provavelmente esconder `::after` e simplificar no media query mobile existente do site.css).
+- Atmosfera de fundo (glow atrás do documento) segue revertida (ver sessão parte 1) — não retomada ainda.

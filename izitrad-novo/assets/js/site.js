@@ -1194,6 +1194,12 @@ function initChipTilt(root){
   // continua reservado pro hover (REST != 0, mas bem menor que HOVER).
   const REST_TITLE_Z=8, REST_DESC_Z=4;
   const HOVER_TITLE_Z=96, HOVER_DESC_Z=62, HOVER_CARD_Z=68;
+  // card de vidro (.chip-box--glass): elevação/inclinação BEM mais forte no
+  // hover, pra vender a sensação de "saindo da tela" — sombra própria (mantém
+  // os insets do vidro, só engorda a sombra externa + acrescenta glow rosa).
+  const GLASS_HOVER_CARD_Z=170, GLASS_HOVER_SCALE=1.18, GLASS_TILT_MULT=1.8;
+  const GLASS_REST_SHADOW='inset 0 1px 0 rgba(255,255,255,.9), inset 0 -10px 18px rgba(180,190,210,.16), 0 1px 2px rgba(20,0,12,.05), 0 3px 8px rgba(20,0,12,.05), 0 18px 36px -14px rgba(30,0,18,.26)';
+  const GLASS_HOVER_SHADOW='inset 0 1px 0 rgba(255,255,255,.9), inset 0 -10px 18px rgba(180,190,210,.16), 0 2px 4px rgba(20,0,12,.06), 0 14px 28px rgba(20,0,12,.12), 0 60px 110px -20px rgba(20,0,10,.48), 0 0 46px rgba(255,0,153,.22)';
   // mesma lógica pro texto: sem sombra própria, o título/descrição em Z
   // mais alto ainda parecem "colados" no card — a sombra reforça que estão
   // soltos, flutuando à frente dele (mesmo padrão do boxShadow acima).
@@ -1206,7 +1212,23 @@ function initChipTilt(root){
     const title = box.querySelector('b');
     const desc  = box.querySelector('.chip-desc');
     const isLeft = [...chip.classList].some(c=>LEFT.has(c));
-    const baseX=4, baseY=isLeft?24:-24, baseZRot=isLeft?4.5:-4.5;
+    // TESTE (card de vidro, .chip-box--glass): reaproveita o x/y do tilt pra
+    // mover o brilho do vidro (CSS var, ver site.css) — sem listener/loop novo.
+    const isGlass = box.classList.contains('chip-box--glass');
+    // o crachá numerado é IRMÃO do card, não filho — nunca acompanhava o
+    // hover. Com o crescimento grande do glass (scale 1.18 + z 170), o card
+    // "inflava" ao redor de um crachá parado, lendo como um conflito bem
+    // perto do título. Sobe/escala junto, na mesma perspectiva (.chip).
+    const badge = isGlass ? chip.querySelector('small') : null;
+    // card de vidro: rotationY de repouso mais forte — acentua a ponta
+    // esquerda "recuando" e a direita "abrindo" (onde mora a face de
+    // espessura, ::after no CSS), vendendo mais claramente o pequeno bloco
+    // físico em vez de um cartão plano.
+    // card de vidro: inclinação de repouso mais forte, mas respeitando o
+    // espelhamento esquerda/direita (c2/c4 têm o crachá e o transform-origin
+    // no lado oposto — um baseY fixo sem isLeft inclinaria eles pro lado
+    // errado, quebrando a face de espessura que é sempre à DIREITA do card).
+    const baseX=4, baseY=isGlass?(isLeft?27:-27):(isLeft?24:-24), baseZRot=isLeft?4.5:-4.5;
 
     gsap.set(box,{rotationX:baseX,rotationY:baseY,rotationZ:baseZRot,z:0,scale:1});
     if(title) gsap.set(title,{z:REST_TITLE_Z});
@@ -1235,11 +1257,15 @@ function initChipTilt(root){
       if(!r.width || !r.height) return;
       const x = Math.max(-1,Math.min(1, ((e.clientX-r.left)/r.width)*2-1));
       const y = Math.max(-1,Math.min(1, ((e.clientY-r.top)/r.height)*2-1));
-      setRotY(baseY + x*8.5);
-      setRotX(baseX - y*6.5);
-      setRotZ(baseZRot + x*0.8);
-      if(setTitleX){ setTitleX(x*14); setTitleY(y*10); }
-      if(setDescX){ setDescX(x*8); setDescY(y*6); }
+      const tm = isGlass ? GLASS_TILT_MULT : 1;
+      setRotY(baseY + x*8.5*tm);
+      setRotX(baseX - y*6.5*tm);
+      setRotZ(baseZRot + x*0.8*tm);
+      // glass: só o brilho acompanha o mouse — título/desc ficam solidários
+      // ao card (evita 2 movimentos concorrentes na mesma área de texto).
+      if(setTitleX && !isGlass){ setTitleX(x*14); setTitleY(y*10); }
+      if(setDescX && !isGlass){ setDescX(x*8); setDescY(y*6); }
+      if(isGlass){ box.style.setProperty('--mx', x); box.style.setProperty('--my', y); }
     }
     function onMove(e){
       lastEvent=e;
@@ -1247,11 +1273,23 @@ function initChipTilt(root){
       rafId=requestAnimationFrame(()=>{ rafId=null; applyMove(lastEvent); });
     }
     function onEnter(){
-      setZ(HOVER_CARD_Z); setScale(1.09);
-      if(setTitleZ) setTitleZ(HOVER_TITLE_Z);
-      if(setDescZ) setDescZ(HOVER_DESC_Z);
-      gsap.to(box,{boxShadow:HOVER_SHADOW,borderColor:HOVER_BORDER,duration:.4,ease:'power2.out'});
-      if(title) gsap.to(title,{textShadow:HOVER_TITLE_SHADOW,duration:.4,ease:'power2.out'});
+      setZ(isGlass ? GLASS_HOVER_CARD_Z : HOVER_CARD_Z);
+      setScale(isGlass ? GLASS_HOVER_SCALE : 1.09);
+      // no card de vidro, título/desc "crescendo" (translateZ) por cima do
+      // brilho que já se move com o mouse duplicava movimento e lia como bug —
+      // aqui só o card inteiro se move (tilt+scale), texto fica solidário.
+      if(setTitleZ && !isGlass) setTitleZ(HOVER_TITLE_Z);
+      if(setDescZ && !isGlass) setDescZ(HOVER_DESC_Z);
+      // .chip-box--glass mantém os insets do vidro (sombra própria, ver
+      // GLASS_HOVER_SHADOW) — só a elevação externa/glow crescem; a borda
+      // (que no glass é decorativa/CSS) não é tocada, ao contrário dos
+      // outros cards, onde ela vira rosa no hover.
+      if(isGlass){
+        gsap.to(box,{boxShadow:GLASS_HOVER_SHADOW,duration:.55,ease:'power3'});
+        if(badge) gsap.to(badge,{z:GLASS_HOVER_CARD_Z*.55,scale:1.10,duration:.55,ease:'power3'});
+      }
+      else gsap.to(box,{boxShadow:HOVER_SHADOW,borderColor:HOVER_BORDER,duration:.4,ease:'power2.out'});
+      if(title && !isGlass) gsap.to(title,{textShadow:HOVER_TITLE_SHADOW,duration:.4,ease:'power2.out'});
       if(desc) gsap.to(desc,{textShadow:HOVER_DESC_SHADOW,duration:.4,ease:'power2.out'});
     }
     function onLeave(){
@@ -1260,8 +1298,13 @@ function initChipTilt(root){
       setZ(0); setScale(1);
       if(setTitleZ){ setTitleZ(REST_TITLE_Z); setTitleX(0); setTitleY(0); }
       if(setDescZ){ setDescZ(REST_DESC_Z); setDescX(0); setDescY(0); }
-      gsap.to(box,{boxShadow:REST_SHADOW,borderColor:REST_BORDER,duration:.5,ease:'power2.out'});
-      if(title) gsap.to(title,{textShadow:REST_TEXT_SHADOW,duration:.5,ease:'power2.out'});
+      if(isGlass){ box.style.setProperty('--mx', 0); box.style.setProperty('--my', 0); }
+      if(isGlass){
+        gsap.to(box,{boxShadow:GLASS_REST_SHADOW,duration:.55,ease:'power3'});
+        if(badge) gsap.to(badge,{z:0,scale:1,duration:.55,ease:'power3'});
+      }
+      else gsap.to(box,{boxShadow:REST_SHADOW,borderColor:REST_BORDER,duration:.5,ease:'power2.out'});
+      if(title && !isGlass) gsap.to(title,{textShadow:REST_TEXT_SHADOW,duration:.5,ease:'power2.out'});
       if(desc) gsap.to(desc,{textShadow:REST_TEXT_SHADOW,duration:.5,ease:'power2.out'});
     }
     box.addEventListener('pointerenter', onEnter, {passive:true});

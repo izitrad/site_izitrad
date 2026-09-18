@@ -346,6 +346,70 @@ img,svg{display:block}
    crachá, não o box) não se movem. */
 .chip{position:absolute;width:300px;z-index:3;perspective:1100px}
 .chip-box{border:1px solid rgba(20,0,12,.08);border-radius:12px;background:rgba(255,255,255,.97);padding:16px 18px;opacity:0;transform-origin:18% 50%;transform-style:preserve-3d;will-change:transform;box-shadow:0 1px 2px rgba(20,0,12,.05), 0 3px 8px rgba(20,0,12,.05), 0 18px 36px -14px rgba(30,0,18,.26);backface-visibility:hidden;width:fit-content;max-width:100%;margin-top:26px}
+/* TESTE — "card de vidro" em CSS puro, inspirado na referência Three.js
+   trazida pela usuária. Sem blur/transmissão real: um degradê diagonal
+   simula o reflexo que atravessa o vidro, insets simulam a espessura da
+   borda. Escopado só a .chip-box--glass (c1, pra aprovação) — os outros 4
+   cards continuam no .chip-box "flat" de sempre. */
+.chip-box--glass{
+  position:relative;overflow:visible;
+  padding:22px 26px;
+  border-color:rgba(255,255,255,.6);
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.40) 0%,rgba(255,255,255,0) 32%,rgba(255,255,255,0) 56%,rgba(255,255,255,.30) 80%,rgba(255,255,255,0) 100%),
+    linear-gradient(160deg,#ffffff 0%,#f8fafc 55%,#eef2f6 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -10px 18px rgba(180,190,210,.16),
+    0 1px 2px rgba(20,0,12,.05),
+    0 3px 8px rgba(20,0,12,.05),
+    0 18px 36px -14px rgba(30,0,18,.26);
+}
+/* brilho que segue o mouse — reaproveita o x/y que initChipTilt (site.js)
+   já calcula a cada movimento; só escreve 2 custom properties a mais,
+   sem loop/listener novo. mix-blend-mode:screen pra "clarear" o vidro
+   onde o brilho passa, em vez de tampar o conteúdo. border-radius PRÓPRIO
+   (em vez de depender do overflow:hidden do pai) porque o pai virou
+   overflow:visible pra caber a "espessura" (::after) abaixo. */
+.chip-box--glass::before{
+  content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(circle at calc(50% + var(--mx,0) * 26px) calc(50% + var(--my,0) * 26px),rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 46%);
+}
+/* "espessura" do vidro — face lateral direita falsa (técnica clássica de
+   cubo em CSS: um retângulo alto/estreito, articulado na própria borda
+   direita do card e girado 90° em Y). Como o card já gira em Y de verdade
+   (GSAP, preserve-3d), essa face fica visível como se o card tivesse
+   profundidade física — o canto direito "abre" e mostra o lado, o esquerdo
+   só recua (mesma leitura de um pequeno bloco de vidro, não um cartão
+   plano). */
+.chip-box--glass::after{
+  content:"";position:absolute;top:0;bottom:0;left:100%;width:20px;
+  transform-origin:0 50%;transform:rotateY(90deg);
+  background:linear-gradient(180deg,rgba(255,255,255,.92) 0%,rgba(214,226,236,.86) 14%,rgba(172,188,208,.88) 55%,rgba(146,162,186,.92) 100%);
+  border-radius:0 6px 6px 0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65);
+}
+/* c2/c4: card espelhado (crachá à direita, rotationY de repouso POSITIVO —
+   ver baseY em initChipTilt/site.js) — é a borda ESQUERDA que "abre" pro
+   viewer nesses dois, não a direita. Espelha a face pro lado certo, senão
+   ela ficaria do lado que está recuando (leria errado/backwards). */
+.c2 .chip-box--glass::after,.c4 .chip-box--glass::after{
+  left:auto;right:100%;
+  transform-origin:100% 50%;transform:rotateY(-90deg);
+  border-radius:6px 0 0 6px;
+}
+/* v2 "master": título volta a ser sólido/nítido (sem serigrafia em camadas
+   — era o que mais atrapalhava a leitura) — herda a cor/peso normal de
+   .chip b, sem override aqui. */
+/* fluxo origem→destino: mantém a hierarquia (Original fraco, Apostila
+   forte), mas a seta volta a ser uma seta de verdade — só com um brilho
+   sutil (1 camada de text-shadow, não a pilha inteira) pra soar "de vidro"
+   sem virar ilegível. */
+.chip-box--glass .cd-a{opacity:.55;font-weight:500;font-style:normal}
+.chip-box--glass .cd-b{opacity:.92;font-weight:650;color:#101834;font-style:normal}
+.chip-box--glass .cd-band{margin:0 5px;color:rgba(20,28,56,.55);text-shadow:0 1px 1px rgba(255,255,255,.8)}
+.chip-box--glass b{font-size:22px}
+.chip-box--glass .chip-desc{font-size:15px}
 /* cards à esquerda do documento (02/04): o crachá fica do lado que
    encosta no documento (direita do card, não esquerda) e o corpo se abre
    pra esquerda — espelhado em relação a 01/03/05. Mesmo espelhamento vale

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=66">
+<link rel="stylesheet" href="assets/css/site.css?v=72">
 <link rel="stylesheet" href="assets/css/solucao-orbital.css?v=6">
 </head>
 <body class="pre-anim">
@@ -171,11 +171,17 @@
            e deixar esse orçamento de GPU pra seção 03. opacity/scale do
            crachá e do número continuam controlados pela MESMA timeline de
            sempre, em <small>/.badge-num. -->
-      <div class="chip c1"><small><span class="badge-num">01</span></small><div class="chip-box"><b>APOSTILAMENTO</b><span class="chip-desc">Original → Apostila</span></div></div>
-      <div class="chip c2"><small><span class="badge-num">02</span></small><div class="chip-box"><b>TRADUÇÃO</b><span class="chip-desc">Original → Tradução</span></div></div>
-      <div class="chip c3"><small><span class="badge-num">03</span></small><div class="chip-box"><b>APOSTILA + TRADUÇÃO</b><span class="chip-desc">Original → Apostila → Tradução</span></div></div>
-      <div class="chip c4"><small><span class="badge-num">04</span></small><div class="chip-box"><b>TRADUÇÃO + APOSTILA</b><span class="chip-desc">Original → Tradução → Apostila</span></div></div>
-      <div class="chip c5"><small><span class="badge-num">05</span></small><div class="chip-box"><b>PROCESSO COMPLETO</b><span class="chip-desc">Apostila → Tradução → Apostila</span></div></div>
+      <!-- Card "vidro premium" (base CSS: gradientes/text-shadow/clip-path,
+           inspirada na arte WebGL que a usuária trouxe, sem custo de render
+           3D) — aprovado no c1, replicado nos 5. Fluxos de 3 etapas usam
+           .cd-a (leve) pras intermediárias e .cd-b (forte) só na última,
+           mesma hierarquia do de 2 etapas. Espessura (::after) fica sempre
+           do lado onde o crachá NÃO está (ver regra .c2/.c4 no site.css). -->
+      <div class="chip c1"><small><span class="badge-num">01</span></small><div class="chip-box chip-box--glass"><b>APOSTILAMENTO</b><span class="chip-desc"><i class="cd-a">Original</i><i class="cd-band">→</i><i class="cd-b">Apostila</i></span></div></div>
+      <div class="chip c2"><small><span class="badge-num">02</span></small><div class="chip-box chip-box--glass"><b>TRADUÇÃO</b><span class="chip-desc"><i class="cd-a">Original</i><i class="cd-band">→</i><i class="cd-b">Tradução</i></span></div></div>
+      <div class="chip c3"><small><span class="badge-num">03</span></small><div class="chip-box chip-box--glass"><b>APOSTILA + TRADUÇÃO</b><span class="chip-desc"><i class="cd-a">Original</i><i class="cd-band">→</i><i class="cd-a">Apostila</i><i class="cd-band">→</i><i class="cd-b">Tradução</i></span></div></div>
+      <div class="chip c4"><small><span class="badge-num">04</span></small><div class="chip-box chip-box--glass"><b>TRADUÇÃO + APOSTILA</b><span class="chip-desc"><i class="cd-a">Original</i><i class="cd-band">→</i><i class="cd-a">Tradução</i><i class="cd-band">→</i><i class="cd-b">Apostila</i></span></div></div>
+      <div class="chip c5"><small><span class="badge-num">05</span></small><div class="chip-box chip-box--glass"><b>PROCESSO COMPLETO</b><span class="chip-desc"><i class="cd-a">Apostila</i><i class="cd-band">→</i><i class="cd-a">Tradução</i><i class="cd-band">→</i><i class="cd-b">Apostila</i></span></div></div>
 
       <div class="s3-bg" aria-hidden="true">
         <svg class="s3-seam" viewBox="0 0 1440 120" preserveAspectRatio="none">
@@ -349,7 +355,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
 <script src="assets/js/solucao-orbital.js?v=10"></script>
-<script src="assets/js/site.js?v=60"></script>
+<script src="assets/js/site.js?v=66"></script>
 <script type="module" src="assets/js/solucao-nodes.js?v=8"></script>
 </body>
 </html>
