@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=85">
+<link rel="stylesheet" href="assets/css/site.css?v=86">
 <link rel="stylesheet" href="assets/css/solucao-orbital.css?v=6">
 </head>
 <body class="pre-anim">
@@ -283,7 +283,6 @@
                 <div class="doc__map-crop">
                   <img src="assets/img/doc-map.svg" alt="Rota BRASIL para EUA no mapa-múndi">
                 </div>
-                <img class="doc__seal" src="assets/img/doc-selo.svg" alt="Selo Apostila de Haia" aria-hidden="true">
               </div>
               <div class="doc__dash"></div>
               <div class="doc__meta">
@@ -299,6 +298,19 @@
               </div>
               <svg class="doc__play" viewBox="528 138 412 475" aria-hidden="true"><path d="M912.63,344.18l-326.98-188.78c-24.29-14.02-54.65,3.51-54.65,31.55v377.56c0,28.05,30.36,45.58,54.65,31.55l326.98-188.78c24.29-14.02,24.29-49.08,0-63.11Z"/></svg>
             </div>
+          </div>
+          <!-- .selo-layer: IRMÃO de .doc (não filho) — sai da camada
+               recortada (.doc tem overflow:hidden) de propósito, pro selo
+               poder vazar da folha durante o carimbo sem quebrar o recorte
+               arredondado do card. Mora dentro de .doc-mouse (mesmo pai de
+               .doc) pra herdar o MESMO sistema de coordenadas/movimento
+               global (scroll, slide 02→03, tilt do mouse) — só não herda a
+               respiração (scale) que já era aplicada direto em .doc, nunca
+               se propagou pra baixo mesmo antes. Posição calculada 1x via
+               JS (relocateSeal em site.js), não por % cravada, pra não
+               saltar ao mover o elemento na hierarquia. -->
+          <div class="selo-layer" aria-hidden="true">
+            <img class="doc__seal" src="assets/img/doc-selo.svg" alt="Selo Apostila de Haia">
           </div>
         </div>
       </div>
@@ -354,7 +366,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
 <script src="assets/js/solucao-orbital.js?v=10"></script>
-<script src="assets/js/site.js?v=79"></script>
+<script src="assets/js/site.js?v=80"></script>
 <script type="module" src="assets/js/solucao-nodes.js?v=8"></script>
 </body>
 </html>

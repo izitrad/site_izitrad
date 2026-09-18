@@ -744,7 +744,12 @@ function initSolucao(root){
   }
   updateCaminhos();
 
-  gsap.to(q('.doc'),{scale:1.014,duration:2.6,repeat:-1,yoyo:true,ease:'sine.inOut'});
+  // .selo-layer (mesma caixa/centro de .doc, ver CSS) entra como 2º alvo do
+  // MESMO tween — não duplica timeline, não muda amplitude/duração/timing:
+  // é a mesma instância animando os dois em sincronia perfeita. Preserva a
+  // respiração visual que o selo tinha por herança quando ainda morava
+  // dentro de .doc (antes da separação de camadas).
+  gsap.to(q('.doc, .selo-layer'),{scale:1.014,duration:2.6,repeat:-1,yoyo:true,ease:'sine.inOut'});
 
   const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
     scrub:1, invalidateOnRefresh:true, onRefresh:()=>{ updateCaminhos(); } } }); // updateVeins() desligado (ver acima)
@@ -812,18 +817,15 @@ function initSolucao(root){
       {opacity:1, y:0, scale:1, filter:'blur(0px)', duration:CARD_DUR, ease:'back.out(1.6)'},
       boxAt);
     // TESTE — carimbo do selo, síncrono com o card de Apostilamento assentando.
-    // .doc tem overflow:hidden (acabamento da folha) — como o selo nasce
-    // MAIOR que o final, a sobra passava da borda e ficava cortada. Destrava
-    // só durante os .5s da animação (nada mais sai dos limites nesse
-    // intervalo) e trava de novo assim que o selo assenta.
+    // .doc__seal agora mora em .selo-layer (irmão de .doc, sem overflow) —
+    // pode vazar da folha livremente, sem precisar mais destravar/travar o
+    // overflow:hidden de .doc (gambiarra antiga removida).
     if(cfg.key==='pc1'){
       const SEAL_DUR=.5;
-      tl.set(q('.doc'),{overflow:'visible'},boxAt)
-        .fromTo(q('.doc__seal'),
-          {opacity:0, scale:2.2, rotation:-30},
-          {opacity:1, scale:1, rotation:15, duration:SEAL_DUR, ease:'back.out(2.4)'},
-          boxAt)
-        .set(q('.doc'),{overflow:'hidden'},boxAt+SEAL_DUR);
+      tl.fromTo(q('.doc__seal'),
+        {opacity:0, scale:2.2, rotation:-30},
+        {opacity:1, scale:1, rotation:15, duration:SEAL_DUR, ease:'back.out(2.4)'},
+        boxAt);
     }
   };
 
@@ -846,6 +848,26 @@ function initSolucao(root){
   };
 
   gsap.set(q('.doc-stage'),{x:0,y:0,xPercent:-50,yPercent:-50,rotation:-4,scale:1});
+
+  // Separação de camadas do selo (.doc__seal agora mora em .selo-layer,
+  // irmão de .doc — ver index.html/CSS): calcula a posição EQUIVALENTE ao
+  // antigo left:90%/top:88%/width:74% (que eram relativos a .doc__map),
+  // agora em % da caixa de .doc (que .selo-layer replica via inset:0).
+  // Medição ÚNICA, na montagem — nunca de novo depois (sem leitura de
+  // layout no scroll/mousemove/frame da animação).
+  (function relocateSeal(){
+    const seal = root.querySelector('.doc__seal');
+    const docMap = root.querySelector('.doc__map');
+    const docEl = root.querySelector('.doc');
+    if(!seal || !docMap || !docEl) return;
+    const mr = docMap.getBoundingClientRect(), dr = docEl.getBoundingClientRect();
+    if(!mr.width || !dr.width) return;
+    const cx = mr.left + mr.width*0.90, cy = mr.top + mr.height*0.88; // fórmula original (90%/88% de .doc__map)
+    const w  = mr.width*0.74; // fórmula original (74% de .doc__map)
+    seal.style.left  = ((cx-dr.left)/dr.width*100).toFixed(3)+'%';
+    seal.style.top   = ((cy-dr.top)/dr.height*100).toFixed(3)+'%';
+    seal.style.width = (w/dr.width*100).toFixed(3)+'%';
+  })();
   // TESTE — selo "carimba" no documento (em vez de nascer já pronto),
   // sincronizado com o card "01 — APOSTILAMENTO" assentando (ver boxAt em
   // buildCaminho, cfg.key==='pc1'). Base xPercent/yPercent replica o

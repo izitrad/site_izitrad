@@ -125,14 +125,16 @@ Causa raiz: `.s3{display:none}` era um **placeholder temporário** de uma etapa 
 Reaproveitado o efeito do sistema antigo/dormente (`.pulse` das veias): um ponto rosa claro com glow que percorre a linha logo depois dela desenhar, chegando um instante antes da "bola grande"/card aparecer. Implementado como `.cam-pulse` (path SVG próprio por caminho, `ensureCamPulse` em site.js), sincronizado com `LINE_DUR` de cada `buildCaminho`. Testado primeiro só no card 01, aprovado, depois estendido pros outros 4.
 ⚠️ Nota técnica de depuração: `tl.seek()` sozinho **não dispara callbacks `onUpdate`** por padrão (GSAP suprime eventos em seek) — pra validar esse tipo de efeito via script é preciso `tl.seek(tempo, false)`, e mesmo assim o disparo automático de onUpdate dentro de timelines scrubadas por ScrollTrigger pode não ser confiável nesse ambiente (validação real depende do navegador da usuária).
 
-## Sessão 2026-09-17 (parte 5) — EM ANDAMENTO: separação de camadas do selo
+## Sessão 2026-09-17 (parte 5) — CONCLUÍDO E APROVADO: separação de camadas do selo
 
 Problema identificado: o carimbo do selo (parte 3) precisa vazar da folha, mas isso exigia destravar temporariamente o `overflow:hidden` do `.doc` inteiro — quebrando o recorte arredondado do card inteiro durante a animação (bug visual real, cantos ficando quadrados).
 
-**Solução em implementação (arquitetura, sem redesign):** separar o selo do `.doc` estruturalmente.
-- `.doc-mouse` (já existente, já é quem recebe o tilt do mouse — "a folha como peça única") passa a ser o wrapper comum de DOIS filhos: `.doc` (intocado, mantém overflow:hidden/border-radius) e `.selo-layer` (NOVO, irmão de `.doc`, sem overflow, hospeda `.doc__seal`).
-- Como `.selo-layer` fica fora de `.doc`, o carimbo pode vazar livremente sem NUNCA precisar tocar no `overflow` do card — elimina o bug na raiz.
-- `.selo-layer` herda automaticamente todo movimento "global" do documento (scroll via `.doc-stage`, slide 02→03 via `.doc-orbit-wrap`, tilt do mouse via `.doc-mouse`) por estar dentro da mesma cadeia de ancestrais — só NÃO herda a respiração (`scale` 1↔1.014) que é aplicada direto em `.doc`, não se propagava pra baixo mesmo antes.
-- Posição do selo recalculada uma vez via `getBoundingClientRect` (JS) — evita cravar a mão uma % nova e causar salto visual.
-- `.caminhos-svg` (as linhas dos 5 caminhos) fica estruturalmente acima de todo o grupo do documento (z-index:10 vs z:9 do `.doc-orbit-wrap`) — a separação de camadas resolve de graça o risco de colisão visual entre o selo grande e as linhas, sem precisar tocar nas linhas.
-- Ver commit anterior a essa mudança como ponto de reversão caso o resultado não agrade.
+**Solução implementada (arquitetura, sem redesign):** separar o selo do `.doc` estruturalmente.
+- `.doc-mouse` (já existente, já é quem recebe o tilt do mouse — "a folha como peça única") virou o wrapper comum de DOIS filhos: `.doc` (intocado, mantém overflow:hidden/border-radius) e `.selo-layer` (NOVO, irmão de `.doc`, `inset:0`/sem overflow, hospeda `.doc__seal`).
+- Como `.selo-layer` fica fora de `.doc`, o carimbo vaza livremente sem NUNCA precisar tocar no `overflow` do card — elimina o bug na raiz. **Gambiarra `tl.set(.doc,{overflow:...})` removida.**
+- `.selo-layer` herda automaticamente todo movimento "global" do documento (scroll via `.doc-stage`, slide 02→03 via `.doc-orbit-wrap`, tilt do mouse via `.doc-mouse`) por estar dentro da mesma cadeia de ancestrais.
+- **Respiração preservada por pedido explícito:** o selo tinha o scale 1↔1.014 por herança (morava dentro de `.doc`); ao virar irmão, deixaria de respirar junto. Resolvido incluindo `.selo-layer` como 2º alvo do MESMO tween de respiração (`gsap.to(q('.doc, .selo-layer'),{scale:1.014,...})`) — mesma instância, sem duplicar timeline, timing/amplitude idênticos.
+- Posição do selo (`relocateSeal`, IIFE em `initSolucao`) calculada **uma única vez** via `getBoundingClientRect` (mede `.doc__map` e `.doc`, aplica a fórmula original 90%/88%/74% e converte pra % da caixa de `.doc`) — sem leitura de layout contínua (nem scroll, nem mousemove, nem por frame). Validado: desvio <4px em relação à posição original (dentro da variação natural da respiração).
+- `.caminhos-svg` (as linhas dos 5 caminhos) fica estruturalmente acima de todo o grupo do documento (z-index:10 vs z:9 do `.doc-orbit-wrap`) — a separação de camadas resolve de graça o risco de colisão visual entre o selo grande e as linhas, sem precisar tocar nas linhas (`.caminhos-svg` não foi tocado).
+- `.selo-layer` usa `z-index:1`, mas só é relevante DENTRO do stacking context próprio de `.doc-mouse` — não compete com `.caminhos-svg`/outras seções.
+- **Aprovado pela usuária** ("ficou muito bom, até o momento não vejo nada estranho") — testado tilt do mouse, respiração e o carimbo (sem cortar a borda).
