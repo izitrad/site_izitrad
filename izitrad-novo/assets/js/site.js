@@ -1021,44 +1021,39 @@ function initSolucao(root){
   // ⚠️ .s3-id é EXCEÇÃO ao padrão "+COVER em todas as âncoras da 03": o
   // movimento (cruzar o documento, subindo) precisa estar sincronizado
   // com a QUEDA de verdade — por isso amarrado na MESMA janela do 1º
-  // tween de .doc-stage (y:0→90, 3.2→4.1, INTRO+CAMINHOS_SHIFT à parte):
-  // é o único trecho em que o documento realmente DESCE na tela (o tween
-  // seguinte é ele voltando/assentando pro centro, não caindo). Só nessa
-  // janela existe movimento oposto de verdade (documento descendo + rótulo
-  // subindo ao mesmo tempo) — colocar em qualquer outro momento (preto já
-  // selado, deslize lateral, ou depois de tudo assentado) faz a sensação
-  // de queda desaparecer, porque não tem mais nada se movendo pra comparar.
-  // Sobe até a posição de REPOUSO normal (y:0, top:5% do CSS — a MESMA
-  // usada por .section-id/todos os rótulos de capítulo) e FICA lá, não
-  // continua subindo até sair de quadro.
-  // MESMOS start/duration/ease do 1º tween de .doc-stage (y:0→90,
-  // 'power1.in') — não é só "começar e terminar junto", é a MESMA forma de
-  // curva, pra que em qualquer ponto intermediário do scroll a proporção
-  // entre "quanto o documento já desceu" e "quanto o rótulo já subiu" se
-  // mantenha consistente (um evento só, não duas animações coincidindo).
-  const FALL_AT = 3.2+INTRO+CAMINHOS_SHIFT, FALL_DUR = 0.9, FALL_EASE = 'power1.in';
+  // tween de .doc-stage (y:0→90, INTRO+CAMINHOS_SHIFT à parte): é o único
+  // trecho em que o documento realmente DESCE na tela (o tween seguinte é
+  // ele voltando/assentando pro centro, não caindo). Fora dessa janela
+  // (preto já selado, deslize lateral, depois de tudo assentado) a
+  // sensação de queda desaparece — nada mais se move pra comparar.
+  const FALL_AT = 3.2+INTRO+CAMINHOS_SHIFT, FALL_DUR = 0.9;
   const DOC_FALL_PX = 90; // mesmo valor do y do tween de queda do .doc-stage acima — se aquele mudar, atualizar aqui também.
-  // Y inicial derivado da geometria real da viewport (não um pixel fixo de
-  // referência) — calculado só na hora de montar o tween (e de novo se o
-  // ScrollTrigger invalidar num refresh/resize, graças ao invalidateOnRefresh
-  // já ligado no scrollTrigger principal), nunca por frame durante o scroll.
-  // .doc-stage fica centralizado (top:50%) dentro de .sol-stage (que tem
-  // height:100vh sempre, sticky ou não) — seu centro em repouso é sempre
-  // innerHeight*0.5. .s3-id fica em top:5% do mesmo container. A distância
-  // entre os dois "pontos de repouso" é G; resolvendo pra o cruzamento
-  // acontecer em progress≈0.5 do tween de queda (mesma matemática do
-  // tween: doc desce DOC_FALL_PX, rótulo sobe Yinit, mesma curva/janela):
-  //   Yinit = 2*G + DOC_FALL_PX
+  // Curva DESACOPLADA da do documento (era power1.in, copiada — medição
+  // real no navegador mostrou que isso é geometricamente incompatível com
+  // cruzar cedo: em power1.in nada se move quase nada logo no início, mas
+  // a referência visual exige que o cruzamento já tenha acontecido bem
+  // cedo na janela, quando o documento ainda mal desceu). power3.out =
+  // sai rápido (cobre a maior parte da distância logo no começo, cruzando
+  // o documento cedo) e desacelera pro resto do trajeto até y:0. Primeira
+  // calibração, não definitiva — se cruzar cedo/tarde demais, ajustar
+  // aqui (curva) ou no Yinit abaixo, não na janela/tempo.
+  const LABEL_EASE = 'power3.out';
+  // Y inicial derivado da geometria real da viewport, calculado só na
+  // montagem (e de novo em refresh/resize via invalidateOnRefresh já
+  // ligado no scrollTrigger principal) — nunca por frame durante o scroll.
+  // G = distância entre a posição de repouso do rótulo (top:5%) e o
+  // centro de repouso do documento (.doc-stage, centralizado top:50% num
+  // .sol-stage sempre 100vh) — ambos só função de innerHeight.
   function s3IdStartY(){
     const G = innerHeight*0.5 - innerHeight*0.05;
-    return 2*G + DOC_FALL_PX;
+    return G*1.3;
   }
   // SEM addRollingTween aqui de propósito — o giro das letras consumia
   // quase toda a janela de 0.9s deixando o texto borrado/girando durante o
   // percurso (lia como "invisível" mesmo com opacity:1). O texto fica
   // estático/legível o tempo todo; o movimento vertical É a entrada.
   tl.set(q('.s3-id'),{y:s3IdStartY,opacity:1},FALL_AT); // nasce abaixo do documento, já visível e legível
-  tl.to(q('.s3-id'),{y:0,ease:FALL_EASE,duration:FALL_DUR},FALL_AT);
+  tl.to(q('.s3-id'),{y:0,ease:LABEL_EASE,duration:FALL_DUR},FALL_AT);
   // .s3-headline/.s3-sub/.halo removidos do HTML (não usados — substituídos
   // pelo .s3o-intro do orbital). O sistema de linhas (.veins/.svc) abaixo
   // continua intacto, DORMENTE (.s3 tem display:none), preservado de
