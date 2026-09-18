@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=82">
+<link rel="stylesheet" href="assets/css/site.css?v=85">
 <link rel="stylesheet" href="assets/css/solucao-orbital.css?v=6">
 </head>
 <body class="pre-anim">
@@ -195,13 +195,18 @@
            Máscara/translateY dirigidos pelo scrub em initSolucao (site.js). -->
       <div class="s3-mask-front" aria-hidden="true"></div>
 
-      <div class="s3">
-        <div class="s3-id">03 — A SOLUÇÃO</div>
-        <div class="s3-intro">
-          <h2 class="s3-headline">Você não precisa<br><span>descobrir o caminho.</span></h2>
-          <p class="s3-sub">Existem diferentes tipos de tradução e processos.<br>A gente sabe qual é o seu.</p>
-        </div>
+      <!-- rótulo de capítulo — mesmo padrão de .section-id (02), fora de
+           .s3 de propósito: .s3 tem display:none (ver comentário abaixo). -->
+      <div class="s3-id">03 — A SOLUÇÃO</div>
 
+      <!-- .s3: headline/subtítulo/CTA de fechamento antigos foram REMOVIDOS
+           (não serão usados — substituídos por .s3o-intro/.s3-close do
+           orbital). O sistema de LINHAS (.veins/.svc, doc → rótulos de
+           serviço com o efeito de traço+pulso) foi mantido de propósito,
+           preservado e DORMENTE (display:none no .s3), caso a usuária queira
+           reaproveitar esse efeito específico depois. Não editar sem
+           necessidade — ver activate()/updateVeins() em site.js. -->
+      <div class="s3">
         <div class="halo"></div>
         <svg class="veins" aria-hidden="true"></svg>
 
@@ -224,12 +229,6 @@
         <div class="svc o-simp">
           <span class="svc-node n-simp"></span><span class="svc-line"></span>
           <div class="svc-txt"><span class="svc-num">04 / TRADUÇÃO</span><b class="svc-title">SIMPLES</b><span class="svc-desc">Tradução simples para uso não oficial.</span></div>
-        </div>
-
-        <div class="s3-close">
-          <h2>Você envia.<br><span>A gente resolve.</span></h2>
-          <p>Analisamos, orientamos e cuidamos de tudo até você receber seu documento pronto.</p>
-          <button>Enviar meu documento →</button>
         </div>
       </div>
 
@@ -355,7 +354,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
 <script src="assets/js/solucao-orbital.js?v=10"></script>
-<script src="assets/js/site.js?v=75"></script>
+<script src="assets/js/site.js?v=79"></script>
 <script type="module" src="assets/js/solucao-nodes.js?v=8"></script>
 </body>
 </html>

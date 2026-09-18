@@ -469,6 +469,9 @@ img,svg{display:block}
 /* pontos de conexão sólidos — pequenos, sem glow, encostados na borda do
    documento e na borda do card (ver cardEdgePoint/camDocAnchors em site.js). */
 .cam-node{fill:#FF0099;opacity:0}
+/* pulso viajando pela linha (mesma técnica do sistema antigo/dormente da
+   seção 03, .pulse) — aprovado, nos 5 caminhos. */
+.cam-pulse{fill:none;stroke:#ff86d1;stroke-width:2.6;stroke-linecap:round;opacity:0;filter:drop-shadow(0 0 6px rgba(255,124,203,.95))}
 /* trilho de progresso da seção inteira (02+03) — já era funcional
    (scrub 0→100% em site.js), só faltava LER como indicador de posição.
    Trilho arredondado + preenchimento em pílula + um ponto com glow na
@@ -502,7 +505,7 @@ img,svg{display:block}
 .s3{display:none}
 .s3-fill{background:#000}
 .s3{position:absolute;inset:0;z-index:7;pointer-events:none}
-.s3-id{position:absolute;top:5%;left:50%;transform:translateX(-50%);color:var(--pink);opacity:0}
+.s3-id{position:absolute;top:5%;left:50%;transform:translateX(-50%);color:var(--pink);opacity:0;z-index:7}
 .s3-intro{position:absolute;left:6%;top:13%;max-width:34%;z-index:3}
 .s3-headline{margin:0;font-size:clamp(30px,4.2vw,70px);color:#fff;opacity:0;text-transform:uppercase}
 .s3-sub{margin:22px 0 0;font-size:clamp(13px,1.1vw,17px);line-height:1.55;color:rgba(255,255,255,.68);opacity:0}

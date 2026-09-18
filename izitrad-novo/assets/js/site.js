@@ -568,7 +568,13 @@ function initSolucao(root){
       pp._len=pp.getTotalLength(); pp.style.strokeDasharray='14px '+pp._len+'px'; pp.style.strokeDashoffset=pp._len+'px';
     });
   }
-  updateVeins();
+  // DESLIGADO (não apagado): .veins agora vive dentro de .s3 (display:none,
+  // dormente de propósito — ver index.html). updateVeins() mede o tamanho
+  // do SVG (getBoundingClientRect) pra criar os paths; com display:none o
+  // tamanho é zero, a função aborta cedo e os paths nunca são criados —
+  // depois activate() tentava usá-los e estourava (TypeError, "vp" null).
+  // Reativar junto com .s3 se o efeito for reaproveitado.
+  // updateVeins();
 
   /* ---- 02 · os 5 caminhos (reta → curva suave → reta + nós) --- */
   /* Geometria "reta/curva/reta" EXPLÍCITA (pathSTS mais abaixo): dois
@@ -628,6 +634,9 @@ function initSolucao(root){
   ];
   const ensureCamPath=(cls)=>{ let el=caminhosSvg.querySelector('path.'+cls); if(!el){ el=document.createElementNS(svgNS,'path'); el.setAttribute('class','cam-line '+cls); caminhosSvg.appendChild(el); } return el; };
   const ensureCamNode=(cls)=>{ let el=caminhosSvg.querySelector('circle.'+cls); if(!el){ el=document.createElementNS(svgNS,'circle'); el.setAttribute('class','cam-node '+cls); el.setAttribute('r','7.2'); caminhosSvg.appendChild(el); } return el; };
+  // pulso viajando pela linha (mesma técnica do sistema antigo/dormente
+  // .pulse da seção 03) — aprovado, aplicado nos 5 caminhos.
+  const ensureCamPulse=(cls)=>{ let el=caminhosSvg.querySelector('path.cam-pulse.'+cls); if(!el){ el=document.createElementNS(svgNS,'path'); el.setAttribute('class','cam-pulse '+cls); caminhosSvg.appendChild(el); } return el; };
   const ensureCamMask=(key)=>{
     let mask=caminhosDefs.querySelector('#camMask-'+key), path;
     if(!mask){
@@ -730,6 +739,7 @@ function initSolucao(root){
       maskPath.setAttribute('d', d);
       maskPath._len=maskPath.getTotalLength(); maskPath.style.strokeDasharray=maskPath._len+'px'; applyDraw(maskPath);
       const n0=ensureCamNode(c.key+'-a'); n0.setAttribute('cx',start.x.toFixed(1)); n0.setAttribute('cy',start.y.toFixed(1));
+      const pulse=ensureCamPulse(c.key); pulse.setAttribute('d', d); pulse._len=pulse.getTotalLength();
     });
   }
   updateCaminhos();
@@ -737,7 +747,7 @@ function initSolucao(root){
   gsap.to(q('.doc'),{scale:1.014,duration:2.6,repeat:-1,yoyo:true,ease:'sine.inOut'});
 
   const tl=gsap.timeline({ scrollTrigger:{ trigger:root, start:'top top', end:'bottom bottom',
-    scrub:1, invalidateOnRefresh:true, onRefresh:()=>{ updateVeins(); updateCaminhos(); } } });
+    scrub:1, invalidateOnRefresh:true, onRefresh:()=>{ updateCaminhos(); } } }); // updateVeins() desligado (ver acima)
 
   // Cada caminho é UMA sequência de 5 fases, estritamente consecutivas
   // (a fase N só começa quando a fase N-1 termina, nunca em paralelo):
@@ -767,6 +777,17 @@ function initSolucao(root){
     tl.addLabel(cfg.key+'-line',lineAt);
     const lineP={p:0};
     tl.to(lineP,{p:1,duration:LINE_DUR,ease:'power1.inOut',onUpdate(){ maskPath._p=lineP.p; applyDraw(maskPath); }},lineAt);
+
+    // pulso percorrendo a linha — começa no meio do desenho da linha e
+    // chega perto do fim, um instante antes da bola grande.
+    {
+      const pulse=ensureCamPulse(cfg.key);
+      const pulseAt=lineAt+LINE_DUR*0.5, pulseDur=LINE_DUR*0.45;
+      const pO={p:0};
+      tl.set(pulse,{opacity:.95},pulseAt)
+        .to(pO,{p:1,duration:pulseDur,ease:'sine.in',onUpdate(){ pulse.style.strokeDasharray='14px '+pulse._len+'px'; pulse.style.strokeDashoffset=(pulse._len*(1-pO.p))+'px'; }},pulseAt)
+        .to(pulse,{opacity:0,duration:.18},pulseAt+pulseDur);
+    }
 
     // 3 — bola grande, só quando a linha termina de chegar
     const badgeAt=lineAt+LINE_DUR;
@@ -980,25 +1001,22 @@ function initSolucao(root){
   // preservado — o bloco inteiro só desloca no tempo.
   tl.set(q('.s3-id'),{opacity:1},4.8+COVER+INTRO+CAMINHOS_SHIFT);
   if(s3IdReels) addRollingTween(tl, s3IdReels, 4.8+COVER+INTRO+CAMINHOS_SHIFT);
-  tl.fromTo(q('.s3-headline'),{opacity:0,x:-40},{opacity:1,x:0,duration:.8},4.9+COVER+INTRO+CAMINHOS_SHIFT)
-    .fromTo(q('.s3-sub'),{opacity:0,x:-30},{opacity:1,x:0,duration:.8},5.2+COVER+INTRO+CAMINHOS_SHIFT)
-    .fromTo(q('.halo'),{opacity:0,scale:.9},{opacity:1,scale:1,duration:1.0},5.3+COVER+INTRO+CAMINHOS_SHIFT);
+  // .s3-headline/.s3-sub/.halo removidos do HTML (não usados — substituídos
+  // pelo .s3o-intro do orbital). O sistema de linhas (.veins/.svc) abaixo
+  // continua intacto, DORMENTE (.s3 tem display:none), preservado de
+  // propósito pra reaproveitar o efeito depois.
 
-  /* serviços ativados em sequência (linha → pulso → nó → rótulo) */
-  activate('jur','.o-jur',5.7+COVER+INTRO+CAMINHOS_SHIFT);
-  activate('haia','.o-haia',7.1+COVER+INTRO+CAMINHOS_SHIFT);
-  activate('cert','.o-cert',8.1+COVER+INTRO+CAMINHOS_SHIFT);
-  activate('tec','.o-tec',9.1+COVER+INTRO+CAMINHOS_SHIFT);
-  activate('simp','.o-simp',10.1+COVER+INTRO+CAMINHOS_SHIFT);
+  /* serviços ativados em sequência (linha → pulso → nó → rótulo) — DESLIGADO
+     junto com updateVeins() (ver acima): sem os paths criados, activate()
+     tentaria animar elementos que não existem (mesmo TypeError). Mantido
+     comentado (não apagado) pra reaproveitar depois, junto com .s3. */
+  // activate('jur','.o-jur',5.7+COVER+INTRO+CAMINHOS_SHIFT);
+  // activate('haia','.o-haia',7.1+COVER+INTRO+CAMINHOS_SHIFT);
+  // activate('cert','.o-cert',8.1+COVER+INTRO+CAMINHOS_SHIFT);
+  // activate('tec','.o-tec',9.1+COVER+INTRO+CAMINHOS_SHIFT);
+  // activate('simp','.o-simp',10.1+COVER+INTRO+CAMINHOS_SHIFT);
 
-  /* fechamento: composição recua, coração sobe, CTA centrado */
-  tl.to(q('.s3-headline, .s3-sub'),{opacity:0,y:-20,duration:.6},11.6+COVER+INTRO+CAMINHOS_SHIFT)
-    .to(q('.svc, .vein'),{opacity:0,duration:.7},11.6+COVER+INTRO+CAMINHOS_SHIFT)
-    // (removido: o fechamento da 03-VEIAS movia o documento — y:-60/scale:.5.
-    //  Na Seção 03 ORBITAL o documento permanece assentado na coluna direita
-    //  (ver solucao-orbital.js). A transição 02→03 continua intacta.)
-    .fromTo(q('.s3-close'),{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:'power2.out'},12.0+COVER+INTRO+CAMINHOS_SHIFT)
-    .to({},{duration:.9},13.0+COVER+INTRO+CAMINHOS_SHIFT);
+  tl.to({},{duration:.9},13.0+COVER+INTRO+CAMINHOS_SHIFT);
 
   /* --- ETAPA 1 · abertura da composição orbital (Opção B) ---------------
      Começa DEPOIS do cover da transição (documento já no CENTRO). Motor
