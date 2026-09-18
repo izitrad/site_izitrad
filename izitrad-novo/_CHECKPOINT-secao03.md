@@ -1,5 +1,5 @@
 # CHECKPOINT — Seção 03 ORBITAL (izitrad-novo)
-_Último update: 2026-09-17_
+_Último update: 2026-09-18_
 
 > Este arquivo viaja com o projeto (OneDrive), independente da conta/máquina do Claude.
 > **Na retomada:** leia este arquivo + os arquivos listados antes de mexer em qualquer coisa.
@@ -138,3 +138,47 @@ Problema identificado: o carimbo do selo (parte 3) precisa vazar da folha, mas i
 - `.caminhos-svg` (as linhas dos 5 caminhos) fica estruturalmente acima de todo o grupo do documento (z-index:10 vs z:9 do `.doc-orbit-wrap`) — a separação de camadas resolve de graça o risco de colisão visual entre o selo grande e as linhas, sem precisar tocar nas linhas (`.caminhos-svg` não foi tocado).
 - `.selo-layer` usa `z-index:1`, mas só é relevante DENTRO do stacking context próprio de `.doc-mouse` — não compete com `.caminhos-svg`/outras seções.
 - **Aprovado pela usuária** ("ficou muito bom, até o momento não vejo nada estranho") — testado tilt do mouse, respiração e o carimbo (sem cortar a borda).
+
+## Sessão 2026-09-18 — Rótulo "03 — A SOLUÇÃO" "saindo de trás da folha" — CONCLUÍDO E APROVADO
+
+Objetivo: fazer o rótulo "03 — A SOLUÇÃO" dar a sensação de "estava atrás da folha, a queda do documento revelou". Passou por várias arquiteturas antes de chegar na final — registrado aqui pra não repetir os becos sem saída.
+
+**Tentativa 1 (Fase A "física pura") — abandonada:** rótulo 100% PARADO (só `tl.set`/`tl.call`, sem tween próprio), revelado exclusivamente pela oclusão real da borda do documento (z-index). Exigiu:
+- Achar o instante exato em que o rótulo "nasce" atrás do documento batendo a composição de **prints de referência** (cards "04"/"05" da sequência de caminhos, ainda visíveis saindo de quadro) contra a posição real dos elementos no timeline — método: medir `getBoundingClientRect()` dos cards via `tl.seek()` em vários `t` e comparar com a fração da altura da viewport no print.
+- **Bug real encontrado:** o 1º tween de queda do documento tinha um overshoot (`y:90`) que fazia o topo do documento SUBIR, DESCER de novo (assentando) e só então SUBIR pra valer — trajetória não-monotônica. Com o rótulo parado, isso causava "flicker" (revela no pico do 1º tween, esconde nível de novo no 2º) — corrigido reduzindo o overshoot pra `y:40` (só esse número; duração/easing/rotação/escala e o resto intactos), o que tornou a queda monotônica.
+- Mesmo corrigido, calibrar a "profundidade" (margem em px de onde o rótulo nasce atrás do documento) pra controlar QUANDO a revelação acontece provou ser **frágil**: funcionava no viewport de teste do agente mas não no navegador real da usuária (janela de margem segura só ~4-70px dependendo da calibração, sensível a tamanho de tela).
+
+**Tentativa 2 (rótulo atrás da MÁSCARA, não do documento) — descartada:** testado colocar `.s3-id` na mesma camada z-index da máscara 02→03 (`.s3-mask-front`, o "furo" branco→preto). Não funcionou porque são dois sistemas de animação **completamente desacoplados** (raio da máscara vs. posição do documento, calibrados em momentos diferentes do projeto) — o furo podia não ter chegado na posição do rótulo ainda, prendendo-o na parte branca opaca. Revertido (`z-index:7` de volta).
+
+**Solução final (aprovada) — os dois elementos se cruzam, sem calibração de margem:**
+A usuária perguntou, com razão, por que uma animação de "documento desce, rótulo sobe, se cruzam" precisava de tanta calibração. Resposta: simplificar de verdade —
+- `.doc-stage` continua com os tweens de sempre (queda + assentamento + `+40px` do `CHECKPOINT_AT`), **intocados** (exceto o `y:90→40` acima).
+- `.s3-id` ganhou um **único tween** (`LABEL_HIDE_AT → +LABEL_RISE_DUR`, `sine.inOut`) subindo de "nascido atrás do documento" até `top:5%/y:0` — sem parar no meio.
+- Quem decide o que fica visível em cada frame é só o **z-index** (`.doc-orbit-wrap` z:9 > `.s3-id` z:7) — sem cálculo de margem/instante exato de revelação. Muito mais robusto a qualquer viewport, porque não depende de medir a posição exata de nada — só precisa nascer "atrás", em qualquer lugar razoável.
+- `LABEL_HIDE_AT = 4.0+INTRO+CAMINHOS_SHIFT` (≈14.6, mesmo ponto batido com os prints), `LABEL_RISE_DUR = 1.8` (termina ≈16.4, com folga antes do orbital abrir em `16.5`).
+- `s3IdHiddenY()` (calcula a posição inicial "atrás do documento") continua lendo `getBoundingClientRect()` ao vivo, mas agora via **`tl.call()`, não `tl.set()`** — achado técnico importante: um `tl.set(el,{prop:funçãoDeValor},pos)` numa timeline ESCRUBADA só avalia a função UMA vez (na 1ª passagem) e usa esse valor em cache dali pra frente, mesmo se o que a função lê (posição do documento) ainda estiver mudando — produz posições erradas/inconsistentes dependendo de como o usuário rolou antes. `tl.call()` reexecuta toda vez que o playhead cruza o ponto, sempre lendo o DOM ao vivo (ver memória `gsap-scrub-set-cache-gotcha.md`).
+
+**Giro de letras (padronização com ".section-id") — 2 tentativas até acertar:**
+- 1ª tentativa (giro escrubado, igual o "02"/`addRollingTween`, cada letra com duração/atraso aleatórios): quebrado — como está preso ao scroll, dava pra pausar em QUALQUER frame e pegar uma mistura de letras já assentadas com letras ainda maiores/borradas (mid-giro) — visualmente "desalinhado" (confirmado por print da usuária).
+- 2ª tentativa (tempo real, `gsap.to()` fora da timeline escrubada, disparado via o mesmo `tl.call` de `LABEL_HIDE_AT`): resolveu o "preso no meio-termo" (uma vez disparado, sempre termina sozinho), mas a usuária pediu mais: queria o giro durando a subida INTEIRA, não um flourish rápido.
+- **Solução final:** giro SINCRONIZADO com a subida — um único proxy escrubado (`rollProxy`, mesma janela/easing do tween de subida) dirige TODAS as letras pelo MESMO progresso `p` ao mesmo tempo (`--k = p * cyclesDaLetra`, escala/blur também função só de `p`, uniforme pra todas). Sem stagger, sem duração aleatória por letra. Resultado: o giro só termina quando o rótulo chega no topo (pedido explícito), e como todas as letras estão SEMPRE no mesmo estágio entre si, pausar em qualquer ponto do scroll mostra um estado uniforme — nunca mais uma mistura desalinhada. Validado numericamente (só 1 combinação de escala/blur em qualquer `t` testado).
+
+**Estado final do código (site.js, dentro de `initSolucao`):**
+```js
+const LABEL_HIDE_AT = 4.0+INTRO+CAMINHOS_SHIFT; // ≈14.6
+const S3ID_HIDE_MARGIN = 20; // só margem de segurança pro nascimento, não é mais parâmetro de timing
+function s3IdHiddenY(){ /* lê .doc-stage.getBoundingClientRect().top ao vivo */ }
+tl.call(function(){ gsap.set(q('.s3-id'),{y:s3IdHiddenY(),opacity:1}); }, null, LABEL_HIDE_AT);
+const LABEL_RISE_DUR = 1.8; // 14.6 → 16.4
+tl.to(q('.s3-id'),{y:0,ease:'sine.inOut',duration:LABEL_RISE_DUR},LABEL_HIDE_AT);
+if(s3IdReels){ /* rollProxy sincronizado, ver acima */ }
+```
+E no tween de queda (mais acima na mesma função): `y:90` → `y:40` (único valor alterado ali).
+
+**Aprovado pela usuária** ("é isso gostei"). Sem pendências abertas nessa frente por enquanto.
+
+**Pós-aprovação — bug de renderização das letras corrigido (2026-09-18):**
+Mesmo com o giro sincronizado (sem flicker de timing), a usuária reportou (com prints) que as letras pareciam com peso visual inconsistente entre si (`Ç`/`Ã`/`O` "mais grossas" que `0`/`3`/`A`) **mesmo já com o rótulo 100% assentado**, algo que a princípio parecia contradizer as medições (caixas/`--k`/`scale`/`filter` idênticos entre letras em repouso).
+- **Causa raiz encontrada:** o `onUpdate` do `rollProxy` sempre escrevia `char.style.transform='scale(...)'` e `char.style.filter='blur(...)'` explicitamente — inclusive em repouso, com valores "neutros" (`scale(1)`/`blur(0px)`). Ter QUALQUER `transform`/`filter` aplicado (mesmo neutro) força o navegador a rasterizar aquele texto numa camada de composição separada pra aplicar o filtro, **trocando o antialiasing normal do texto por um diferente** — glifos com mais traço (`Ç`,`Ã`,`O`) ficam visualmente mais afetados que glifos simples (`0`,`3`,`A`). Não era bug de posição/escala real, era um efeito colateral de deixar essas propriedades "no ar".
+- **Correção:** no `onUpdate`, quando `p>=1` (giro 100% terminado), `r.char.style.transform=''` e `r.char.style.filter=''` — REMOVE as propriedades em vez de zerá-las, deixando o navegador renderizar o texto pelo caminho normal (igual o resto do site). Testado: transição suave até `p=1`, sem jank na troca.
+- **Aprovado pela usuária** ("ficou perfeito!!").

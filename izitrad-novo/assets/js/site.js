@@ -518,6 +518,9 @@ function initSolucao(root){
   // de antes).
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const idReels   = reduceMotion ? null : buildRollingLabel(root.querySelector('.section-id'));
+  // mesmos parâmetros padrão do "02" (ver addRollingTweenRealtime abaixo —
+  // toca em tempo real, não precisa mais estreitar variação pra evitar
+  // ficar preso num meio-termo do scroll).
   const s3IdReels = reduceMotion ? null : buildRollingLabel(root.querySelector('.s3-id'));
   const veinsSvg = root.querySelector('.veins');
   const svgNS='http://www.w3.org/2000/svg';
@@ -1008,7 +1011,12 @@ function initSolucao(root){
     // fade). Ver applyRise/riseGroup acima. 1ª versão com deslocamento BEM
     // perceptível (-1.3*vh) pra avaliar a direção.
     .to(riseProxy,{p:1,duration:1.4+COVER,ease:'none',onUpdate:applyRise},3.2+INTRO+CAMINHOS_SHIFT)
-    .to(q('.doc-stage'),{y:90,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2+INTRO+CAMINHOS_SHIFT)
+    // y reduzido de 90→40 (era overshoot antes do assentamento) — só esse
+    // número: abre espaço entre o pico deste tween e a posição final do
+    // documento, necessário pra caber uma revelação do rótulo "03 — A
+    // SOLUÇÃO" sem flicker (ver LABEL_HIDE_AT/S3ID_HIDE_MARGIN abaixo).
+    // Duração/easing/rotação/escala e o resto da queda continuam intactos.
+    .to(q('.doc-stage'),{y:40,rotation:3,scale:.78,duration:.9,ease:'power1.in'},3.2+INTRO+CAMINHOS_SHIFT)
     // queda do documento prolongada: agora assenta só no FIM do cover (5.4),
     // reforçando o documento caindo da 02 pra dentro da 03 enquanto o escuro
     // termina de cobrir (era duração 1.0, terminando em 5.05).
@@ -1018,42 +1026,112 @@ function initSolucao(root){
   /* 03 — chegada + headline + halo */
   // "03 / A SOLUÇÃO" ficava opacity 0→1 (fade simples); agora aparece de
   // uma vez (set, sem tween) e o giro das letras é que faz a entrada.
-  // ⚠️ .s3-id é EXCEÇÃO ao padrão "+COVER em todas as âncoras da 03": o
-  // movimento (cruzar o documento, subindo) precisa estar sincronizado
-  // com a QUEDA de verdade — por isso amarrado na MESMA janela do 1º
-  // tween de .doc-stage (y:0→90, INTRO+CAMINHOS_SHIFT à parte): é o único
-  // trecho em que o documento realmente DESCE na tela (o tween seguinte é
-  // ele voltando/assentando pro centro, não caindo). Fora dessa janela
-  // (preto já selado, deslize lateral, depois de tudo assentado) a
-  // sensação de queda desaparece — nada mais se move pra comparar.
-  const FALL_AT = 3.2+INTRO+CAMINHOS_SHIFT, FALL_DUR = 0.9;
-  const DOC_FALL_PX = 90; // mesmo valor do y do tween de queda do .doc-stage acima — se aquele mudar, atualizar aqui também.
-  // Curva DESACOPLADA da do documento (era power1.in, copiada — medição
-  // real no navegador mostrou que isso é geometricamente incompatível com
-  // cruzar cedo: em power1.in nada se move quase nada logo no início, mas
-  // a referência visual exige que o cruzamento já tenha acontecido bem
-  // cedo na janela, quando o documento ainda mal desceu). power3.out =
-  // sai rápido (cobre a maior parte da distância logo no começo, cruzando
-  // o documento cedo) e desacelera pro resto do trajeto até y:0. Primeira
-  // calibração, não definitiva — se cruzar cedo/tarde demais, ajustar
-  // aqui (curva) ou no Yinit abaixo, não na janela/tempo.
-  const LABEL_EASE = 'power3.out';
-  // Y inicial derivado da geometria real da viewport, calculado só na
-  // montagem (e de novo em refresh/resize via invalidateOnRefresh já
-  // ligado no scrollTrigger principal) — nunca por frame durante o scroll.
-  // G = distância entre a posição de repouso do rótulo (top:5%) e o
-  // centro de repouso do documento (.doc-stage, centralizado top:50% num
-  // .sol-stage sempre 100vh) — ambos só função de innerHeight.
-  function s3IdStartY(){
-    const G = innerHeight*0.5 - innerHeight*0.05;
-    return G*1.3;
+  // ⚠️ .s3-id é EXCEÇÃO ao padrão "+COVER em todas as âncoras da 03".
+  //
+  // MICROFASE DE REVELAÇÃO (checkpoint medido, não estimado — ver
+  // ferramentas de inspeção no navegador): por volta de t≈15.9 (medido
+  // via getBoundingClientRect em várias amostras) o documento já está 100%
+  // assentado (.doc-stage não se move mais entre 15.5 e 16.0 — os dois
+  // tweens de queda/assentamento anteriores JÁ terminaram visualmente ali,
+  // mesmo que o tween2 só termine formalmente em ~16.0). Esse é o
+  // CHECKPOINT: o rótulo nasce exatamente na altura do documento (mesmo
+  // centro), oculto por trás dele (z-index:7 do rótulo < z-index:9 de
+  // .doc-orbit-wrap, já garantia isso — sem mexer em stacking contexts).
+  // Daí em diante (até pouco antes de ORBITAL_OPEN_AT=16.5, com folga de
+  // 0.1): documento e rótulo se separam em sentidos opostos na MESMA
+  // curva (sine.inOut, suave, sem concentrar movimento numa ponta) — o
+  // documento ganha um deslocamento vertical FINAL (DOC_FINAL_Y_OFFSET,
+  // ver window.DOC_FINAL_Y_OFFSET em solucao-orbital.js — fonte única,
+  // também usada pelo cy do orbital, os dois permanecem vinculados) sem
+  // retornar a 0 depois — não é bounce/overshoot, é a nova posição de
+  // repouso da seção 03. O rótulo sobe de "atrás do documento" até
+  // top:5%/y:0 (mesma posição de todos os .section-id) e para.
+  const CHECKPOINT_AT = 5.3+INTRO+CAMINHOS_SHIFT; // ≈15.9 medido
+  const REVEAL_DUR = 0.5; // até ≈16.4 — 0.1 de folga antes do orbital abrir (16.5)
+  const REVEAL_EASE = 'sine.inOut'; // .doc-stage fica nessa curva — intacta, não mexer
+  // SIMPLIFICADO: o documento desce (tweens de sempre, intocados — a queda,
+  // o assentamento e depois o tween de CHECKPOINT_AT) e o rótulo sobe num
+  // ÚNICO tween, sem parar no meio. Quem decide o que fica visível em cada
+  // frame é só o z-index: o documento (z-index:9 de .doc-orbit-wrap) sempre
+  // por cima do rótulo (z-index:7) — sem opacity, sem máscara. Não existe
+  // mais cálculo de margem/instante-exato-de-revelação: o cruzamento
+  // acontece onde quer que os dois se sobreponham naquele frame, o que é
+  // automaticamente robusto a qualquer viewport (ao contrário da versão
+  // anterior, que tentava prever o momento exato via medição do documento).
+  //
+  // LABEL_HIDE_AT: só o instante em que o rótulo NASCE (ponto de partida da
+  // subida), atrás do documento — mesmo ponto de referência de antes
+  // (bate com o print onde os cards "04"/"05" ainda estão saindo de
+  // quadro). Não precisa mais ser preciso a esse ponto: como o documento
+  // sempre oclude por cima, mesmo que o rótulo nasça um pouco mais alto ou
+  // mais baixo que o topo exato do documento, ele continua escondido
+  // enquanto estiver atrás dele.
+  const LABEL_HIDE_AT = 4.0+INTRO+CAMINHOS_SHIFT; // ≈14.6
+  const S3ID_HIDE_MARGIN = 20; // só garante que nasce claramente atrás, não colado na borda
+  function s3IdHiddenY(){
+    const docEl = root.querySelector('.doc-stage');
+    const labelEl = root.querySelector('.s3-id');
+    if(!docEl || !labelEl) return 0;
+    const docTop = docEl.getBoundingClientRect().top;
+    const topOculto = docTop + S3ID_HIDE_MARGIN;
+    const topNatural = innerHeight*0.05; // top:5% de CSS, mesmo valor de sempre
+    return topOculto - topNatural;
   }
-  // SEM addRollingTween aqui de propósito — o giro das letras consumia
-  // quase toda a janela de 0.9s deixando o texto borrado/girando durante o
-  // percurso (lia como "invisível" mesmo com opacity:1). O texto fica
-  // estático/legível o tempo todo; o movimento vertical É a entrada.
-  tl.set(q('.s3-id'),{y:s3IdStartY,opacity:1},FALL_AT); // nasce abaixo do documento, já visível e legível
-  tl.to(q('.s3-id'),{y:0,ease:LABEL_EASE,duration:FALL_DUR},FALL_AT);
+  // tl.call (não tl.set): função-valor num .set() só é avaliada a PRIMEIRA
+  // vez que o scrub passa por ali e fica em cache dali pra frente (GSAP
+  // otimiza assim) — .call() reexecuta toda vez que o playhead cruza esse
+  // ponto, sempre lendo a posição ao vivo do documento nesse instante.
+  tl.call(function(){ gsap.set(q('.s3-id'),{y:s3IdHiddenY(),opacity:1}); }, null, LABEL_HIDE_AT);
+  // sobe direto até top:5%/y:0 — um tween só, do nascimento (atrás do
+  // documento) até o repouso final. Termina ≈16.4, com folga antes do
+  // orbital abrir (ORBITAL_OPEN_AT=16.5).
+  const LABEL_RISE_DUR = 1.8; // 14.6 → 16.4
+  tl.to(q('.s3-id'),{y:0,ease:'sine.inOut',duration:LABEL_RISE_DUR},LABEL_HIDE_AT);
+  // giro de letras SINCRONIZADO com a subida — não é mais um giro
+  // independente (real-time OU escrubado com atraso aleatório por letra):
+  // um único proxy escrubado, MESMA janela/easing do tween de subida acima
+  // (LABEL_HIDE_AT → +LABEL_RISE_DUR, sine.inOut), dirige TODAS as letras
+  // no mesmo progresso `p` ao mesmo tempo — sem stagger, sem duração
+  // aleatória por letra. Efeitos:
+  //  1) o giro só termina quando a subida termina (chega no topo) — pedido
+  //     explícito da usuária, em vez do flourish rápido de antes;
+  //  2) como todas as letras estão SEMPRE no mesmo estágio uma da outra,
+  //     parar o scroll em qualquer ponto mostra um estado uniforme (todas
+  //     igualmente giradas/borradas), nunca uma mistura desalinhada de
+  //     letras prontas com letras no meio do giro (era esse o bug do print
+  //     anterior — resolvido aqui pela sincronia, não por tempo real).
+  if(s3IdReels){
+    gsap.set(s3IdReels.map(r=>r.char), {scale:1.22, filter:'blur(3px)'});
+    const rollProxy = {p:0};
+    tl.to(rollProxy, {p:1, duration:LABEL_RISE_DUR, ease:'sine.inOut',
+      onUpdate(){
+        const p = rollProxy.p;
+        for(const r of s3IdReels){
+          r.track.style.setProperty('--k', String(p*r.to));
+          if(p>=1){
+            // giro 100% terminado: REMOVE transform/filter em vez de deixar
+            // em valor neutro (scale(1)/blur(0px)) — mesmo "zerados", esses
+            // dois continuam forçando o navegador a rasterizar a letra numa
+            // camada separada pro filtro, o que troca o antialiasing normal
+            // do texto por um diferente (glifos com mais traço — Ç, Ã, O —
+            // ficam com peso visual inconsistente comparado a letras simples
+            // — 0, 3, A). Sem a propriedade no style, a letra volta a
+            // renderizar pelo caminho normal de texto, igual o resto do site.
+            r.char.style.transform = '';
+            r.char.style.filter = '';
+          } else {
+            const scale = 1+0.22*(1-p), blurPx = (3*(1-p)).toFixed(2);
+            r.char.style.transform = 'scale('+scale+')';
+            r.char.style.filter = 'blur('+blurPx+'px)';
+          }
+        }
+      }
+    }, LABEL_HIDE_AT);
+  }
+  // documento ganha o deslocamento final — SEM retorno a 0 depois (fonte
+  // única: window.DOC_FINAL_Y_OFFSET, ver solucao-orbital.js). Único
+  // movimento desta fase: é ele quem revela o rótulo ao descer.
+  tl.to(q('.doc-stage'),{y:'+='+(window.DOC_FINAL_Y_OFFSET||40),ease:REVEAL_EASE,duration:REVEAL_DUR},CHECKPOINT_AT);
   // .s3-headline/.s3-sub/.halo removidos do HTML (não usados — substituídos
   // pelo .s3o-intro do orbital). O sistema de linhas (.veins/.svc) abaixo
   // continua intacto, DORMENTE (.s3 tem display:none), preservado de
