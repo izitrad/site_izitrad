@@ -1037,8 +1037,27 @@ function initSolucao(root){
   // entre "quanto o documento já desceu" e "quanto o rótulo já subiu" se
   // mantenha consistente (um evento só, não duas animações coincidindo).
   const FALL_AT = 3.2+INTRO+CAMINHOS_SHIFT, FALL_DUR = 0.9, FALL_EASE = 'power1.in';
-  tl.set(q('.s3-id'),{y:400,opacity:1},FALL_AT); // nasce atrás/na altura do documento, já visível
-  if(s3IdReels) addRollingTween(tl, s3IdReels, FALL_AT);
+  const DOC_FALL_PX = 90; // mesmo valor do y do tween de queda do .doc-stage acima — se aquele mudar, atualizar aqui também.
+  // Y inicial derivado da geometria real da viewport (não um pixel fixo de
+  // referência) — calculado só na hora de montar o tween (e de novo se o
+  // ScrollTrigger invalidar num refresh/resize, graças ao invalidateOnRefresh
+  // já ligado no scrollTrigger principal), nunca por frame durante o scroll.
+  // .doc-stage fica centralizado (top:50%) dentro de .sol-stage (que tem
+  // height:100vh sempre, sticky ou não) — seu centro em repouso é sempre
+  // innerHeight*0.5. .s3-id fica em top:5% do mesmo container. A distância
+  // entre os dois "pontos de repouso" é G; resolvendo pra o cruzamento
+  // acontecer em progress≈0.5 do tween de queda (mesma matemática do
+  // tween: doc desce DOC_FALL_PX, rótulo sobe Yinit, mesma curva/janela):
+  //   Yinit = 2*G + DOC_FALL_PX
+  function s3IdStartY(){
+    const G = innerHeight*0.5 - innerHeight*0.05;
+    return 2*G + DOC_FALL_PX;
+  }
+  // SEM addRollingTween aqui de propósito — o giro das letras consumia
+  // quase toda a janela de 0.9s deixando o texto borrado/girando durante o
+  // percurso (lia como "invisível" mesmo com opacity:1). O texto fica
+  // estático/legível o tempo todo; o movimento vertical É a entrada.
+  tl.set(q('.s3-id'),{y:s3IdStartY,opacity:1},FALL_AT); // nasce abaixo do documento, já visível e legível
   tl.to(q('.s3-id'),{y:0,ease:FALL_EASE,duration:FALL_DUR},FALL_AT);
   // .s3-headline/.s3-sub/.halo removidos do HTML (não usados — substituídos
   // pelo .s3o-intro do orbital). O sistema de linhas (.veins/.svc) abaixo
