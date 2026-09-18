@@ -565,8 +565,9 @@ img,svg{display:block}
 /* intro da coluna esquerda — oculta até a abertura da 03 (autoAlpha via JS). */
 .s3o-intro{position:absolute;left:10px;top:24%;width:min(560px,38%);z-index:12;color:#fff;opacity:0;pointer-events:none;font-family:'DM Sans',sans-serif}
 .s3o-title{font-family:'Outfit';font-weight:900;font-size:clamp(53px,5.9vw,95px);line-height:.98;letter-spacing:-.045em;margin:0 0 20px;color:#00FF66}
-.s3o-title-a,.s3o-title-b{display:inline-block}
+.s3o-title-a,.s3o-title-b{display:block}
 .s3o-title-b{font-weight:400;font-size:clamp(40px,4.51vw,72px);color:#fff}
+.s3o-title .s3o-line{display:block}
 .s3o-lead{font-size:20px;line-height:1.55;max-width:520px;color:rgba(255,255,255,.78);margin:0}
 .s3o-lead .s3o-hl{color:var(--pink)}
 .s3o-micro{margin-top:30px;display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.5);font-size:11px;letter-spacing:.18em;text-transform:uppercase}

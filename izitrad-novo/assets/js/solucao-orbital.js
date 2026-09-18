@@ -161,39 +161,53 @@
 
     if(wrap)  gsap.set(wrap,  { x: 0 });
     // .s3o-intro em si só controla opacity/pointer-events do CONTAINER (fica
-    // opacity:0 no CSS por padrão) — quem sobe de baixo é cada BLOCO de
-    // texto por dentro, individualmente (ver abaixo), não o container
-    // inteiro de uma vez. innerHeight*1.0 garante que nasçam abaixo do
-    // documento de verdade (documento ocupa ~31%-69% da viewport).
-    const introBlocks = intro ? [
-      root.querySelector('.s3o-title-a'),
-      root.querySelector('.s3o-title-b'),
-      root.querySelector('.s3o-lead')
-    ].filter(Boolean) : [];
+    // opacity:0 no CSS por padrão) — quem sobe de baixo é cada elemento por
+    // dentro, individualmente (ver abaixo), não o container inteiro de uma
+    // vez. innerHeight*1.0 garante que nasçam abaixo do documento de verdade
+    // (documento ocupa ~31%-69% da viewport).
+    //
+    // título/subtítulo (.s3o-title-a/.s3o-title-b, os "textos grandes") sobem
+    // LINHA POR LINHA (cada uma um .s3o-line, ver HTML/CSS) — não mais como
+    // 2 blocos inteiros. O parágrafo (.s3o-lead) continua como bloco único
+    // de propósito (pedido explícito: só os textos grandes ganham o efeito
+    // por linha).
+    const titleLines = intro ? Array.from(root.querySelectorAll('.s3o-title .s3o-line')) : [];
+    const lead = intro ? root.querySelector('.s3o-lead') : null;
+    const introMovers = lead ? titleLines.concat([lead]) : titleLines;
     if(intro) gsap.set(intro, { autoAlpha: 0 });
-    if(introBlocks.length) gsap.set(introBlocks, { autoAlpha: 0, y: () => innerHeight*1.0 });
+    if(introMovers.length) gsap.set(introMovers, { autoAlpha: 0, y: () => innerHeight*1.0 });
     if(ok){ gsap.set(backC,{autoAlpha:0}); gsap.set(frontC,{autoAlpha:0}); }
 
     // 1) documento faz sozinho centro → direita
     if(wrap && desktop){
       tl.fromTo(wrap, { x:0 }, { x:()=>innerWidth*DOC_SHIFT_X, ease:'power2.inOut', duration:OPEN_DUR }, openAt);
     }
-    // 2) intro ocupa a esquerda — cada bloco sobe em seu próprio momento
-    // (escalonado +0.18 entre eles), pra NÃO ler como "um bloco só subindo"
-    // — primeiro o negrito ("A ORDEM..."), depois a linha clara ("AGORA,
-    // QUAL..."), por último o parágrafo. O container (.s3o-intro) só
+    // 2) intro ocupa a esquerda — cada LINHA do título/subtítulo ainda sobe
+    // no seu próprio momento, mas com uma defasagem BEM pequena entre elas
+    // (LINE_STAGGER=0.025, era 0.08) — a usuária achou o bloco inteiro mais
+    // forte que o efeito claramente picotado por linha, mas quis manter o
+    // mecanismo por linha só com menos distância: cada linha ainda "chega"
+    // separada (textura sutil de movimento), mas rápido o bastante pra ler
+    // quase como bloco quando param juntas na posição final. O parágrafo
+    // entra depois, como bloco único, com a mesma folga de antes (+0.18)
+    // depois da última linha do subtítulo. O container (.s3o-intro) só
     // acompanha em opacity, sem seu próprio movimento — quem se move é
-    // sempre um bloco de texto específico.
+    // sempre um elemento específico.
     if(intro) tl.set(intro, { autoAlpha: 1 }, introAt);
-    const INTRO_STAGGER = 0.18;
+    const LINE_STAGGER = 0.025;
+    const GROUP_GAP = 0.18;
     // ease:'none' de propósito — já fazia parte da timeline escrubada (presa
     // ao scroll, não a um timer), mas 'power2.out' desacelerava no final,
     // dando uma sensação de suavização própria, meio dissociada da
     // velocidade real do scroll. 'none' é proporcional 1:1: anda exatamente
     // na medida em que a pessoa rola, para exatamente onde ela parar.
-    introBlocks.forEach((el, i)=>{
-      tl.fromTo(el, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:OPEN_DUR*0.55 }, introAt + i*INTRO_STAGGER);
+    titleLines.forEach((el, i)=>{
+      tl.fromTo(el, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:OPEN_DUR*0.55 }, introAt + i*LINE_STAGGER);
     });
+    if(lead){
+      const leadAt = introAt + titleLines.length*LINE_STAGGER + GROUP_GAP;
+      tl.fromTo(lead, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:OPEN_DUR*0.55 }, leadAt);
+    }
     // 3) Saturno materializa no centro final (fade + scale-in PROVISÓRIO),
     //    cronometrado com a chegada do documento.
     if(ok){
