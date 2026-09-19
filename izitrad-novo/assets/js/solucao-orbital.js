@@ -201,12 +201,23 @@
     // dando uma sensação de suavização própria, meio dissociada da
     // velocidade real do scroll. 'none' é proporcional 1:1: anda exatamente
     // na medida em que a pessoa rola, para exatamente onde ela parar.
+    //
+    // duration esticada (era OPEN_DUR*0.55 ≈0.715, agora *0.7 ≈0.91): o
+    // parágrafo (o último a começar) terminava de subir por volta de
+    // t≈16.2, mas o documento só termina de assentar em t≈16.4 — sobrava um
+    // trecho em que o texto já estava parado enquanto o resto ainda se
+    // mexia, quebrando a sensação de "tudo caindo junto". Não mexe no
+    // instante em que cada linha COMEÇA (introAt/LINE_STAGGER/GROUP_GAP
+    // intactos) — só estica até onde cada uma TERMINA, reaproveitando o
+    // espaço que já existe até o documento assentar, sem precisar mexer no
+    // timing do documento.
+    const INTRO_DUR = OPEN_DUR*0.7;
     titleLines.forEach((el, i)=>{
-      tl.fromTo(el, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:OPEN_DUR*0.55 }, introAt + i*LINE_STAGGER);
+      tl.fromTo(el, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:INTRO_DUR }, introAt + i*LINE_STAGGER);
     });
     if(lead){
       const leadAt = introAt + titleLines.length*LINE_STAGGER + GROUP_GAP;
-      tl.fromTo(lead, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:OPEN_DUR*0.55 }, leadAt);
+      tl.fromTo(lead, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:INTRO_DUR }, leadAt);
     }
     // 3) Saturno materializa no centro final (fade + scale-in PROVISÓRIO),
     //    cronometrado com a chegada do documento.
