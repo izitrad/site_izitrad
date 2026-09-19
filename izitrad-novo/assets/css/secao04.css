@@ -1,0 +1,522 @@
+/* ===========================================================================
+   SEÇÃO 04 — "SEÇÃO 04 - APROVADO" (fonte: _izi-GPT/seção 4/seção 04 - aprovado.html)
+   Transporte literal do CSS aprovado. Removidas apenas 4 regras GLOBAIS que
+   vazariam pro resto do site (redundantes com o reset de site.css ou que
+   mudariam background/tipografia fora da seção 04):
+     - *{box-sizing:border-box}              -> já existe em site.css
+     - html,body{margin:0;padding:0;background:...;color:#111}
+     - body{overflow-x:hidden}
+     - h1,h2,h3,p{margin:0;font-weight:inherit}
+   Nenhum elemento de texto da seção 04 depende de font-weight:inherit (todos
+   os h1/h2/h3/p aqui já declaram font-weight explícito na própria regra), e
+   .izi-pre04/.guiding-principles já definem seu próprio background — remover
+   essas 4 linhas não muda nada visualmente DENTRO da seção 04.
+   .demo-before (filler só do harness de preview do arquivo original) também
+   foi omitido — não faz parte da seção em si.
+   Fontes TWKLausanne-200/250 e NeoSansPro-Medium baixadas e hospedadas local
+   em assets/fonts/ (antes hotlinkadas direto de amaterasu.ai/_nuxt/...).
+   =========================================================================== */
+
+@font-face{font-family:"TWKLausanne-200";src:url("../fonts/TWKLausanne-200.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"TWKLausanne-250";src:url("../fonts/TWKLausanne-250.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"NeoSansPro-Medium";src:url("../fonts/NeoSansPro-Medium.woff2") format("woff2");font-display:swap}
+:root{
+ --color-white:#111;--color-downy:#00FF66;--color-midnight-blue:#fbfbfa;
+ --font-f-twk-lausanne-250:"TWKLausanne-250";--font-f-twk-lausanne-200:"TWKLausanne-200";--font-f-neo-sans-pro-medium:"NeoSansPro-Medium";
+ --font-s-heading-l:5.5555555556vw;--font-lh-heading-l:5.5555555556vw;--font-ls-heading-l:-.025em;
+ --font-s-body-r:1.3888888889vw;--font-lh-body-r:1.9444444444vw;--font-ls-body-r:0em;
+ --font-s-body-xs:.9722222222vw;--font-lh-body-xs:1.3888888889vw;--font-ls-body-xs:.02em;
+ --font-s-title-r:.6944444444vw;--font-lh-title-r:1.0416666667vw;--font-ls-title-r:.16em;
+ --app-deg:180deg;
+}
+.guiding-principles{color:var(--color-white);overflow:hidden;position:relative;background:#fbfbfa;isolation:isolate}
+.guiding-principles::before{
+ content:"";position:absolute;inset:-28% -42%;z-index:0;pointer-events:none;
+ background:
+   radial-gradient(ellipse at 76% 46%,rgba(0,255,102,.24) 0%,rgba(0,255,102,.12) 20%,rgba(0,255,102,.045) 38%,rgba(0,255,102,0) 61%),
+   radial-gradient(ellipse at 30% 70%,rgba(0,255,102,.08) 0%,rgba(0,255,102,0) 48%);
+ filter:blur(26px);
+ transform:translate3d(-7%,0,0) scale(1.08);
+ animation:iziAmbientGreen 16s ease-in-out infinite alternate;
+ will-change:transform;
+}
+@keyframes iziAmbientGreen{
+ 0%{transform:translate3d(-10%,-2%,0) scale(1.06)}
+ 50%{transform:translate3d(4%,3%,0) scale(1.12)}
+ 100%{transform:translate3d(12%,-1%,0) scale(1.07)}
+}
+.container{display:grid;grid-template-columns:repeat(12,1fr);grid-column-gap:1.3888888889vw;margin:0 2.7777777778vw;padding:14.5833333333vw 0;position:relative;z-index:1}
+.column:first-child{grid-column:7/10;margin-bottom:10.4166666667vw}
+.column:nth-child(2){grid-column:3/6}
+.column:nth-child(3){grid-column:8/11}
+.heading{font-family:var(--font-f-twk-lausanne-200);font-size:var(--font-s-heading-l);font-weight:400;letter-spacing:var(--font-ls-heading-l);line-height:var(--font-lh-heading-l);padding-bottom:1.3888888889vw}
+.paragraph{font-family:var(--font-f-twk-lausanne-250);font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
+.number{
+ aspect-ratio:320/470;
+ background:linear-gradient(var(--app-deg),#fff 0,#82c9d8 100%);
+ -webkit-mask-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 320 470'%3E%3Cpath fill='currentcolor' d='M0 242.705C0 122.637 40.563 0 160.966 0c92.716 0 129.416 50.082 143.581 113.648h-45.07c-10.946-35.957-26.399-75.123-95.936-75.123-85.634 0-115.251 89.89-119.114 182.991 25.11-41.735 68.893-64.849 122.977-64.849 88.21 0 152.596 69.344 152.596 157.308C320 403.866 250.463 470 159.678 470c-48.29 0-92.072-19.904-121.046-55.861C6.439 374.973 0 322.964 0 242.705m48.934 71.27c0 64.208 46.358 117.5 110.744 117.5s115.252-53.292 115.252-117.5c0-64.207-48.934-118.142-115.252-118.142-64.386 0-110.744 46.872-110.744 118.142'/%3E%3C/svg%3E");
+ mask-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 320 470'%3E%3Cpath fill='currentcolor' d='M0 242.705C0 122.637 40.563 0 160.966 0c92.716 0 129.416 50.082 143.581 113.648h-45.07c-10.946-35.957-26.399-75.123-95.936-75.123-85.634 0-115.251 89.89-119.114 182.991 25.11-41.735 68.893-64.849 122.977-64.849 88.21 0 152.596 69.344 152.596 157.308C320 403.866 250.463 470 159.678 470c-48.29 0-92.072-19.904-121.046-55.861C6.439 374.973 0 322.964 0 242.705m48.934 71.27c0 64.208 46.358 117.5 110.744 117.5s115.252-53.292 115.252-117.5c0-64.207-48.934-118.142-115.252-118.142-64.386 0-110.744 46.872-110.744 118.142'/%3E%3C/svg%3E");
+ -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:cover;mask-size:cover
+}
+.principle:not(:last-child){margin-bottom:4.1666666667vw}
+.title{align-items:center;display:inline-flex;visibility:hidden}
+.dot{background:var(--color-downy);border-radius:100%;height:.3472222222vw;margin-right:.625vw;width:.3472222222vw}
+.label{font-family:var(--font-f-neo-sans-pro-medium);font-size:var(--font-s-title-r);font-weight:400;letter-spacing:var(--font-ls-title-r);line-height:var(--font-lh-title-r);text-transform:uppercase}
+.paragraph-s{color:rgba(17,17,17,.68);font-family:var(--font-f-twk-lausanne-250);font-size:var(--font-s-body-xs);font-weight:400;letter-spacing:var(--font-ls-body-xs);line-height:var(--font-lh-body-xs);margin-top:1.3888888889vw;visibility:hidden}
+.background{align-items:center;display:flex;inset:0;justify-content:center;position:absolute;z-index:0}
+.divider-svg{-webkit-mask-image:linear-gradient(180deg,transparent 15%,#000 50%,transparent 90%);mask-image:linear-gradient(180deg,transparent 15%,#000 50%,transparent 90%);position:absolute;height:122.3611111111vw;padding:0 .6944444444vw;top:-2.0833333333vw;transform:translate(-4.1666666667vw);width:8.0555555556vw}
+.divider-svg path{stroke-width:1}
+.divider-svg path:first-child{color:#FF0099;opacity:.34;filter:blur(.2083333333vw)}
+.divider-svg path:last-child{color:#FF0099;opacity:.72}
+
+@media (prefers-reduced-motion:reduce){
+ .guiding-principles::before{animation:none;transform:none}
+}
+@media(max-width:600px){
+ :root{
+  --font-s-m-heading-s:12.8vw;--font-lh-m-heading-s:12.8vw;--font-ls-m-heading-s:-.0229166667em;
+  --font-s-body-r:5.3333333333vw;--font-lh-body-r:7.4666666667vw;--font-ls-body-r:0em;
+  --font-s-body-s:4.2666666667vw;--font-lh-body-s:6.4vw;--font-ls-body-s:.03125em;
+  --font-s-title-r:2.6666666667vw;--font-lh-title-r:4vw;--font-ls-title-r:.16em;
+ }
+ .container{grid-template-columns:repeat(6,1fr);grid-column-gap:5.3333333333vw;margin:0 5.3333333333vw;padding:21.3333333333vw 0}
+ .column:first-child{grid-column:1/7;order:2;margin-bottom:0}
+ .column:nth-child(2){grid-column:1/4;order:1}
+ .column:nth-child(3){grid-column:1/7;order:3}
+ .heading{font-family:var(--font-f-twk-lausanne-200);font-size:var(--font-s-m-heading-s);line-height:var(--font-lh-m-heading-s);letter-spacing:var(--font-ls-m-heading-s);padding:10.6666666667vw 0 6.6666666667vw}
+ .paragraph{margin-bottom:13.3333333333vw}
+ .principle{border-top:1px solid rgba(17,17,17,.18);padding-top:7.2vw}
+ .principle:not(:last-child){padding-bottom:10.6666666667vw;margin-bottom:0}
+ .title{visibility:visible}
+ .dot{height:1.3333333333vw;margin-right:2.4vw;width:1.3333333333vw}
+ .label{font-size:var(--font-s-title-r);line-height:var(--font-lh-title-r);letter-spacing:var(--font-ls-title-r)}
+ .paragraph-s{font-size:var(--font-s-body-s);line-height:var(--font-lh-body-s);letter-spacing:var(--font-ls-body-s);margin-top:5.3333333333vw;width:73.3333333333vw;visibility:visible}
+ .background{display:none}
+}
+
+/* IZITRAD — substitui o algarismo 6 pela marca, preservando a mecânica de scroll */
+.izi-logo-mark{
+  background:none;
+  -webkit-mask-image:none;mask-image:none;
+  aspect-ratio:1257/507;
+  width:800px;max-width:none;height:auto;transform:translateX(-242px);
+  display:flex;align-items:center;justify-content:center;
+}
+.izi-logo-svg{display:block;width:100%;height:auto;overflow:visible}
+
+/* ===== PRELÚDIO 04 — animação SIMPLES (isolada) ===== */
+.izi-pre04{
+  position:relative;
+  min-height:340vh;
+  overflow:hidden;
+  background:#ff0099;
+  color:#fff;
+  font-family:"Outfit",Arial,sans-serif;
+}
+.izi-pre04-intro{height:150vh;position:relative}
+.izi-pre04-stage{
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(24px,5vw,72px)
+}
+.izi-pre04-kicker{
+  position:absolute;top:8vh;left:clamp(24px,5vw,72px);
+  font-size:clamp(12px,1vw,16px);font-weight:600;letter-spacing:.08em;
+  opacity:0;transform:translateY(18px)
+}
+.izi-pre04-question{
+  margin:0;max-width:1100px;
+  font-size:clamp(48px,7vw,118px);line-height:.94;
+  letter-spacing:-.045em;font-weight:600;
+  opacity:0;transform:translateY(44px)
+}
+.izi-pre04-simple-zone{
+  min-height:190vh;padding-top:42vh;container-type:inline-size
+}
+.izi-pre04-simple-title{
+  margin:0 0 0 -.035em;width:100%;
+  font-size:22cqw;line-height:.9;font-weight:600;letter-spacing:0;
+  text-align:center;white-space:nowrap;text-transform:uppercase
+}
+.izi-pre04-squeeze-line{
+  display:block;transform-origin:0 0;transform:scaleY(0);will-change:transform
+}
+@media(max-width:700px){
+  .izi-pre04-intro{height:135vh}
+  .izi-pre04-question{font-size:clamp(44px,13vw,76px)}
+  .izi-pre04-simple-zone{padding-top:48vh}
+  .izi-pre04-simple-title{font-size:22cqw}
+}
+
+/* ===== SEÇÃO 04 — BACKGROUND ÚNICO CORRIGIDO ===== */
+.izi-sec04-unified{
+  position:relative;
+  isolation:isolate;
+  background:#fbfbfa;
+  color:#111;
+  overflow:hidden;
+}
+.izi-sec04-unified::before{
+  content:"";
+  position:absolute;
+  inset:-8% -38%;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 78% 24%,
+      rgba(0,255,102,.25) 0%,
+      rgba(0,255,102,.13) 20%,
+      rgba(0,255,102,.05) 38%,
+      rgba(0,255,102,0) 62%),
+    radial-gradient(ellipse at 27% 66%,
+      rgba(0,255,102,.10) 0%,
+      rgba(0,255,102,.035) 28%,
+      rgba(0,255,102,0) 55%);
+  filter:blur(30px);
+  transform:translate3d(-8%,0,0) scale(1.08);
+  animation:iziSec04Ambient 16s ease-in-out infinite alternate;
+  will-change:transform;
+}
+@keyframes iziSec04Ambient{
+  0%{transform:translate3d(-9%,-1%,0) scale(1.07)}
+  50%{transform:translate3d(3%,2%,0) scale(1.12)}
+  100%{transform:translate3d(10%,-1%,0) scale(1.08)}
+}
+
+/* As duas partes ficam transparentes e enxergam a MESMA camada abaixo */
+.izi-sec04-unified .izi-pre04,
+.izi-sec04-unified .guiding-principles{
+  background:transparent !important;
+}
+
+/* Mata somente a antiga camada verde interna da parte aprovada */
+.izi-sec04-unified .guiding-principles::before{
+  content:none !important;
+  display:none !important;
+}
+
+/* Primeira animação agora pertence à paleta clara */
+.izi-sec04-unified .izi-pre04{
+  color:#111 !important;
+}
+
+/* Mantém a camada de conteúdo acima do fundo */
+.izi-sec04-unified .izi-pre04,
+.izi-sec04-unified .guiding-principles,
+.izi-sec04-unified .container,
+.izi-sec04-unified .background{
+  position:relative;
+}
+.izi-sec04-unified .izi-pre04,
+.izi-sec04-unified .guiding-principles{
+  z-index:1;
+}
+
+/* A background/divider da parte aprovada continua funcional sem criar fundo próprio */
+.izi-sec04-unified .guiding-principles .background{
+  position:absolute;
+  z-index:0;
+}
+.izi-sec04-unified .guiding-principles .container{
+  z-index:1;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .izi-sec04-unified::before{animation:none}
+}
+
+/* Ajuste: 04 — COMO FUNCIONA centralizado */
+.izi-pre04-kicker{
+  left:50% !important;
+  right:auto !important;
+  width:max-content;
+  text-align:center;
+  transform:translate(-50%,18px);
+}
+
+/* Logo IZITRAD substitui apenas a palavra IZITRAD na pergunta */
+.izi-question-logo{
+  display:inline-block;
+  width:3.95em;
+  max-width:42vw;
+  vertical-align:-0.075em;
+  margin-left:.035em;
+}
+.izi-question-logo svg{
+  display:block;
+  width:100%;
+  height:auto;
+}
+
+/* Refinamento: logo integrada à linha da pergunta, sem vão visual */
+.izi-question-logo{
+  display:inline-flex !important;
+  width:3.35em !important;
+  max-width:none !important;
+  height:.72em;
+  align-items:center;
+  vertical-align:-.035em !important;
+  margin-left:.02em !important;
+  margin-right:.015em;
+  overflow:visible;
+}
+.izi-question-logo svg{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain;
+}
+
+/* V6 — logo com proporção tipográfica natural dentro da frase */
+.izi-question-logo{
+  display:inline-block !important;
+  width:auto !important;
+  height:.74em !important;
+  max-width:none !important;
+  margin:0 .015em 0 .025em !important;
+  padding:0 !important;
+  vertical-align:-.055em !important;
+  line-height:0 !important;
+  white-space:nowrap;
+}
+.izi-question-logo svg{
+  display:block !important;
+  width:auto !important;
+  height:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:visible;
+}
+
+/* V7 — aproxima a resposta SIMPLES da pergunta */
+.izi-pre04-intro{
+  height:118vh !important;
+}
+.izi-pre04-simple-zone{
+  min-height:170vh !important;
+  padding-top:12vh !important;
+}
+@media(max-width:700px){
+  .izi-pre04-intro{height:112vh !important}
+  .izi-pre04-simple-zone{padding-top:16vh !important}
+}
+
+/* V14 — composição limpa e estável */
+.izi-pre04-question .izi-q-line1{display:block}
+.izi-pre04-question .izi-q-line2{
+  display:flex;
+  align-items:center;
+  width:max-content;
+  white-space:nowrap;
+  gap:.08em;
+}
+.izi-pre04-question .izi-q-prefix,
+.izi-pre04-question .izi-q-mark{
+  display:block;
+  flex:none;
+  line-height:.94;
+}
+.izi-pre04-question .izi-question-logo{
+  position:relative !important;
+  display:block !important;
+  flex:none !important;
+  width:3.25em !important;
+  height:.82em !important;
+  margin:0 -.03em 0 .01em !important;
+  padding:0 !important;
+  line-height:0 !important;
+  vertical-align:initial !important;
+  overflow:hidden !important;
+}
+.izi-pre04-question .izi-question-logo svg{
+  position:absolute !important;
+  left:0 !important;
+  top:50% !important;
+  width:100% !important;
+  height:auto !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  transform:translateY(-50%) !important;
+}
+.izi-pre04-question .izi-q-mark{margin-left:-.03em}
+@media(max-width:700px){
+  .izi-pre04-question .izi-q-line2{gap:.06em}
+  .izi-pre04-question .izi-question-logo{
+    width:2.9em !important;
+    height:.80em !important;
+  }
+}
+
+/* V15 — composição visual aprovada: "com um [IZITRAD]?" */
+.izi-pre04-question{
+  max-width:none !important;
+}
+.izi-pre04-question .izi-q-line1{
+  display:block !important;
+}
+.izi-pre04-question .izi-q-line2{
+  display:grid !important;
+  grid-template-columns:max-content 3.55em max-content !important;
+  align-items:center !important;
+  column-gap:.10em !important;
+  width:max-content !important;
+  max-width:none !important;
+  height:.96em !important;
+  line-height:.94 !important;
+  white-space:nowrap !important;
+}
+.izi-pre04-question .izi-q-prefix,
+.izi-pre04-question .izi-q-mark{
+  position:static !important;
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  line-height:.94 !important;
+}
+.izi-pre04-question .izi-question-logo{
+  position:relative !important;
+  display:block !important;
+  width:3.55em !important;
+  height:.88em !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  line-height:0 !important;
+  transform:none !important;
+  align-self:center !important;
+}
+.izi-pre04-question .izi-question-logo svg{
+  position:absolute !important;
+  left:0 !important;
+  top:50% !important;
+  width:100% !important;
+  height:auto !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  transform:translateY(-50%) !important;
+  transform-origin:center !important;
+}
+.izi-pre04-question .izi-q-mark{
+  margin-left:-.035em !important;
+}
+@media(max-width:700px){
+  .izi-pre04-question .izi-q-line2{
+    grid-template-columns:max-content 3.05em max-content !important;
+    column-gap:.075em !important;
+  }
+  .izi-pre04-question .izi-question-logo{
+    width:3.05em !important;
+    height:.86em !important;
+  }
+}
+
+/* V16 — IZITRAD volta a ser texto da própria fonte do título */
+.izi-pre04-question .izi-q-line2{
+  display:flex !important;
+  align-items:baseline !important;
+  gap:.10em !important;
+  width:max-content !important;
+  height:auto !important;
+  white-space:nowrap !important;
+}
+.izi-pre04-question .izi-q-prefix,
+.izi-pre04-question .izi-question-word,
+.izi-pre04-question .izi-q-mark{
+  position:static !important;
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  font:inherit !important;
+  line-height:.94 !important;
+  letter-spacing:inherit !important;
+}
+.izi-pre04-question .izi-q-mark{margin-left:-.04em !important}
+
+/* V17 — SIMPLES entra ainda mais cedo */
+.izi-pre04-intro{
+  height:105vh !important;
+}
+.izi-pre04-simple-zone{
+  min-height:160vh !important;
+  padding-top:2vh !important;
+}
+@media(max-width:700px){
+  .izi-pre04-intro{height:104vh !important}
+  .izi-pre04-simple-zone{padding-top:4vh !important}
+}
+
+/* V18 — reduz mais um pouco o gap antes de SIMPLES */
+.izi-pre04-intro{
+  height:100vh !important;
+}
+.izi-pre04-simple-zone{
+  min-height:156vh !important;
+  padding-top:0 !important;
+  margin-top:-8vh !important;
+}
+@media(max-width:700px){
+  .izi-pre04-intro{height:100vh !important}
+  .izi-pre04-simple-zone{
+    padding-top:0 !important;
+    margin-top:-5vh !important;
+  }
+}
+
+/* V19 — reduz o espaço entre SIMPLES e a animação seguinte */
+.izi-sec04-unified .guiding-principles .container{
+  padding-top:5.73vw !important;
+  /* mantém o respiro inferior original */
+}
+@media(max-width:600px){
+  .izi-sec04-unified .guiding-principles .container{
+    padding-top:48px !important;
+  }
+}
+
+/* V21 — limite VISUAL real do crescimento do SIMPLES */
+.izi-pre04-simple-zone{
+  min-height:105vh !important;
+  padding-top:0 !important;
+  margin-top:-8vh !important;
+}
+.izi-sec04-unified .guiding-principles{
+  margin-top:-12vh !important;
+}
+.izi-sec04-unified .guiding-principles .container{
+  padding-top:5.73vw !important;
+}
+@media(max-width:700px){
+  .izi-pre04-simple-zone{min-height:110vh !important}
+  .izi-sec04-unified .guiding-principles{margin-top:-6vh !important}
+}
+
+/* V22 — remove o espaço artificial imposto pelo wrapper pai */
+.izi-pre04{
+  min-height:0 !important;
+  height:auto !important;
+}
+
+/* preserva o timing atual da pergunta e do SIMPLES */
+.izi-pre04-intro{
+  height:100vh !important;
+}
+.izi-pre04-simple-zone{
+  min-height:105vh !important;
+  padding-top:0 !important;
+  margin-top:-8vh !important;
+}
+
+/* remove a sobreposição usada na V21: agora o fluxo natural aproxima as partes */
+.izi-sec04-unified .guiding-principles{
+  margin-top:0 !important;
+}
+
+/* V27 — correção real: seletores do SIMPLES */
+.izi-pre04-simple-title,
+.izi-pre04-squeeze-line{
+  font-family:"Big Shoulders Display", sans-serif !important;
+  font-weight:900 !important;
+}
