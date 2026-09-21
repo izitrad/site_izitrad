@@ -417,7 +417,28 @@ function initHeroS2Story(root){
   addRollingTween(tl, ilDocReels,  PHASE2_START+0.10);
   addRollingTween(tl, ilDestReels, PHASE2_START+0.35);
   addRollingTween(tl, ilCamReels,  PHASE2_START+0.60);
-  addRollingTween(tl, introEyebrowReels, PHASE2_START+0.10);
+  // "02 — O Caminho": padronizado pro giro SINCRONIZADO (ver
+  // addSyncedRollingTween acima) igual o "03 — A Solução" — era o único
+  // rótulo ainda na versão antiga (addRollingTween), que a usuária reportou
+  // como "estático"/desalinhado comparado ao "03". ilDoc/ilDest/ilCam
+  // (título grande) ficam de fora por enquanto, fora do escopo pedido.
+  // at=ENTRY_START (não PHASE2_START+0.10): o rótulo fica no top:5% de
+  // .s2-layer, ou seja, é a PRIMEIRA coisa a aparecer conforme a camada sobe
+  // (yPercent 100→0, mesma janela ENTRY_START..ENTRY_START+ENTRY_DUR) — a
+  // usuária reportou que ele ficava "parado" visível lá embaixo, estático,
+  // até a subida terminar inteira, só girando DEPOIS. Começando o giro
+  // junto com a subida (duration=ENTRY_DUR, termina exatamente quando a
+  // camada termina de subir) ele já aparece girando, nunca estático.
+  // ease 'none' (linear): tentamos 'sine.inOut' (largada devagar demais,
+  // ainda parecia parado quando aparecia) e depois 'power2.out' (resolveu a
+  // largada, mas desacelera tanto no final que as letras pareciam prontas
+  // bem ANTES da subida terminar — a usuária reportou por print que a
+  // seção ainda não cobria a tela toda e o rótulo já estava assentado).
+  // 'none' anda proporcional ao scroll o tempo inteiro (mesma técnica usada
+  // alhures no site pra sensação de "grudado no scroll") — sem largada lenta
+  // no início nem desaceleração no fim, giro visivelmente em andamento do
+  // primeiro ao último frame, terminando exatamente junto com a subida.
+  addSyncedRollingTween(tl, introEyebrowReels, ENTRY_START, ENTRY_DUR, 'none');
 }
 
 /* --------------- ROLLING TEXT (giro de entrada dos rótulos) ----------- */
@@ -479,6 +500,42 @@ function addRollingTween(tl, reels, at, stagger){
     // volta no tamanho normal junto com o fim do giro (mesma at/duration).
     tl.fromTo(r.char,{scale:1.22,filter:'blur(3px)'},{scale:1,filter:'blur(0px)',duration:r.duration,ease:'expo.out'},t0);
   });
+}
+// versão SINCRONIZADA do giro (mesmo padrão do rótulo "03 — A SOLUÇÃO" em
+// initSolucao, ver s3IdReels/rollProxy) — UM proxy só (p:0→1) dirige TODAS
+// as letras pelo MESMO progresso ao mesmo tempo, em vez de cada letra ter
+// sua própria duração/atraso aleatórios (addRollingTween acima). Corrige o
+// "desalinhado" de pausar o scroll no meio e pegar uma mistura de letras já
+// assentadas com letras ainda girando/borradas — reportado pela usuária no
+// rótulo "02 — O Caminho" (que usava addRollingTween). Também remove
+// transform/filter (em vez de zerar) quando p>=1: mesmo "zerados"
+// (scale(1)/blur(0px)), os dois forçam o navegador a rasterizar a letra numa
+// camada separada, trocando o antialiasing normal do texto por um diferente
+// (glifos com mais traço — Ç,Ã,O — ficam com peso visual inconsistente
+// comparado a glifos simples — 0,3,A) mesmo já assentado. Sem a propriedade
+// no style, a letra volta a renderizar pelo caminho normal, igual o resto
+// do site. Cada letra mantém seu próprio número de ciclos (r.to, variedade
+// visual), só o PROGRESSO fica sincronizado entre todas.
+function addSyncedRollingTween(tl, reels, at, duration, ease){
+  ease = ease || 'sine.inOut';
+  gsap.set(reels.map(r=>r.char), {scale:1.22, filter:'blur(3px)'});
+  const rollProxy = {p:0};
+  tl.to(rollProxy, {p:1, duration:duration, ease:ease,
+    onUpdate(){
+      const p = rollProxy.p;
+      for(const r of reels){
+        r.track.style.setProperty('--k', String(p*r.to));
+        if(p>=1){
+          r.char.style.transform = '';
+          r.char.style.filter = '';
+        } else {
+          const scale = 1+0.22*(1-p), blurPx = (3*(1-p)).toFixed(2);
+          r.char.style.transform = 'scale('+scale+')';
+          r.char.style.filter = 'blur('+blurPx+'px)';
+        }
+      }
+    }
+  }, at);
 }
 
 /* ------------- FOCUS TEXT (revelação caractere a caractere) ---------- */
@@ -965,7 +1022,44 @@ function initSolucao(root){
     .to(q('.doc-stage'),{opacity:1,y:0,scale:1,duration:.75,ease:'power2.out'},0.62);
   // rótulo "02 / O CAMINHO" já nasce visível (sem gsap.set/opacity antes
   // disso) — o giro das letras (rolling text) é a própria entrada dele.
-  if(idReels) addRollingTween(tl, idReels, 0);
+  // Padronizado pro giro SINCRONIZADO (mesmo padrão de addSyncedRollingTween,
+  // aplicado no ".intro-eyebrow" da seção Hero→Caminho) — mesmo problema do
+  // addRollingTween antigo: pausar o scroll no meio pega letras já
+  // assentadas do lado de outras ainda girando/borradas.
+  // AQUI PRECISA DE SCROLLTRIGGER PRÓPRIO, fora da `tl` principal: a `tl`
+  // usa start:'top top' (linha ~814) — só começa a contar quando .sol-stage
+  // JÁ ESTÁ 100% grudada no topo (sticky). Enquanto a seção ainda está
+  // subindo pra dentro da tela via scroll normal (ANTES de stickar), a `tl`
+  // fica travada em t=0 — se o giro estivesse dentro dela (como antes),
+  // ficava parado/borrado a viagem toda e só começava a girar depois que a
+  // seção já tinha terminado de entrar (reportado pela usuária, print). Esse
+  // 2º ScrollTrigger cobre exatamente essa janela que falta: do momento em
+  // que o topo da seção entra pela base da viewport (start:'top bottom') até
+  // o momento em que gruda no topo (end:'top top', onde a `tl` principal
+  // assume) — mesma técnica de proxy+onUpdate de addSyncedRollingTween, só
+  // que dirigida pelo PRÓPRIO scroll da página em vez de por uma posição
+  // dentro de `tl`. ease:'none': anda proporcional ao scroll o tempo todo.
+  if(idReels){
+    gsap.set(idReels.map(r=>r.char), {scale:1.22, filter:'blur(3px)'});
+    const idRollProxy = {p:0};
+    gsap.to(idRollProxy, {p:1, ease:'none',
+      scrollTrigger:{trigger:root, start:'top bottom', end:'top top', scrub:true},
+      onUpdate(){
+        const p = idRollProxy.p;
+        for(const r of idReels){
+          r.track.style.setProperty('--k', String(p*r.to));
+          if(p>=1){
+            r.char.style.transform = '';
+            r.char.style.filter = '';
+          } else {
+            const scale = 1+0.22*(1-p), blurPx = (3*(1-p)).toFixed(2);
+            r.char.style.transform = 'scale('+scale+')';
+            r.char.style.filter = 'blur('+blurPx+'px)';
+          }
+        }
+      }
+    });
+  }
   const INTRO=0.9;
 
   /* 02 — os 5 caminhos, um de cada vez: linha desenha → card nasce dela →
