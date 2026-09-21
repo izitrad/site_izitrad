@@ -429,15 +429,11 @@ function initHeroS2Story(root){
   // até a subida terminar inteira, só girando DEPOIS. Começando o giro
   // junto com a subida (duration=ENTRY_DUR, termina exatamente quando a
   // camada termina de subir) ele já aparece girando, nunca estático.
-  // ease 'none' (linear): tentamos 'sine.inOut' (largada devagar demais,
-  // ainda parecia parado quando aparecia) e depois 'power2.out' (resolveu a
-  // largada, mas desacelera tanto no final que as letras pareciam prontas
-  // bem ANTES da subida terminar — a usuária reportou por print que a
-  // seção ainda não cobria a tela toda e o rótulo já estava assentado).
-  // 'none' anda proporcional ao scroll o tempo inteiro (mesma técnica usada
-  // alhures no site pra sensação de "grudado no scroll") — sem largada lenta
-  // no início nem desaceleração no fim, giro visivelmente em andamento do
-  // primeiro ao último frame, terminando exatamente junto com a subida.
+  // ease 'none' (linear): tentamos 'sine.inOut' (largada devagar demais)
+  // e depois 'power2.out' (largada boa, mas desacelerava tanto no final que
+  // as letras pareciam prontas ANTES da seção cobrir a tela toda). 'none'
+  // anda proporcional ao scroll o tempo inteiro — sem largada lenta nem
+  // desaceleração no fim. Esse é o estado APROVADO ("perfeito").
   addSyncedRollingTween(tl, introEyebrowReels, ENTRY_START, ENTRY_DUR, 'none');
 }
 
