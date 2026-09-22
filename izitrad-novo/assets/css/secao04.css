@@ -599,6 +599,25 @@
   margin-top:12vh !important;
 }
 
+/* V41 — gap real entre a pergunta sumindo e o "SIMPLES" aparecendo.
+   Medido via ScrollTrigger (scrollY, não CSS): o início do "estica" do
+   SIMPLES (#iziPre04SimpleLine, trigger "top bottom") acontecia ~972px
+   (108vh a 900 de viewport) ANTES do fim do fade de saída da pergunta
+   (#iziPre04Intro, trigger "bottom top") — os dois rodavam SOBREPOSTOS
+   boa parte do tempo, não só "apertado". .izi-pre04-simple-zone é irmão
+   de .izi-pre04-intro no HTML; empurrar ela pra baixo com margin-top
+   desloca o início do "top bottom" do SIMPLES na MESMA medida (1:1,
+   confirmado pela mesma lógica que já regia o -8vh antigo). Fórmula:
+   margin-top = -8vh + 108vh(fecha a sobreposição) + gap_desejado.
+   Testado 30vh (→130vh), 20vh (→120vh) e 10vh (→110vh), todos
+   confirmados por medição real. Agora pedido em PX direto (60px) em vez
+   de vh — convertido pra vh usando 900px como viewport de referência
+   (mesmo usado em todos os testes): 60/900*100 = 6,667vh →
+   -8+108+6,667 = 106,667vh. */
+.izi-pre04-simple-zone{
+  margin-top:106.667vh !important;
+}
+
 /* V27 — correção real: seletores do SIMPLES */
 /* V39 — fonte trocada de Big Shoulders Display pra Steelfish Eb (pedido).
    font-weight:normal (não mais 900): só carregamos UMA variante estática
