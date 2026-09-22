@@ -593,3 +593,90 @@
   font-family:"Big Shoulders Display", sans-serif !important;
   font-weight:900 !important;
 }
+
+/* V34 — "IZITRAD" vira a logo "izi" (assets/logo-izi.png) na pergunta.
+   Classe nova (não reaproveita .izi-question-logo, que carrega CSS órfão
+   de V14/15 pra um layout em grid que não é mais o ativo desde a V16) —
+   .izi-question-word continua na tag (JS usa esse seletor pra pegar o
+   elemento e incluir ele no array de palavras animadas: blur+fade igual
+   às outras).
+   V35 — recorte cirúrgico + alinhamento na linha de base. Duas correções
+   em cima do feedback visual (print) de que a logo ficava flutuando acima
+   da linha e com respiro grande demais dos dois lados:
+   1) O PNG (1366×768) tem MUITO espaço transparente em volta do "izi" —
+      medido pixel a pixel: tinta real ocupa só x:[291,1100] y:[21,716]
+      (21,4% de sobra à esquerda, 19,5% à direita, ~3-7% em cima/baixo).
+      Isso fazia tanto a altura quanto os espaçamentos "sentirem" errado
+      mesmo com os números batendo no papel. Solução: .izi-q-logo-crop é
+      um wrapper overflow:hidden do TAMANHO DA TINTA (proporção real
+      809:695 ≈ 1.164:1), e .izi-q-logo-img é a imagem INTEIRA, escalada e
+      deslocada (position:absolute, negative left/top) pra só a parte
+      visível aparecer dentro do wrapper — contas em em (relativas ao
+      font-size da pergunta, então escalam com clamp() responsivo).
+   2) align-self:baseline sozinho NÃO alinhava com a linha de base real
+      dos glifos (confirmado medindo o bounding box de texto de verdade
+      via Range — o "baseline" que o flexbox calcula pra um replaced
+      element como <img>/wrapper usa a borda de baixo dele como "baseline
+      sintética", que não bate com o baseline real do texto quando a
+      line-height é apertada feito aqui, .94). translateY aqui embaixo é
+      a correção medida (não teórica) — se a fonte/tamanho mudar muito,
+      reconferir com o mesmo método (Range.getBoundingClientRect() num
+      textNode de referência tipo "com"/"?", que dá a caixa REAL da
+      tinta, e não confiar em vertical-align pra isso — vertical-align
+      não faz nada dentro de flex).
+   3) gap do .izi-q-line2 (V16) subiu de .10em pra .15em aqui embaixo,
+      medido do espaço natural entre "com" e "a" (mesmo texto, mesma
+      fonte) — antes os dois gaps (texto vs flex) eram diferentes. */
+.izi-pre04-question .izi-q-line2{
+  gap:.15em !important;
+}
+/* .izi-q-mark tinha margin-left:-.04em (V16) calibrado pro texto "IZITRAD"
+   que não existe mais — puxava o "?" ~4px pra mais perto, deixando o gap
+   direito (11px) menor que o esquerdo (15px) mesmo com o mesmo gap:.15em
+   dos dois lados. Zerado aqui pros dois gaps ficarem iguais de verdade. */
+.izi-pre04-question .izi-q-mark{
+  margin-left:0 !important;
+}
+/* V36 — recorte era exato demais (0px de folga em volta da tinta): não
+   cortava nenhum pixel (conferido — a borda do crop batia exato com a
+   borda real da tinta), mas sem a "respiração" que toda letra tem
+   naturalmente (side-bearing da fonte) parecia cortado, principalmente a
+   bolinha do primeiro "i". Bounds recalculados com +12px de margem de
+   segurança (no espaço de pixels do PNG original, 1366×768) em volta da
+   caixa de tinta antes de converter pra em — mesmo método de sempre, só
+   com essa folga extra.
+   V37 — o translateY(.258em) da V35 (comentário "2" acima) partiu de uma
+   medição ERRADA: Range.getBoundingClientRect() num textNode NÃO dá a
+   caixa da tinta real, dá a caixa de MÉTRICA DA FONTE (reserva espaço de
+   descendente tipo "g"/"j"/"y" mesmo em palavras sem nenhum, tipo "com"/
+   "a") — sobra bem abaixo da baseline visual de verdade. Comparado com
+   canvas ctx.measureText().actualBoundingBoxAscent (tinta real), a
+   baseline verdadeira tava ~.258em ACIMA do que eu tinha calculado — ou
+   seja, o translateY(.258em) empurrava a logo pra baixo exatamente o
+   dobro do necessário. Removido: align-self:baseline sozinho (sem
+   nenhum translateY) já alinha certo, confirmado com o método correto
+   (measureText, não Range) direto no navegador da usuária (819px de
+   viewport, non nosso ambiente de teste). */
+/* V38 — mais respiro só entre "a" e a logo (não entre a logo e "?"): gap
+   do .izi-q-line2 é uniforme pros dois lados, então pra crescer só um
+   lado uso margin-left extra aqui, em cima do gap:.15em que já existe.
+   !important necessário: .izi-question-word (V16, classe que também está
+   nesse wrapper, o JS precisa dela) já tem margin:0!important. */
+.izi-pre04-question .izi-q-logo-crop{
+  display:inline-block;
+  position:relative;
+  overflow:hidden;
+  width:.811em;
+  height:.7em;
+  margin-left:.06em !important;
+  align-self:baseline;
+}
+.izi-pre04-question .izi-q-logo-img{
+  display:block;
+  position:absolute;
+  left:-.2716em;
+  top:-.0088em;
+  width:1.3298em;
+  height:.7477em;
+  max-width:none;
+}
