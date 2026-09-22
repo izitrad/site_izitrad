@@ -200,7 +200,7 @@ addEventListener("resize",()=>{
   function fitSimples(){
     const line = document.getElementById("iziPre04SimpleLine");
     const title = line && line.closest(".izi-pre04-simple-title");
-    if(!line || !title) return;
+    if(!line || !title) return false;
 
     /* largura/posição REAL do container-PAI (não window.innerWidth) —
        innerWidth inclui a faixa da barra de rolagem (~15-17px no Windows
@@ -237,7 +237,7 @@ addEventListener("resize",()=>{
     document.body.appendChild(svg);
     const bbox = textEl.getBBox();
     document.body.removeChild(svg);
-    if(!bbox.width) return;
+    if(!bbox.width) return false;
 
     /* advance (largura de "avanço"/layout, usada pra centralização via
        text-align:center do CSS — diferente da largura de TINTA acima).
@@ -247,7 +247,7 @@ addEventListener("resize",()=>{
     const ctx = canvas.getContext("2d");
     ctx.font = weight + " " + probeSize + "px " + family;
     const advance = ctx.measureText(TEXT).width;
-    if(!advance) return;
+    if(!advance) return false;
 
     const inkWidthAtProbe = bbox.width;
     const targetInkWidth = containerWidth - (TARGET_MARGIN * 2);
@@ -269,6 +269,29 @@ addEventListener("resize",()=>{
     const correction = (containerLeft + TARGET_MARGIN) - inkLeftAbsolute;
     title.style.position = "relative";
     title.style.left = correction + "px";
+    return true;
+  }
+
+  /* fitSimples() pode falhar silenciosamente (retorna false) se o SVG de
+     medição (getBBox) ainda não estiver pronto pra medir — visto
+     acontecer mesmo depois de document.fonts.load() resolver (a fonte
+     "carregada" não garante que o motor de renderização/layout já
+     processou o SVG temporário no MESMO tick). Sem retry, isso deixava
+     title.style.fontSize nunca setado nessa passada — SIMPLES ficava no
+     tamanho de fallback do CSS (22cqw) até um resize acontecer (se
+     acontecesse). fitSimplesUntilReady devolve uma Promise que só resolve
+     depois que fitSimples() de fato funcionou (ou esgotou as tentativas,
+     via requestAnimationFrame, até 20x ≈ 1/3s) — quem espera essa
+     Promise (window.__iziSimplesReady, abaixo) tem garantia real de que
+     o fontSize já foi aplicado, não só "tentado". */
+  function fitSimplesUntilReady(triesLeft){
+    return new Promise(function(resolve){
+      function attempt(remaining){
+        if(fitSimples() || remaining <= 0){ resolve(); return; }
+        requestAnimationFrame(function(){ attempt(remaining - 1); });
+      }
+      attempt(triesLeft);
+    });
   }
 
   /* Exposto em window pro outro IIFE (mais abaixo, "PRELÚDIO 04") que monta
@@ -277,17 +300,17 @@ addEventListener("resize",()=>{
      RODOU (fontSize aplicado), não só quando a fonte "carregou" (dois
      eventos diferentes; duas chamadas separadas a document.fonts.load()
      pra "a mesma fonte" não têm ordem de resolução garantida entre si). */
-  window.__iziSimplesReady = document.fonts.load('normal 100px "Steelfish Eb"').then(function(){
-    fitSimples();
-    if(window.ScrollTrigger) ScrollTrigger.refresh();
-  });
+  window.__iziSimplesReady = document.fonts.load('normal 100px "Steelfish Eb"')
+    .then(function(){ return fitSimplesUntilReady(20); })
+    .then(function(){ if(window.ScrollTrigger) ScrollTrigger.refresh(); });
 
   let fitTimer;
   window.addEventListener("resize", function(){
     clearTimeout(fitTimer);
     fitTimer = setTimeout(function(){
-      fitSimples();
-      if(window.ScrollTrigger) ScrollTrigger.refresh();
+      fitSimplesUntilReady(20).then(function(){
+        if(window.ScrollTrigger) ScrollTrigger.refresh();
+      });
     }, 120);
   });
 })();
@@ -493,14 +516,20 @@ addEventListener("resize",()=>{
     // exato de novo) as duas taxas voltam a bater 1:1, e a margem fica
     // constante do início ao fim do estica.
     const BOTTOM_MARGIN=13;
+    // "end" como FUNÇÃO (não string fixa): o GSAP reavalia funções de
+    // start/end a cada ScrollTrigger.refresh() — se por algum motivo
+    // line.offsetHeight ainda estiver errado/0 na primeira criação
+    // (mesmo com o retry do fitSimplesUntilReady acima), qualquer
+    // refresh() seguinte (já rolam vários: no fim do fitSimplesUntilReady,
+    // no listener de resize) recalcula com o valor CORRETO — autocorrige
+    // sozinho em vez de ficar preso na string errada pra sempre.
     (window.__iziSimplesReady || Promise.resolve()).then(function(){
-      const lineHeight=line.offsetHeight;
       gsap.to(line,{
         scaleY:FINAL_STRETCH,scaleX:1,ease:"none",
         scrollTrigger:{
           trigger:line,
           start:`top bottom-=${BOTTOM_MARGIN}px`,
-          end:`top bottom-=${(lineHeight * FINAL_STRETCH) + BOTTOM_MARGIN}px`,
+          end:function(){ return `top bottom-=${(line.offsetHeight * FINAL_STRETCH) + BOTTOM_MARGIN}px`; },
           scrub:true
         }
       });
