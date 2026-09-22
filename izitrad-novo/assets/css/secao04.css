@@ -108,7 +108,17 @@
 .izi-pre04{
   position:relative;
   min-height:340vh;
-  overflow:hidden;
+  /* overflow:hidden REMOVIDO — era um SEGUNDO ancestral (além do
+     .izi-sec04-unified, já corrigido acima) quebrando o position:sticky
+     de .izi-pre04-stage por completo (mesmo motivo: overflow≠visible em
+     qualquer ancestral do sticky impede o "grudar"). Confirmado ao vivo:
+     com overflow:hidden aqui, o card andava 1:1 com o scroll sem nunca
+     parar; removendo, gruda certinho. Efeito colateral mínimo conhecido:
+     o texto "SIMPLES" (.izi-pre04-simple-title, ajuste fino de largura via
+     canvas em secao04.js) pode vazar ~3-4px horizontalmente por
+     imprecisão de sub-pixel do próprio ajuste — praticamente
+     imperceptível, não um scrollbar real visível na prática.
+  */
   background:#ff0099;
   color:#fff;
   font-family:"Outfit",Arial,sans-serif;
@@ -120,7 +130,7 @@
   padding:clamp(24px,5vw,72px)
 }
 .izi-pre04-kicker{
-  position:absolute;top:8vh;left:clamp(24px,5vw,72px);
+  position:absolute;top:5%;left:clamp(24px,5vw,72px);
   font-size:clamp(12px,1vw,16px);font-weight:600;letter-spacing:.08em;
   opacity:0;transform:translateY(18px)
 }
@@ -154,14 +164,30 @@
   isolation:isolate;
   background:#fbfbfa;
   color:#111;
-  overflow:hidden;
+  /* SEM overflow:hidden aqui — overflow diferente de visible em QUALQUER
+     ancestral de um position:sticky quebra o sticky por completo (vira
+     containing block de scroll não-viewport, que nunca "rola" de verdade,
+     então o sticky nunca engata — bug real confirmado rolando de verdade:
+     .izi-pre04-stage andava 1:1 junto com o scroll, nunca grudava).
+     clip-path:inset(0) foi tentado como alternativa e TAMBÉM não resolve
+     de verdade: só corta a PINTURA, mas a caixa ainda conta pra largura
+     rolável da página (virou scroll horizontal). O recorte do glow abaixo
+     (.izi-sec04-glow) agora é feito por um elemento IRMÃO, não ancestral,
+     de .izi-pre04 — assim ele pode ter overflow:hidden próprio sem afetar
+     o sticky em nada.
+  */
 }
-.izi-sec04-unified::before{
+.izi-sec04-glow{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  overflow:hidden;
+  pointer-events:none;
+}
+.izi-sec04-glow::before{
   content:"";
   position:absolute;
   inset:-8% -38%;
-  z-index:-1;
-  pointer-events:none;
   background:
     radial-gradient(ellipse at 78% 24%,
       rgba(0,255,102,.25) 0%,
@@ -222,7 +248,7 @@
 }
 
 @media (prefers-reduced-motion:reduce){
-  .izi-sec04-unified::before{animation:none}
+  .izi-sec04-glow::before{animation:none}
 }
 
 /* Ajuste: 04 — COMO FUNCIONA centralizado */
@@ -231,7 +257,14 @@
   right:auto !important;
   width:max-content;
   text-align:center;
-  transform:translate(-50%,18px);
+  /* y 18px→70px: mais distância de deslocamento vertical no "pouso" do
+     rótulo — a usuária sentiu o giro "mais leve" que o da seção 02 mesmo
+     com número de px comparável, porque lá tem a camada inteira se
+     movendo junto (peso visual grande); aqui só o texto se move. Sem
+     recriar a mecânica da camada (fora de escopo, decisão explícita),
+     aumentar esse deslocamento próprio do rótulo é o jeito de dar mais
+     sensação de "chegada"/percurso sem mexer na estrutura da seção. */
+  transform:translate(-50%,70px);
 }
 
 /* Logo IZITRAD substitui apenas a palavra IZITRAD na pergunta */
@@ -499,9 +532,23 @@
   height:auto !important;
 }
 
-/* preserva o timing atual da pergunta e do SIMPLES */
+/* V28 — cria uma janela de ANCORAGEM real (tela parada) depois que a seção
+   termina de entrar. .izi-pre04-stage é sticky (top:0;height:100vh) dentro
+   deste wrapper — o tempo que ele fica "grudado" (tela parada) é
+   exatamente altura-do-wrapper menos altura-do-stage. Antes os dois eram
+   iguais (100vh), então não sobrava NENHUM tempo grudado — o topo da seção
+   mal tocava o topo da tela e já ia embora, sem pausa nenhuma.
+   V29 — 186vh (100 entrada + 56 giro do kicker pinado + 30 pergunta
+   pinada): antes só tinha os 30vh da pergunta; o giro do rótulo "04" tinha
+   que rodar parte fora da tela (invisível) pra ter mais distância, o que
+   fazia parecer mais curto que o rótulo "02" mesmo com número maior de
+   px (~900px realmente visíveis contra ~1400px do "02"). Os 56vh extras
+   dão esse tempo TODO visível e pinado só pro giro terminar (ver
+   scrollTrigger start:"top bottom", end:"top -56%" em secao04.js — os
+   dois precisam bater), chegando em ~1400px visíveis, igual o "02". A
+   pergunta continua logo depois (start:"top -56%", end:"top -86%"). */
 .izi-pre04-intro{
-  height:100vh !important;
+  height:186vh !important;
 }
 .izi-pre04-simple-zone{
   min-height:105vh !important;

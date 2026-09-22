@@ -247,15 +247,127 @@ addEventListener("resize",()=>{
 
   gsap.set("#iziPre04Kicker",{xPercent:-50});
 
+  // Janela do giro do rótulo. Histórico: primeiro start:'top bottom'→
+  // end:'top top' (só 900px visíveis possíveis, é o máximo de scroll NÃO
+  // pinado — "top bottom"→"top top" é SEMPRE exatamente 1 altura de tela,
+  // não dá pra esticar). Depois start:'top 180%' (mais scroll total, mas
+  // 44% dele rodava com a seção ainda fora da tela, invisível — a usuária
+  // percebeu que "parecia mais curto" mesmo com número maior, e média
+  // confirmou: só 900px dos 1620px eram realmente vistos). Comparado aos
+  // ~1400px VISÍVEIS do rótulo "02", faltava esticar de verdade.
+  // Solução agora: end:'top -56%' — o giro continua rodando 56% de altura
+  // de tela DEPOIS que a seção já está 100% na tela (.izi-pre04-stage já
+  // grudado/parado), consumindo scroll real e TODO visível (nada roda fora
+  // da tela). .izi-pre04-intro precisou crescer de 130vh pra 186vh (100
+  // entrada + 56 giro pinado + 30 pergunta pinada, ver CSS) pra sobrar
+  // esse tempo "parado" extra. Total visível: 900 (entrada) + 504 (56% de
+  // 900) ≈ 1404px — bate com os ~1400px visíveis do "02".
+  // ease power2.out (não "none"): o rótulo "02" parece "chegar rápido"
+  // porque o giro dele corre junto com o painel grande deslizando (peso
+  // visual forte logo de cara). O "04" gira sozinho numa janela de scroll
+  // longa (900px) — com ease linear, as letras só ficam legíveis devagar e
+  // uniformemente, dando sensação de "começa tarde/arrasta". Com ease-out,
+  // a maior parte da resolução (fade+giro) acontece logo no início da
+  // janela e desacelera até o fim — sem tocar em start/end/pin/altura.
   gsap.to("#iziPre04Kicker",{
-    opacity:1,y:0,ease:"none",
-    scrollTrigger:{trigger:"#iziPre04Intro",start:"top 72%",end:"top 48%",scrub:true}
+    opacity:1,y:0,ease:"power2.out",
+    scrollTrigger:{trigger:"#iziPre04Intro",start:"top bottom",end:"top -56%",scrub:true}
   });
 
-  gsap.to("#iziPre04Question",{
-    opacity:1,y:0,ease:"none",
-    scrollTrigger:{trigger:"#iziPre04Intro",start:"top 58%",end:"top 22%",scrub:true}
-  });
+  // Giro sincronizado das letras — mesmo mecanismo já padronizado nos
+  // rótulos "02 — O Caminho" (ver buildRollingLabel/addSyncedRollingTween
+  // em site.js, funções globais reaproveitadas aqui: site.js carrega antes
+  // de secao04.js no index.html). Reimplementado inline (não chama
+  // addSyncedRollingTween direto) porque aqui não existe uma timeline `tl`
+  // compartilhada pra nestar o tween — igual o rótulo "02" da seção 03,
+  // que também precisou de ScrollTrigger próprio (mesma trigger/start/end
+  // já usados pelo fade acima, só dirigindo o giro em vez da opacity/y).
+  var reduceMotionS04 = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduceMotionS04 && window.buildRollingLabel){
+    var kickerEl = document.querySelector('#iziPre04Kicker');
+    var kickerReels = buildRollingLabel(kickerEl);
+    gsap.set(kickerReels.map(function(r){return r.char;}), {scale:1.4, filter:'blur(5px)'});
+    var kickerRollProxy = {p:0};
+    gsap.to(kickerRollProxy, {p:1, ease:'power2.out',
+      scrollTrigger:{trigger:"#iziPre04Intro",start:"top bottom",end:"top -56%",scrub:true},
+      onUpdate:function(){
+        var p = kickerRollProxy.p;
+        for(var i=0;i<kickerReels.length;i++){
+          var r = kickerReels[i];
+          r.track.style.setProperty('--k', String(p*r.to));
+          if(p>=1){
+            r.char.style.transform = '';
+            r.char.style.filter = '';
+          } else {
+            var scale = 1+0.4*(1-p), blurPx = (5*(1-p)).toFixed(2);
+            r.char.style.transform = 'scale('+scale+')';
+            r.char.style.filter = 'blur('+blurPx+'px)';
+          }
+        }
+      }
+    });
+  }
+
+  // "E como é fazer isso com um IZITRAD?" — mesmo efeito de aparecimento do
+  // "Guiding Principles" (ver setupDesktop() acima: heading.innerHTML
+  // reconstruído em palavras, cada uma com blur+autoAlpha, stagger .04) —
+  // aqui preserva a estrutura/CSS já calibrados (.izi-q-line1, .izi-q-prefix,
+  // .izi-question-word, .izi-q-mark, versões V14-V16), só quebra o TEXTO de
+  // .izi-q-line1/.izi-q-prefix em palavras; .izi-question-word e .izi-q-mark
+  // já são unidades atômicas (IZITRAD / "?"), viram "palavra" cada um.
+  // start:"top -56%" == end do giro do kicker acima — só começa depois que
+  // "04 — COMO FUNCIONA" estiver 100% girado, nunca sobreposto. end:"top
+  // -86%" (56%+30%): mais 30% de altura de viewport de revelação, mesmo
+  // span de antes, só deslocado pra depois do giro do kicker ter mais
+  // tempo pinado.
+  (function(){
+    function splitIntoWords(el){
+      var text = el.textContent;
+      var words = text.trim().split(/\s+/);
+      el.textContent = '';
+      var spans = [];
+      words.forEach(function(w, i){
+        var span = document.createElement('span');
+        span.className = 'iziq-word';
+        span.textContent = w;
+        el.appendChild(span);
+        spans.push(span);
+        if(i < words.length-1) el.appendChild(document.createTextNode(' '));
+      });
+      return spans;
+    }
+    var line1 = document.querySelector('#iziPre04Question .izi-q-line1');
+    var prefix = document.querySelector('#iziPre04Question .izi-q-prefix');
+    var questionWordEl = document.querySelector('#iziPre04Question .izi-question-word');
+    var markEl = document.querySelector('#iziPre04Question .izi-q-mark');
+    var questionWords = [];
+    // .izi-question-word/.izi-q-mark já são display:block !important (V16,
+    // dentro do flex .izi-q-line2) — não força inline-block neles, deixa a
+    // regra existente. Só as palavras NOVAS (de line1/prefix) precisam.
+    if(line1){
+      var line1Words = splitIntoWords(line1);
+      gsap.set(line1Words, {display:'inline-block'});
+      questionWords = questionWords.concat(line1Words);
+    }
+    if(prefix){
+      var prefixWords = splitIntoWords(prefix);
+      gsap.set(prefixWords, {display:'inline-block'});
+      questionWords = questionWords.concat(prefixWords);
+    }
+    if(questionWordEl){ questionWordEl.classList.add('iziq-word'); questionWords.push(questionWordEl); }
+    if(markEl){ markEl.classList.add('iziq-word'); questionWords.push(markEl); }
+    if(!questionWords.length) return;
+    // neutraliza o estado inicial do CSS (.izi-pre04-question{opacity:0;
+    // transform:translateY(44px)}) — quem controla a revelação agora são as
+    // palavras, não o bloco inteiro.
+    gsap.set('#iziPre04Question', {opacity:1, y:0});
+    var qScaleBase = 1440;
+    gsap.set(questionWords, {autoAlpha:0, filter:'blur('+(innerWidth/qScaleBase*10)+'px)'});
+    gsap.to(questionWords, {
+      autoAlpha:1, filter:'blur(0px)', stagger:.04, duration:.2, ease:'none',
+      scrollTrigger:{trigger:"#iziPre04Intro", start:"top -56%", end:"top -86%", scrub:true}
+    });
+  })();
 
   gsap.to(["#iziPre04Question","#iziPre04Kicker"],{
     opacity:0,y:-35,ease:"none",
