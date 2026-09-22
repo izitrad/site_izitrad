@@ -565,9 +565,16 @@
    desaparecendo ainda borrado). 300vh dá 0.55×300=165vh, ~19vh de folga
    DEPOIS dos 146vh da revelação — mesma margem de segurança (proporcional)
    que já existia nas versões anteriores. Se esticar a revelação de novo,
-   recalcular: altura mínima ≈ (56+revelação_vh+folga_desejada)÷0.55. */
+   recalcular: altura mínima ≈ (56+revelação_vh+folga_desejada)÷0.55.
+   V32 — 430vh: janela da pergunta foi de 90vh pra 160vh — end do reveal em
+   secao04.js agora é "top -216%" (56+160). Pela fórmula acima, com folga
+   de ~20vh: (56+160+20)÷0.55 ≈ 429 → 430vh. Confere: 0.55×430=236,5vh,
+   ~20,5vh de folga depois dos 216vh da revelação.
+   V33 — 466vh: janela da pergunta foi de 160vh pra 180vh — end do reveal
+   em secao04.js agora é "top -236%" (56+180). (56+180+20)÷0.55 ≈ 465,5 →
+   466vh. Confere: 0.55×466=256,3vh, ~20,3vh de folga depois dos 236vh. */
 .izi-pre04-intro{
-  height:300vh !important;
+  height:466vh !important;
 }
 .izi-pre04-simple-zone{
   min-height:105vh !important;

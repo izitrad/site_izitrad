@@ -321,13 +321,11 @@ addEventListener("resize",()=>{
   // já são unidades atômicas (IZITRAD / "?"), viram "palavra" cada um.
   // start:"top -56%" == end do giro do kicker acima — só começa depois que
   // "04 — COMO FUNCIONA" estiver 100% girado, nunca sobreposto. end:"top
-  // -146%" (56%+90%): 90% de altura de viewport de revelação — era 30%,
-  // depois 45% (+50%, ainda "rápido demais"), agora dobrado de novo (3x o
-  // original) pra ficar bem mais devagar de verdade. Exige aumentar
-  // .izi-pre04-intro (secao04.css) o bastante pra manter a folga antes do
-  // fade de saída — é essa altura que dá o tempo "grudado"/sticky pra
-  // seção não desgrudar da tela no meio da revelação (ver V28/V29/V31 no
-  // CSS).
+  // -236%" (56%+180%): 180% de altura de viewport de revelação — era 30,
+  // 45, 90, 160, agora 180vh. Exige aumentar .izi-pre04-intro (secao04.css)
+  // o bastante pra manter a folga antes do fade de saída — é essa altura
+  // que dá o tempo "grudado"/sticky pra seção não desgrudar da tela no
+  // meio da revelação (ver V28/V29/V31/V32/V33 no CSS).
   (function(){
     function splitIntoWords(el){
       var text = el.textContent;
@@ -373,14 +371,43 @@ addEventListener("resize",()=>{
     gsap.set(questionWords, {autoAlpha:0, filter:'blur('+(innerWidth/qScaleBase*10)+'px)'});
     gsap.to(questionWords, {
       autoAlpha:1, filter:'blur(0px)', stagger:.04, duration:.2, ease:'none',
-      scrollTrigger:{trigger:"#iziPre04Intro", start:"top -56%", end:"top -146%", scrub:true}
+      scrollTrigger:{trigger:"#iziPre04Intro", start:"top -56%", end:"top -236%", scrub:true}
     });
+
+    // Saída: MESMO mecanismo da entrada (blur+autoAlpha por palavra,
+    // stagger .04, ease none), só invertido — de nítido/visível pra
+    // borrado/invisível, em vez de opacity+y no bloco inteiro. Ordem do
+    // stagger mantida igual à entrada (1ª palavra ainda é a 1ª a se mexer);
+    // se quiser inverter a ordem também (última palavra some primeiro), é
+    // só trocar stagger:.04 por stagger:{each:.04, from:"end"} aqui embaixo.
+    // Rótulo não entra (fica visível, ver comentário mais abaixo).
+    // fromTo (não .to()): com .to() a 1ª palavra ("E", stagger 0 igual a
+    // entrada) saía "seca" — pulava de opacity 1 pra 0 já nos primeiros 5%
+    // da janela, sem gradação nenhuma (testado isoladamente, as outras 8
+    // palavras já ficavam suaves normalmente). O GSAP fica ambíguo sobre o
+    // valor "de onde parte" quando duas tweens staggered diferentes miram
+    // o mesmo alvo com posição zero de stagger (a entrada TAMBÉM começa
+    // essa mesma palavra em offset 0) — fromTo trava from/to explícitos e
+    // tira a ambiguidade.
+    // immediateRender:false é OBRIGATÓRIO aqui: por padrão fromTo renderiza
+    // o "from" ({autoAlpha:1,blur:0}) IMEDIATAMENTE na criação (ainda no
+    // carregamento da página, scrollY=0) — isso sobrescrevia o autoAlpha:0
+    // que a entrada tinha acabado de setar em TODAS as palavras, corrompendo
+    // o valor "de onde partir" que a entrada (um .to() simples, sem from
+    // explícito) captura de forma preguiçosa por palavra — só a 1ª palavra
+    // escapava (capturada na criação da própria entrada, antes da saída
+    // existir). Resultado sem isso: entrada quebrada, palavras 2-9 já
+    // nasciam visíveis/nítidas, só a 1ª de fato revelava.
+    gsap.fromTo(questionWords,
+      {autoAlpha:1, filter:'blur(0px)'},
+      {autoAlpha:0, filter:'blur('+(innerWidth/qScaleBase*10)+'px)', stagger:.04, duration:.2, ease:'none', immediateRender:false,
+      scrollTrigger:{trigger:"#iziPre04Intro", start:"55% top", end:"bottom top", scrub:true}}
+    );
   })();
 
-  gsap.to(["#iziPre04Question","#iziPre04Kicker"],{
-    opacity:0,y:-35,ease:"none",
-    scrollTrigger:{trigger:"#iziPre04Intro",start:"55% top",end:"bottom top",scrub:true}
-  });
+  // Rótulo "04 — COMO FUNCIONA" fica (pedido: não precisa sumir, ele sai de
+  // tela naturalmente junto com o resto do .izi-pre04-stage quando o
+  // sticky solta, rolando pra cima com a seção, sem fade/efeito próprio).
 
   const line=document.querySelector("#iziPre04SimpleLine");
   if(line){
