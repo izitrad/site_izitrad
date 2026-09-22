@@ -262,15 +262,19 @@ addEventListener("resize",()=>{
   // entrada + 56 giro pinado + 30 pergunta pinada, ver CSS) pra sobrar
   // esse tempo "parado" extra. Total visível: 900 (entrada) + 504 (56% de
   // 900) ≈ 1404px — bate com os ~1400px visíveis do "02".
-  // ease power2.out (não "none"): o rótulo "02" parece "chegar rápido"
-  // porque o giro dele corre junto com o painel grande deslizando (peso
-  // visual forte logo de cara). O "04" gira sozinho numa janela de scroll
-  // longa (900px) — com ease linear, as letras só ficam legíveis devagar e
-  // uniformemente, dando sensação de "começa tarde/arrasta". Com ease-out,
-  // a maior parte da resolução (fade+giro) acontece logo no início da
-  // janela e desacelera até o fim — sem tocar em start/end/pin/altura.
+  // ease "none" (era power2.out): tinha ido pra ease-out pra evitar a
+  // sensação de "começa tarde/arrasta" que o linear dava aqui — só que
+  // ease-out resolve a MAIOR PARTE do giro/fade logo cedo (medido: com
+  // power2.out, a 50% da janela já tá 87,5% revelado; a 70%, já 97,3%),
+  // sobrando uns 400-500px de "scroll morto" no fim da janela onde nada
+  // muda mais — é exatamente isso que dava a sensação de "sobe rápido,
+  // com pouco scroll" comparado à seção "02" (que usa ease:'none' tanto no
+  // painel quanto no giro das letras, e revela 1:1 com o scroll a janela
+  // inteira). Voltando pra "none" pra igualar de verdade com a "02" — se
+  // voltar a sensação de "arrasta no começo", o ajuste certo é ENCURTAR a
+  // janela (end mais perto de -56%), não trocar o ease de novo.
   gsap.to("#iziPre04Kicker",{
-    opacity:1,y:0,ease:"power2.out",
+    opacity:1,y:0,ease:"none",
     scrollTrigger:{trigger:"#iziPre04Intro",start:"top bottom",end:"top -56%",scrub:true}
   });
 
@@ -288,7 +292,7 @@ addEventListener("resize",()=>{
     var kickerReels = buildRollingLabel(kickerEl);
     gsap.set(kickerReels.map(function(r){return r.char;}), {scale:1.4, filter:'blur(5px)'});
     var kickerRollProxy = {p:0};
-    gsap.to(kickerRollProxy, {p:1, ease:'power2.out',
+    gsap.to(kickerRollProxy, {p:1, ease:'none',
       scrollTrigger:{trigger:"#iziPre04Intro",start:"top bottom",end:"top -56%",scrub:true},
       onUpdate:function(){
         var p = kickerRollProxy.p;
