@@ -473,13 +473,20 @@ addEventListener("resize",()=>{
     // outro IIFE não rodou por algum motivo, ainda cria a ScrollTrigger
     // (com a altura do fallback, melhor que nada) em vez de nunca criar.
     const FINAL_STRETCH=1.45;
+    // BOTTOM_MARGIN: respiro visível (pedido) entre a linha achatada e a
+    // borda de baixo da tela no instante em que ela começa a entrar.
+    // start:"top bottom" sozinho = 0px por definição (o gatilho dispara
+    // EXATAMENTE quando o topo da linha toca a borda de baixo). Adiantar
+    // o start em alguns px ("top bottom-=Npx") faz a largada acontecer
+    // um pouco mais cedo, com essa folga já visível desde o começo.
+    const BOTTOM_MARGIN=10;
     (window.__iziSimplesReady || Promise.resolve()).then(function(){
       const lineHeight=line.offsetHeight;
       gsap.to(line,{
         scaleY:FINAL_STRETCH,scaleX:1,ease:"none",
         scrollTrigger:{
           trigger:line,
-          start:"top bottom",
+          start:`top bottom-=${BOTTOM_MARGIN}px`,
           end:`top bottom-=${lineHeight * FINAL_STRETCH}px`,
           scrub:true
         }
