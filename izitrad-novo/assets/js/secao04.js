@@ -186,46 +186,98 @@ addEventListener("resize",()=>{
   const TARGET_MARGIN = 10;
   const TEXT = "SIMPLES";
 
+  /* Reescrito pra troca de fonte (Big Shoulders Display → Steelfish Eb):
+     a versão anterior usava ctx.measureText().actualBoundingBox* (métrica
+     da fonte) + um fudge "+9px" calibrado visualmente só pra fonte antiga
+     — quebrou com a troca. Uma 2ª tentativa usou canvas (fillText + scan
+     de alpha pixel a pixel) mas sobrava um erro de alguns px, variável
+     por tamanho de tela (~1px em telas pequenas, ~6px em telas grandes)
+     — o Canvas2D não renderiza texto de forma IDÊNTICA ao motor de
+     layout normal da página em todo tamanho. Solução final: SVG
+     getBBox() — mede a caixa de tinta REAL usando o MESMO motor de
+     renderização de texto da página (não um canvas à parte), sem
+     nenhuma constante mágica. */
   function fitSimples(){
     const line = document.getElementById("iziPre04SimpleLine");
     const title = line && line.closest(".izi-pre04-simple-title");
     if(!line || !title) return;
 
-    const family = '"Big Shoulders Display"';
-    const weight = 900;
-    const probeSize = 1000;
+    /* largura/posição REAL do container-PAI (não window.innerWidth) —
+       innerWidth inclui a faixa da barra de rolagem (~15-17px no Windows
+       sem overlay), então o container onde o título de fato renderiza
+       (width:100% do pai) é mais estreito. Mede o PAI, não o título — o
+       título tem margin-left:-.035em (calculado embaixo, cssMarginLeft),
+       que depende do fontSize que ainda vamos calcular; medir o próprio
+       título aqui criaria uma referência circular (margem antiga, do
+       fontSize anterior). */
+    const containerRect = title.parentElement.getBoundingClientRect();
+    const containerWidth = containerRect.width || window.innerWidth;
+    const containerLeft = containerRect.left;
+
+    const family = '"Steelfish Eb"';
+    const weight = "normal"; /* só uma variante estática carregada (@font-face
+      sem faixa de peso) — pedir 900 faria o canvas/svg cair pra fonte de
+      fallback do sistema em vez da Steelfish, que não tem peso 900
+      registrado; "normal" usa a face real. */
+    const probeSize = 800;
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.style.position = "absolute";
+    svg.style.visibility = "hidden";
+    svg.style.pointerEvents = "none";
+    const textEl = document.createElementNS(svgNS, "text");
+    textEl.setAttribute("x", "0");
+    textEl.setAttribute("y", "0");
+    textEl.style.fontFamily = family;
+    textEl.style.fontWeight = weight;
+    textEl.style.fontSize = probeSize + "px";
+    textEl.textContent = TEXT;
+    svg.appendChild(textEl);
+    document.body.appendChild(svg);
+    const bbox = textEl.getBBox();
+    document.body.removeChild(svg);
+    if(!bbox.width) return;
+
+    /* advance (largura de "avanço"/layout, usada pra centralização via
+       text-align:center do CSS — diferente da largura de TINTA acima).
+       canvas measureText já bate com o Range real do DOM (conferido),
+       só a medição de TINTA (bbox acima) que precisava do getBBox. */
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     ctx.font = weight + " " + probeSize + "px " + family;
+    const advance = ctx.measureText(TEXT).width;
+    if(!advance) return;
 
-    const m = ctx.measureText(TEXT);
-    const inkWidthAtProbe = m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
-    if(!inkWidthAtProbe) return;
-
-    const targetInkWidth = window.innerWidth - (TARGET_MARGIN * 2);
-    const fittedSize = targetInkWidth * probeSize / inkWidthAtProbe;
-
-    /* Só a dimensão da palavra é recalculada. */
+    const inkWidthAtProbe = bbox.width;
+    const targetInkWidth = containerWidth - (TARGET_MARGIN * 2);
+    const scale = targetInkWidth / inkWidthAtProbe;
+    const fittedSize = probeSize * scale;
     title.style.fontSize = fittedSize + "px";
 
-    /* Corrige apenas os side-bearings da fonte para os pixels visíveis
-       terminarem em 10px de cada lado. Não toca no transform animado. */
-    ctx.font = weight + " " + fittedSize + "px " + family;
-    const fm = ctx.measureText(TEXT);
-    const advance = fm.width;
-    const inkLeftFromBox = fm.actualBoundingBoxLeft;
-    const inkWidth = fm.actualBoundingBoxLeft + fm.actualBoundingBoxRight;
+    /* Reconstrói a MESMA geometria de posicionamento do CSS (text-align:
+       center + margin-left:-.035em do .izi-pre04-simple-title) no tamanho
+       final, ancorando na tinta real (bbox.x do getBBox) — não em
+       métrica de fonte. advanceAtFitted/inkLeftAtFitted são a versão
+       escalada do que foi medido no probe. */
+    const advanceAtFitted = advance * scale;
+    const inkLeftAtFitted = bbox.x * scale;
+    const cssMarginLeft = -.035 * fittedSize;
+    const advanceBoxLeft = containerLeft + cssMarginLeft + (containerWidth - advanceAtFitted) / 2;
+    const inkLeftAbsolute = advanceBoxLeft + inkLeftAtFitted;
 
-    const desiredInkLeft = TARGET_MARGIN + 9; /* calibração óptica pela captura: +9px */
-    const centeredBoxLeft = (window.innerWidth - advance) / 2;
-    const currentInkLeft = centeredBoxLeft + (advance - fm.actualBoundingBoxRight);
-    const correction = desiredInkLeft - currentInkLeft;
-
+    const correction = (containerLeft + TARGET_MARGIN) - inkLeftAbsolute;
     title.style.position = "relative";
     title.style.left = correction + "px";
   }
 
-  document.fonts.load('900 100px "Big Shoulders Display"').then(function(){
+  /* Exposto em window pro outro IIFE (mais abaixo, "PRELÚDIO 04") que monta
+     a ScrollTrigger do "estica" do SIMPLES poder esperar o MESMO
+     encadeamento de promise — precisa saber quando fitSimples() de fato
+     RODOU (fontSize aplicado), não só quando a fonte "carregou" (dois
+     eventos diferentes; duas chamadas separadas a document.fonts.load()
+     pra "a mesma fonte" não têm ordem de resolução garantida entre si). */
+  window.__iziSimplesReady = document.fonts.load('normal 100px "Steelfish Eb"').then(function(){
     fitSimples();
     if(window.ScrollTrigger) ScrollTrigger.refresh();
   });
@@ -412,16 +464,26 @@ addEventListener("resize",()=>{
   const line=document.querySelector("#iziPre04SimpleLine");
   if(line){
     gsap.set(line,{transformOrigin:"0 0",scaleX:1,scaleY:0});
-    const lineHeight=line.offsetHeight;
+    // lineHeight precisa do fontSize FINAL já aplicado por fitSimples()
+    // (outro IIFE, ver window.__iziSimplesReady acima) — medir aqui direto
+    // pegava a altura ainda no fallback do CSS (22cqw), bem menor que o
+    // final (~650-900px): a janela de scroll do "estica" colapsava pra 0
+    // (start igual a end), e o efeito "sumia" de vez (nada acontecia).
+    // (window.__iziSimplesReady || Promise.resolve()) é defensivo — se o
+    // outro IIFE não rodou por algum motivo, ainda cria a ScrollTrigger
+    // (com a altura do fallback, melhor que nada) em vez de nunca criar.
     const FINAL_STRETCH=1.45;
-    gsap.to(line,{
-      scaleY:FINAL_STRETCH,scaleX:1,ease:"none",
-      scrollTrigger:{
-        trigger:line,
-        start:"top bottom",
-        end:`top bottom-=${lineHeight * FINAL_STRETCH}px`,
-        scrub:true
-      }
+    (window.__iziSimplesReady || Promise.resolve()).then(function(){
+      const lineHeight=line.offsetHeight;
+      gsap.to(line,{
+        scaleY:FINAL_STRETCH,scaleX:1,ease:"none",
+        scrollTrigger:{
+          trigger:line,
+          start:"top bottom",
+          end:`top bottom-=${lineHeight * FINAL_STRETCH}px`,
+          scrub:true
+        }
+      });
     });
   }
 })();
