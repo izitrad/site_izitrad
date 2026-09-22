@@ -546,9 +546,28 @@
    dão esse tempo TODO visível e pinado só pro giro terminar (ver
    scrollTrigger start:"top bottom", end:"top -56%" em secao04.js — os
    dois precisam bater), chegando em ~1400px visíveis, igual o "02". A
-   pergunta continua logo depois (start:"top -56%", end:"top -86%"). */
+   pergunta continua logo depois (start:"top -56%", end:"top -86%").
+   V30 — 201vh (100 + 56 + 45): a janela da pergunta esticou de 30vh pra
+   45vh (+50%, revelação tava rápida demais) — end do reveal em secao04.js
+   foi de "top -86%" pra "top -101%" (56+45). Essa altura tem que crescer
+   NA MESMA MEDIDA (+15vh), senão a seção desgruda (fim do sticky) antes do
+   blur acabar de sumir e o texto sai de tela ainda borrado.
+   V31 — 300vh: ainda "rápido demais" com 45vh, dobrado de novo pra 90vh de
+   janela de revelação (3x o valor original) — end do reveal em secao04.js
+   agora é "top -146%" (56+90). A conta de altura MUDOU de método aqui: não
+   é mais só "100+56+90" (=246) porque o fade de saída logo depois (gsap.to
+   de #iziPre04Question/#iziPre04Kicker pra opacity:0, mais abaixo em
+   secao04.js) usa scrollTrigger start:"55% top" end:"bottom top" — ou
+   seja, a POSIÇÃO desse fade é uma FRAÇÃO da altura total do wrapper
+   (0.55×altura), não um valor fixo em vh. Só aumentar pra 246vh faria
+   0.55×246=135vh, MENOS que os 146vh onde a revelação termina — o fade de
+   saída ia começar ANTES da revelação acabar (sobreposição, texto
+   desaparecendo ainda borrado). 300vh dá 0.55×300=165vh, ~19vh de folga
+   DEPOIS dos 146vh da revelação — mesma margem de segurança (proporcional)
+   que já existia nas versões anteriores. Se esticar a revelação de novo,
+   recalcular: altura mínima ≈ (56+revelação_vh+folga_desejada)÷0.55. */
 .izi-pre04-intro{
-  height:186vh !important;
+  height:300vh !important;
 }
 .izi-pre04-simple-zone{
   min-height:105vh !important;

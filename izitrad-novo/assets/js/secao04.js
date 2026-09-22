@@ -317,9 +317,13 @@ addEventListener("resize",()=>{
   // já são unidades atômicas (IZITRAD / "?"), viram "palavra" cada um.
   // start:"top -56%" == end do giro do kicker acima — só começa depois que
   // "04 — COMO FUNCIONA" estiver 100% girado, nunca sobreposto. end:"top
-  // -86%" (56%+30%): mais 30% de altura de viewport de revelação, mesmo
-  // span de antes, só deslocado pra depois do giro do kicker ter mais
-  // tempo pinado.
+  // -146%" (56%+90%): 90% de altura de viewport de revelação — era 30%,
+  // depois 45% (+50%, ainda "rápido demais"), agora dobrado de novo (3x o
+  // original) pra ficar bem mais devagar de verdade. Exige aumentar
+  // .izi-pre04-intro (secao04.css) o bastante pra manter a folga antes do
+  // fade de saída — é essa altura que dá o tempo "grudado"/sticky pra
+  // seção não desgrudar da tela no meio da revelação (ver V28/V29/V31 no
+  // CSS).
   (function(){
     function splitIntoWords(el){
       var text = el.textContent;
@@ -365,7 +369,7 @@ addEventListener("resize",()=>{
     gsap.set(questionWords, {autoAlpha:0, filter:'blur('+(innerWidth/qScaleBase*10)+'px)'});
     gsap.to(questionWords, {
       autoAlpha:1, filter:'blur(0px)', stagger:.04, duration:.2, ease:'none',
-      scrollTrigger:{trigger:"#iziPre04Intro", start:"top -56%", end:"top -86%", scrub:true}
+      scrollTrigger:{trigger:"#iziPre04Intro", start:"top -56%", end:"top -146%", scrub:true}
     });
   })();
 
