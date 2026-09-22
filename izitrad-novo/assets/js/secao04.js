@@ -479,7 +479,20 @@ addEventListener("resize",()=>{
     // EXATAMENTE quando o topo da linha toca a borda de baixo). Adiantar
     // o start em alguns px ("top bottom-=Npx") faz a largada acontecer
     // um pouco mais cedo, com essa folga já visível desde o começo.
-    const BOTTOM_MARGIN=10;
+    // IMPORTANTE: o "end" precisa somar o MESMO BOTTOM_MARGIN (não só
+    // lineHeight*FINAL_STRETCH sozinho) — sem isso a margem "dilui"
+    // conforme estica (relatado: "os 10px vão sumindo"). Motivo: o topo
+    // da linha sobe na tela 1px por 1px de scroll (é scroll normal, não
+    // animado), enquanto a ALTURA dela cresce numa taxa de
+    // lineHeight*FINAL_STRETCH px por (span da janela) px de scroll — se
+    // o span for só lineHeight*FINAL_STRETCH (sem a margem), essa taxa
+    // fica LIGEIRAMENTE MAIOR que 1 (854/844≈1,012), então a borda de
+    // baixo da palavra cresce um pouquinho mais rápido do que o topo
+    // sobe, comendo a margem aos poucos até zerar no fim. Somando
+    // BOTTOM_MARGIN no span total (end-start = lineHeight*FINAL_STRETCH
+    // exato de novo) as duas taxas voltam a bater 1:1, e a margem fica
+    // constante do início ao fim do estica.
+    const BOTTOM_MARGIN=13;
     (window.__iziSimplesReady || Promise.resolve()).then(function(){
       const lineHeight=line.offsetHeight;
       gsap.to(line,{
@@ -487,7 +500,7 @@ addEventListener("resize",()=>{
         scrollTrigger:{
           trigger:line,
           start:`top bottom-=${BOTTOM_MARGIN}px`,
-          end:`top bottom-=${lineHeight * FINAL_STRETCH}px`,
+          end:`top bottom-=${(lineHeight * FINAL_STRETCH) + BOTTOM_MARGIN}px`,
           scrub:true
         }
       });
