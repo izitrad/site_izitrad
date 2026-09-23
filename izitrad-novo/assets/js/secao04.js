@@ -487,15 +487,6 @@ addEventListener("resize",()=>{
   const line=document.querySelector("#iziPre04SimpleLine");
   if(line){
     gsap.set(line,{transformOrigin:"0 0",scaleX:1,scaleY:0});
-    // lineHeight precisa do fontSize FINAL já aplicado por fitSimples()
-    // (outro IIFE, ver window.__iziSimplesReady acima) — medir aqui direto
-    // pegava a altura ainda no fallback do CSS (22cqw), bem menor que o
-    // final (~650-900px): a janela de scroll do "estica" colapsava pra 0
-    // (start igual a end), e o efeito "sumia" de vez (nada acontecia).
-    // (window.__iziSimplesReady || Promise.resolve()) é defensivo — se o
-    // outro IIFE não rodou por algum motivo, ainda cria a ScrollTrigger
-    // (com a altura do fallback, melhor que nada) em vez de nunca criar.
-    const FINAL_STRETCH=1.45;
     // BOTTOM_MARGIN: respiro visível (pedido) entre a linha achatada e a
     // borda de baixo da tela no instante em que ela começa a entrar.
     // start:"top bottom" sozinho = 0px por definição (o gatilho dispara
@@ -516,6 +507,41 @@ addEventListener("resize",()=>{
     // exato de novo) as duas taxas voltam a bater 1:1, e a margem fica
     // constante do início ao fim do estica.
     const BOTTOM_MARGIN=13;
+    // FINAL_STRETCH era fixo (1.45), calibrado só olhando a tela de
+    // referência (1440x900). Medido depois: nessa mesma tela a palavra
+    // esticada ("tinta" real, via getBBox — mesma técnica do fitSimples
+    // acima) fica com 1140px de altura contra 900px de viewport, ou seja
+    // ~126,7% da tela — é ESSE estouro (não um scaleY fixo) que fazia a
+    // palavra "tomar a tela toda" na print aprovada. Um 1.45 fixo não
+    // reproduz esse mesmo efeito fora dessa resolução: no celular sobra
+    // ~64% de tela vazia (fica pequena), e num desktop 1920x1080 comum
+    // vaza ~41% (quase o dobro do aprovado). TARGET_FILL_FACTOR generaliza
+    // a MESMA proporção validada visualmente pra qualquer tela — o
+    // scaleY final passa a ser calculado (não fixo) pra sempre entregar
+    // esse mesmo estouro de ~126,7% da altura do viewport.
+    const TARGET_FILL_FACTOR = 1140/900; // ≈1.2667 — proporção validada em 1440x900
+
+    function measureInkHeight(){
+      const cs = getComputedStyle(line);
+      const fontSizeApplied = parseFloat(cs.fontSize);
+      if(!fontSizeApplied) return 0;
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNS,"svg");
+      svg.style.position = "absolute";
+      svg.style.visibility = "hidden";
+      svg.style.pointerEvents = "none";
+      const textEl = document.createElementNS(svgNS,"text");
+      textEl.style.fontFamily = cs.fontFamily;
+      textEl.style.fontSize = fontSizeApplied + "px";
+      textEl.textContent = line.textContent;
+      svg.appendChild(textEl);
+      document.body.appendChild(svg);
+      const h = textEl.getBBox().height;
+      document.body.removeChild(svg);
+      return h;
+    }
+
+    let simplesStretchTween = null;
     // "end" como FUNÇÃO (não string fixa): o GSAP reavalia funções de
     // start/end a cada ScrollTrigger.refresh() — se por algum motivo
     // line.offsetHeight ainda estiver errado/0 na primeira criação
@@ -523,8 +549,15 @@ addEventListener("resize",()=>{
     // refresh() seguinte (já rolam vários: no fim do fitSimplesUntilReady,
     // no listener de resize) recalcula com o valor CORRETO — autocorrige
     // sozinho em vez de ficar preso na string errada pra sempre.
-    (window.__iziSimplesReady || Promise.resolve()).then(function(){
-      gsap.to(line,{
+    function setupSimplesStretch(){
+      const inkHeight = measureInkHeight();
+      if(!inkHeight) return;
+      const FINAL_STRETCH = (window.innerHeight * TARGET_FILL_FACTOR) / inkHeight;
+      if(simplesStretchTween){
+        simplesStretchTween.scrollTrigger.kill();
+        simplesStretchTween.kill();
+      }
+      simplesStretchTween = gsap.to(line,{
         scaleY:FINAL_STRETCH,scaleX:1,ease:"none",
         scrollTrigger:{
           trigger:line,
@@ -533,6 +566,22 @@ addEventListener("resize",()=>{
           scrub:true
         }
       });
+    }
+
+    // (window.__iziSimplesReady || Promise.resolve()) é defensivo — se o
+    // outro IIFE não rodou por algum motivo, ainda cria a ScrollTrigger
+    // (com a altura do fallback, melhor que nada) em vez de nunca criar.
+    (window.__iziSimplesReady || Promise.resolve()).then(setupSimplesStretch);
+
+    // Resize: fitSimples() (outro IIFE) recalcula o fontSize em até
+    // ~120ms + 20 tentativas de rAF; espera 500ms (folga generosa acima
+    // desse pior caso) antes de remedir a tinta e recriar o estica com o
+    // FINAL_STRETCH certo pro novo tamanho — sem isso o cálculo ficaria
+    // preso na proporção da tela anterior.
+    let simplesResizeTimer;
+    window.addEventListener("resize", function(){
+      clearTimeout(simplesResizeTimer);
+      simplesResizeTimer = setTimeout(setupSimplesStretch, 500);
     });
   }
 })();
