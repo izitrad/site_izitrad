@@ -629,6 +629,56 @@
   font-family:"Steelfish Eb", sans-serif !important;
   font-weight:normal !important;
 }
+/* SIMPLES na cor rosa da marca (mesmo #FF0099 do resto do site: divider,
+   destaques de texto, logo) — antes herdava o preto (#111) do ancestral
+   .izi-sec04-unified .izi-pre04. */
+.izi-pre04-simple-title{
+  color:#FF0099;
+}
+
+/* Faixa "jeito izi" — passa por cima do SIMPLES já esticado, durante uma
+   janela de scroll em que a palavra fica travada (pin, ver secao04.js)
+   na posição em que termina de crescer. position:absolute (não fixed)
+   porque o pin dessa janela usa pinType:"transform" (GSAP compensa o
+   scroll com translate3d, não com position:fixed) — um fixed aqui dentro
+   ficaria relativo a QUALQUER ancestral com transform ativo em outro
+   lugar da página (bug real encontrado com a 1ª tentativa: salto de
+   ~55px no instante do travamento). absolute relativo à própria
+   .izi-pre04-simple-zone (position:relative abaixo) é estável porque a
+   zone em si é o que fica visualmente parado durante o pin. O "top" não
+   é um valor fixo aqui — é medido ao vivo e escrito via JS
+   (placeBandOnScreenCenter em secao04.js) no instante exato em que o
+   travamento engata. */
+.izi-pre04-simple-zone{
+  position:relative;
+}
+.izi-pre04-simple-band{
+  position:absolute;
+  left:0;
+  transform:translateY(-50%);
+  height:18px;
+  width:22vw;
+  max-width:320px;
+  background:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:5;
+  opacity:0;
+  pointer-events:none;
+  will-change:transform,opacity;
+}
+.izi-pre04-simple-band-text{
+  font-family:var(--font-f-neo-sans-pro-medium),sans-serif;
+  font-size:clamp(10px,.85vw,13px);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#fff;
+  white-space:nowrap;
+}
+@media(max-width:700px){
+  .izi-pre04-simple-band{width:52vw;height:16px}
+}
 
 /* V34 — "IZITRAD" vira a logo "izi" (assets/logo-izi.png) na pergunta.
    Classe nova (não reaproveita .izi-question-logo, que carrega CSS órfão

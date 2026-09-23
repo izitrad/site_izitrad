@@ -506,7 +506,7 @@ addEventListener("resize",()=>{
     // BOTTOM_MARGIN no span total (end-start = lineHeight*FINAL_STRETCH
     // exato de novo) as duas taxas voltam a bater 1:1, e a margem fica
     // constante do início ao fim do estica.
-    const BOTTOM_MARGIN=13;
+    const BOTTOM_MARGIN=30;
     // FINAL_STRETCH era fixo (1.45), calibrado só olhando a tela de
     // referência (1440x900). Medido depois: nessa mesma tela a palavra
     // esticada ("tinta" real, via getBBox — mesma técnica do fitSimples
@@ -568,20 +568,101 @@ addEventListener("resize",()=>{
       });
     }
 
+    // ===== Faixa "jeito izi" + travamento (pin) do SIMPLES já esticado =====
+    // Pedido: depois que a palavra termina de crescer, ela fica "travada"
+    // na tela por um trecho de scroll, e nesse meio tempo uma faixa preta
+    // entra aos poucos pela esquerda (acompanhando o scroll, não um timer),
+    // passando por cima da palavra, com um texto branco dentro.
+    //
+    // pinType:"fixed" foi a 1ª tentativa (parecia necessário pra faixa
+    // position:fixed) mas causou um SALTO real de ~55px bem no instante em
+    // que travava (medido: bottom da linha ia de 951px pra 895px entre 2px
+    // de scroll) — não era só impressão do "duro" relatado, tinha um bug de
+    // verdade. Causa: em algum lugar da página (outra animação, fora desta
+    // seção) existe um ancestral com transform ativo naquele momento, o que
+    // vira "containing block" pra qualquer position:fixed dentro dele —
+    // tanto o pin quanto a faixa ficavam relativos a ESSE ancestral errado,
+    // não à viewport real, daí o descompasso. pinType:"transform" (o padrão
+    // do ScrollTrigger) evita isso por completo: em vez de position:fixed,
+    // ele compensa o scroll com um translate3d relativo — contínuo por
+    // construção, sem recalcular referência nenhuma no meio do caminho.
+    // Como consequência, a faixa deixou de ser position:fixed (relativa à
+    // TELA) e virou position:absolute (relativa à PRÓPRIA .izi-pre04-
+    // simple-zone, que agora tem position:relative) — o "top" não pode mais
+    // ser um simples "50vh" fixo (a zone tem 105vh, mais alta que a tela, e
+    // só uma fatia dela fica visível durante o travamento). Por isso o
+    // onEnter/onEnterBack abaixo MEDE ao vivo (getBoundingClientRect, não
+    // conta teórica) onde fica o meio da tela relativo ao topo da zone
+    // exatamente no instante em que o pin engata, e só então posiciona a
+    // faixa — mesma filosofia de "medir o real, não calcular teórico" já
+    // usada no resto do arquivo (fitSimples/measureInkHeight).
+    //
+    // SETTLE_VH: tentativa de separar "para de crescer" e "trava a posição"
+    // em dois instantes diferentes (12vh de scroll normal entre os dois),
+    // pra não parecer um freio duplo simultâneo. Efeito colateral: nesses
+    // 12vh a palavra já sobe mais um pouco ANTES de travar, saindo da
+    // posição "cheia" que a print aprovada mostrava — sobrava vazio embaixo
+    // e cortava mais em cima. Como o "duro" de verdade era o BUG do salto
+    // de ~55px (containing block, ver comentário do pinType acima, já
+    // corrigido), zerado aqui: trava exatamente onde o estica termina,
+    // igual à print aprovada.
+    const band = document.getElementById("iziPre04SimpleBand");
+    const simpleZoneEl = document.querySelector(".izi-pre04-simple-zone");
+    let freezeTween = null;
+    function setupSimplesFreeze(){
+      if(!band || !simpleZoneEl) return;
+      const stretchST = simplesStretchTween && simplesStretchTween.scrollTrigger;
+      if(!stretchST) return;
+      if(freezeTween){
+        freezeTween.scrollTrigger.kill();
+        freezeTween.kill();
+      }
+      gsap.set(band,{xPercent:-100,opacity:0});
+      function placeBandOnScreenCenter(){
+        const zr = simpleZoneEl.getBoundingClientRect();
+        band.style.top = (window.innerHeight/2 - zr.top) + "px";
+      }
+      const FREEZE_VH = 45; // duração (scroll) do travamento + faixa, a partir do fim do estica
+      freezeTween = gsap.timeline({
+        scrollTrigger:{
+          trigger:line,
+          start:() => stretchST.end,
+          end:() => stretchST.end + window.innerHeight * (FREEZE_VH/100),
+          scrub:true,
+          pin:simpleZoneEl,
+          pinType:"transform",
+          onEnter:placeBandOnScreenCenter,
+          onEnterBack:placeBandOnScreenCenter
+        }
+      })
+      .set(band,{opacity:1})
+      .to(band,{xPercent:0,ease:"none",duration:.6})
+      .to({},{duration:.15}) // segura a faixa visível um pouco antes de sumir
+      .to(band,{opacity:0,ease:"none",duration:.25});
+    }
+
     // (window.__iziSimplesReady || Promise.resolve()) é defensivo — se o
     // outro IIFE não rodou por algum motivo, ainda cria a ScrollTrigger
     // (com a altura do fallback, melhor que nada) em vez de nunca criar.
-    (window.__iziSimplesReady || Promise.resolve()).then(setupSimplesStretch);
+    (window.__iziSimplesReady || Promise.resolve()).then(function(){
+      setupSimplesStretch();
+      setupSimplesFreeze();
+    });
 
     // Resize: fitSimples() (outro IIFE) recalcula o fontSize em até
     // ~120ms + 20 tentativas de rAF; espera 500ms (folga generosa acima
     // desse pior caso) antes de remedir a tinta e recriar o estica com o
     // FINAL_STRETCH certo pro novo tamanho — sem isso o cálculo ficaria
-    // preso na proporção da tela anterior.
+    // preso na proporção da tela anterior. setupSimplesFreeze depende do
+    // stretchST.end recém-recalculado, por isso roda sempre DEPOIS de
+    // setupSimplesStretch(), nunca antes/paralelo.
     let simplesResizeTimer;
     window.addEventListener("resize", function(){
       clearTimeout(simplesResizeTimer);
-      simplesResizeTimer = setTimeout(setupSimplesStretch, 500);
+      simplesResizeTimer = setTimeout(function(){
+        setupSimplesStretch();
+        setupSimplesFreeze();
+      }, 500);
     });
   }
 })();
