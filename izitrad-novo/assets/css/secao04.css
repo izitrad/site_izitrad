@@ -664,7 +664,9 @@
   top:calc(50vh + 100px);
   left:0;
   transform:translateY(-50%);
-  height:18px;
+  /* 24px = texto de 20px (line-height:1) + 2px de respiro em cima e embaixo */
+  height:24px;
+  padding:2px 0;
   width:22vw;
   max-width:320px;
   background:#111;
@@ -686,13 +688,15 @@
 .izi-pre04-simple-band-text{
   font-family:"DM Sans","Outfit",Arial,sans-serif;
   font-weight:300;
-  font-size:clamp(10px,.85vw,13px);
+  font-size:20px;
+  line-height:1;
+  text-transform:uppercase;
   letter-spacing:.01em;
   color:#fff;
   white-space:nowrap;
 }
 @media(max-width:700px){
-  .izi-pre04-simple-band{width:52vw;height:16px}
+  .izi-pre04-simple-band{width:52vw}
 }
 
 /* V34 — "IZITRAD" vira a logo "izi" (assets/logo-izi.png) na pergunta.
