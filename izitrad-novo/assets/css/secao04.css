@@ -664,9 +664,17 @@
   top:calc(50vh + 100px);
   left:0;
   transform:translateY(-50%);
-  /* 24px = texto de 20px (line-height:1) + 2px de respiro em cima e embaixo */
-  height:24px;
-  padding:2px 0;
+  /* 30px: texto de 20px (line-height:1) centralizado = 5px de respiro em
+     cima e embaixo (era 24px com 2px de respiro; aumentado a pedido, texto
+     mantido em 20px) */
+  /* 35px (era 30). Caixa de linha do texto centralizada na faixa (sem
+     padding assimétrico): a logo é maior que o texto, então o que importa
+     é o conjunto, não as maiúsculas isoladas. */
+  height:40px;
+  /* 3.5px embaixo: sobe o par texto+logo 1,75px. O vertical-align da logo
+     aumenta a caixa de linha do texto, o que deixava o centro das
+     maiúsculas 1,77px abaixo do centro da faixa (medido). */
+  padding:0 0 3.5px;
   width:22vw;
   max-width:320px;
   background:#111;
@@ -688,16 +696,46 @@
 .izi-pre04-simple-band-text{
   font-family:"DM Sans","Outfit",Arial,sans-serif;
   font-weight:200;
-  font-size:20px;
+  font-size:25px; /* era 24px (22px, 20px antes): acompanha a logo, que é maior que o texto */
   line-height:1;
   text-transform:uppercase;
   /* espaçamento largo (pedido: "J   E   I  T   O"). margin-right negativo
      de mesmo valor: o letter-spacing também é aplicado depois da ÚLTIMA
      letra, o que deslocaria o texto pra esquerda no centro da faixa. */
   letter-spacing:.4em;
-  margin-right:-.4em;
   color:#fff;
   white-space:pre;
+}
+/* Logo "izi" no fim da frase. Altura = 1em (20px) do texto: o corpo do "z"
+   é 73,8% da altura total do viewBox (188,9/255,9), ou seja ~14,8px —
+   quase igual à altura das maiúsculas (~14px), com os pontos dos "i"
+   subindo acima. Base do svg = linha de base do texto (vertical-align:
+   baseline em inline-block/svg alinha a borda de baixo). O letter-spacing
+   não se aplica depois de elemento atômico, por isso o margin-right
+   negativo que compensava o espaço depois da última letra saiu do texto. */
+.izi-pre04-simple-band-text .izi-band-logo{
+  /* altura total da logo (com os pontos dos "i") — ajustar só aqui: o
+     alinhamento pelo centro com o texto (vertical-align) acompanha. Era
+     20.2px (= 258.9/255.9 * 20); agora 26px, a pedido. */
+  --logo-h:26px;
+  display:inline-block;
+  /* altura em px (não em): o texto tem font-size próprio e a logo não
+     deve crescer junto com ele */
+  height:var(--logo-h);
+  width:auto;
+  /* Centro do CORPO da logo (z e hastes dos "i", sem os pontos) = centro
+     das maiúsculas. Antes alinhava o centro da caixa inteira (pontos
+     incluídos), mas os pontos puxam esse centro pra cima: o corpo, que é
+     o que o olho lê, ficava ~3,4px ABAIXO do centro do texto ("parece que
+     não estão alinhados"). Medidas no viewBox de 258.9: o corpo (traço
+     incluído) tem centro a .3721 da altura a partir da borda de baixo;
+     cap-height do texto = .7031em (DM Sans, rasterizando um "E" em 1000px).
+     A base da logo fica em (linha de base) - va: va = cap/2 - .3721*altura. */
+  vertical-align:calc(.35155em - .3721 * var(--logo-h));
+  /* mais perto da frase: o vão texto→logo (letter-spacing do "O" + espaço
+     + letter-spacing do espaço) ficava ~21px; -10px deixa ~15,9px */
+  margin-left:-10px;
+  overflow:visible;
 }
 /* letras individuais (secao04.js divide o texto) — entram em sequência
    depois que a faixa termina de entrar */

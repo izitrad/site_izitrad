@@ -663,7 +663,13 @@ addEventListener("resize",()=>{
       const txt = bandTextEl.textContent;
       bandTextEl.setAttribute("aria-label", txt);
       bandTextEl.textContent = "";
-      Array.from(txt).forEach(function(ch){
+      // "izi" no fim vira a LOGO (os 3 primeiros <path> do SVG da hero: i, z, i
+      // — reaproveita as mesmas formas, sem PNG, porque o PNG tem os "i"
+      // pretos e sumiriam na faixa preta). Cada path entra como uma "letra".
+      const heroPaths = Array.from(document.querySelectorAll(".logo__img path")).slice(0,3);
+      const useLogo = /izi$/i.test(txt) && heroPaths.length === 3;
+      const letters = useLogo ? txt.slice(0,-3) : txt;
+      Array.from(letters).forEach(function(ch){
         const sp = document.createElement("span");
         sp.className = "izi-band-ch";
         sp.setAttribute("aria-hidden", "true");
@@ -671,6 +677,27 @@ addEventListener("resize",()=>{
         bandTextEl.appendChild(sp);
         bandChars.push(sp);
       });
+      if(useLogo){
+        // viewBox = união das 3 caixas (medidas: x 98→406,6; y 331,2→587,1;
+        // base dos "i" e do "z" ~ y 587) + 1,5 de cada lado pro traço de 3
+        const NS = "http://www.w3.org/2000/svg";
+        const svgLogo = document.createElementNS(NS, "svg");
+        svgLogo.setAttribute("class", "izi-band-logo");
+        svgLogo.setAttribute("viewBox", "96.5 329.7 311.6 258.9");
+        svgLogo.setAttribute("aria-hidden", "true");
+        heroPaths.forEach(function(src, i){
+          const p = document.createElementNS(NS, "path");
+          p.setAttribute("d", src.getAttribute("d"));
+          const color = i === 1 ? "#FF0099" : "#fff"; // "z" rosa, "i" brancos
+          p.setAttribute("fill", color);
+          p.setAttribute("stroke", color);
+          p.setAttribute("stroke-width", "3");
+          p.setAttribute("stroke-miterlimit", "10");
+          svgLogo.appendChild(p);
+          bandChars.push(p);
+        });
+        bandTextEl.appendChild(svgLogo);
+      }
     }
     let freezeTween = null;
     function setupSimplesFreeze(){
