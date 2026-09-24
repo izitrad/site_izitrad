@@ -614,7 +614,15 @@
    perto do valor ORIGINAL (-8vh), testando -5vh direto (menos
    sobreposição que o -8vh original, não zero) pra ver se agrada. */
 .izi-pre04-simple-zone{
-  margin-top:-5vh !important;
+  margin-top:0 !important;
+}
+/* O -5vh de sobreposição agora vive no irmão ANTERIOR (margin-bottom
+   negativo = mesmo layout de antes). Motivo: a zone é fixada via GSAP
+   pin (pinType:"fixed", secao04.js), que zera margin inline — mas um
+   margin-top:-5vh !important da própria zone vencia esse reset e
+   deslocava ~55px só quando o pin engatava (salto). */
+.izi-pre04-intro{
+  margin-bottom:-5vh !important;
 }
 
 /* V27 — correção real: seletores do SIMPLES */
@@ -636,24 +644,24 @@
   color:#FF0099;
 }
 
-/* Faixa "jeito izi" — passa por cima do SIMPLES já esticado, durante uma
-   janela de scroll em que a palavra fica travada (pin, ver secao04.js)
-   na posição em que termina de crescer. position:absolute (não fixed)
-   porque o pin dessa janela usa pinType:"transform" (GSAP compensa o
-   scroll com translate3d, não com position:fixed) — um fixed aqui dentro
-   ficaria relativo a QUALQUER ancestral com transform ativo em outro
-   lugar da página (bug real encontrado com a 1ª tentativa: salto de
-   ~55px no instante do travamento). absolute relativo à própria
-   .izi-pre04-simple-zone (position:relative abaixo) é estável porque a
-   zone em si é o que fica visualmente parado durante o pin. O "top" não
-   é um valor fixo aqui — é medido ao vivo e escrito via JS
-   (placeBandOnScreenCenter em secao04.js) no instante exato em que o
-   travamento engata. */
-.izi-pre04-simple-zone{
-  position:relative;
+/* Faixa "jeito izi" — passa por cima do SIMPLES já esticado, durante a
+   janela de scroll em que a palavra fica travada (ver secao04.js). */
+/* Trava do SIMPLES por position:sticky NATIVO (não mais pin do GSAP):
+   o título fica sticky com "top" definido por JS (secao04.js) pra engatar
+   exatamente onde o "estica" termina; o pin do GSAP trocava a caixa de
+   fluxo normal pra position:fixed no meio do scroll, e essa troca não é
+   contínua frame a frame (solavanco no engate, mais visível com a palavra
+   ainda em movimento). Sticky é resolvido pelo compositor, sem troca. */
+.izi-pre04-simple-title{
+  position:sticky;
 }
+/* Faixa: position:fixed relativo à TELA. Fica FORA da .izi-pre04-simple-
+   zone (irmã dela, direto na section) porque a zone tem container-type
+   (layout containment), que viraria containing block do fixed. A
+   visibilidade é controlada por opacity (timeline em secao04.js). */
 .izi-pre04-simple-band{
-  position:absolute;
+  position:fixed;
+  top:calc(50vh + 100px);
   left:0;
   transform:translateY(-50%);
   height:18px;
@@ -668,11 +676,18 @@
   pointer-events:none;
   will-change:transform,opacity;
 }
+/* DM Sans, peso 300 — a mesma fonte/peso do subtítulo "Apostila, tradução,
+   ou os dois..." (.copy-a__subtitle, site.css: font-family:var(--copy-
+   font),'DM Sans'; font-weight:300), pedido explicitamente por print de
+   referência. Já carregada via Google Fonts no <head> (family=DM+Sans:...
+   300;400;500;700), não precisa de @font-face novo. Sem uppercase/letter-
+   spacing largo (a Outfit usada antes, estilo rótulo, não é o que a
+   referência mostra — a referência é texto corrido normal). */
 .izi-pre04-simple-band-text{
-  font-family:var(--font-f-neo-sans-pro-medium),sans-serif;
+  font-family:"DM Sans","Outfit",Arial,sans-serif;
+  font-weight:300;
   font-size:clamp(10px,.85vw,13px);
-  letter-spacing:.08em;
-  text-transform:uppercase;
+  letter-spacing:.01em;
   color:#fff;
   white-space:nowrap;
 }

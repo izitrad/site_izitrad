@@ -267,8 +267,12 @@ addEventListener("resize",()=>{
     const inkLeftAbsolute = advanceBoxLeft + inkLeftAtFitted;
 
     const correction = (containerLeft + TARGET_MARGIN) - inkLeftAbsolute;
-    title.style.position = "relative";
-    title.style.left = correction + "px";
+    /* margin-left (não position:relative + left): o título agora é
+       position:sticky (trava do SIMPLES após esticar, ver freeze em abaixo)
+       e em sticky "left" vira RESTRIÇÃO de rolagem, não deslocamento — a
+       correção horizontal seria ignorada. margin-left desloca a caixa do
+       mesmo jeito (o visual é idêntico ao relative+left). */
+    title.style.marginLeft = (cssMarginLeft + correction) + "px";
     return true;
   }
 
@@ -520,6 +524,15 @@ addEventListener("resize",()=>{
     // scaleY final passa a ser calculado (não fixo) pra sempre entregar
     // esse mesmo estouro de ~126,7% da altura do viewport.
     const TARGET_FILL_FACTOR = 1140/900; // ≈1.2667 — proporção validada em 1440x900
+    // TOP_MARGIN: pedido "a palavra tem que crescer mais em cima" — com o
+    // TARGET_FILL_FACTOR acima sobrava ~80-90px de vão entre o topo da tela
+    // e o topo das letras (embaixo eram 30px). Motivo: aquele fator mira na
+    // CAIXA de métrica da fonte (ascent+descent, 1054px numa fonte de 878px),
+    // bem maior que o desenho das letras em caixa alta (~727px, ver
+    // measureCapExtent). Agora o scaleY é calculado pra as LETRAS ocuparem
+    // exatamente (altura da tela - BOTTOM_MARGIN - TOP_MARGIN), em qualquer
+    // tela. Se a medição falhar, cai no cálculo antigo.
+    const TOP_MARGIN = 30;
 
     function measureInkHeight(){
       const cs = getComputedStyle(line);
@@ -541,7 +554,41 @@ addEventListener("resize",()=>{
       return h;
     }
 
+    // Distância (em px, com scaleY=1) do topo das letras em caixa alta até a
+    // borda de baixo da caixa da linha: h - baseline + capHeight. A linha é
+    // esticada com transform-origin no topo, então a borda de baixo da caixa
+    // fica em (topo da caixa + scaleY*h) — e o topo VISÍVEL das letras em
+    // (borda de baixo - scaleY*E). Como baseline ≈ borda de baixo (medido:
+    // 791,5 vs 791), E ≈ altura das letras. capHeight vem do canvas
+    // (actualBoundingBoxAscent de "I", letra de topo reto); baseline vem das
+    // métricas da fonte + meia-entrelinha (line-height .9 < ascent+descent).
+    function measureCapExtent(){
+      const fs = parseFloat(getComputedStyle(line).fontSize);
+      const h = line.offsetHeight;
+      if(!fs || !h) return 0;
+      const ctx = document.createElement("canvas").getContext("2d");
+      ctx.font = "normal " + fs + 'px "Steelfish Eb"';
+      const m = ctx.measureText("I");
+      const asc = m.fontBoundingBoxAscent, desc = m.fontBoundingBoxDescent, cap = m.actualBoundingBoxAscent;
+      if(!asc || !desc || !cap) return 0;
+      const baselineFromTop = (h - (asc + desc)) / 2 + asc;
+      const E = h - baselineFromTop + cap;
+      return E > 0 ? E : 0;
+    }
+
     let simplesStretchTween = null;
+    // Desaceleração antes do travamento (pedido: a parada era "abrupta").
+    // Antes: a palavra crescia/subia a 1px por 1px de scroll e, no engate do
+    // pin, PARAVA de uma vez (velocidade 1 → 0 no mesmo frame). Agora o
+    // "estica" linear termina um pouco ANTES (em F1 < F) e o pin engata ali;
+    // dentro do pin, a palavra segue crescendo (scaleY F1→F) E subindo
+    // (y 0→-D) com ease "power1.out" — velocidade cai linearmente de 1 pra
+    // 0, e D = W/2 (W = janela de desaceleração em px de scroll). Crescer
+    // D/h de scaleY faz a borda de baixo descer D px; subir D px cancela
+    // exatamente → a base continua fixa na margem, e o tamanho/posição
+    // FINAIS ficam idênticos aos de antes (só o caminho até lá muda).
+    const DECEL_VH = 0.35; // janela de desaceleração, em fração da altura da tela
+    let simplesDecel = {F:1, F1:1, D:0, W:0};
     // "end" como FUNÇÃO (não string fixa): o GSAP reavalia funções de
     // start/end a cada ScrollTrigger.refresh() — se por algum motivo
     // line.offsetHeight ainda estiver errado/0 na primeira criação
@@ -552,65 +599,65 @@ addEventListener("resize",()=>{
     function setupSimplesStretch(){
       const inkHeight = measureInkHeight();
       if(!inkHeight) return;
-      const FINAL_STRETCH = (window.innerHeight * TARGET_FILL_FACTOR) / inkHeight;
+      const capExtent = measureCapExtent();
+      const FINAL_STRETCH = capExtent
+        ? (window.innerHeight - BOTTOM_MARGIN - TOP_MARGIN) / capExtent
+        : (window.innerHeight * TARGET_FILL_FACTOR) / inkHeight;
       if(simplesStretchTween){
         simplesStretchTween.scrollTrigger.kill();
         simplesStretchTween.kill();
       }
+      const h = line.offsetHeight;
+      let W = window.innerHeight * DECEL_VH;
+      let D = W / 2;
+      let F1 = h ? FINAL_STRETCH - D / h : FINAL_STRETCH;
+      if(!h || F1 < FINAL_STRETCH * 0.3){ W = 0; D = 0; F1 = FINAL_STRETCH; } // sem base confiável: sem desaceleração
+      simplesDecel = {F:FINAL_STRETCH, F1:F1, D:D, W:W};
+      gsap.set(line,{y:0});
       simplesStretchTween = gsap.to(line,{
-        scaleY:FINAL_STRETCH,scaleX:1,ease:"none",
+        scaleY:F1,scaleX:1,ease:"none",
         scrollTrigger:{
           trigger:line,
           start:`top bottom-=${BOTTOM_MARGIN}px`,
-          end:function(){ return `top bottom-=${(line.offsetHeight * FINAL_STRETCH) + BOTTOM_MARGIN}px`; },
+          end:function(){ return `top bottom-=${(line.offsetHeight * F1) + BOTTOM_MARGIN}px`; },
           scrub:true
         }
       });
     }
 
-    // ===== Faixa "jeito izi" + travamento (pin) do SIMPLES já esticado =====
+    // ===== Faixa "jeito izi" + travamento (sticky) do SIMPLES já esticado =====
     // Pedido: depois que a palavra termina de crescer, ela fica "travada"
     // na tela por um trecho de scroll, e nesse meio tempo uma faixa preta
     // entra aos poucos pela esquerda (acompanhando o scroll, não um timer),
     // passando por cima da palavra, com um texto branco dentro.
     //
-    // pinType:"fixed" foi a 1ª tentativa (parecia necessário pra faixa
-    // position:fixed) mas causou um SALTO real de ~55px bem no instante em
-    // que travava (medido: bottom da linha ia de 951px pra 895px entre 2px
-    // de scroll) — não era só impressão do "duro" relatado, tinha um bug de
-    // verdade. Causa: em algum lugar da página (outra animação, fora desta
-    // seção) existe um ancestral com transform ativo naquele momento, o que
-    // vira "containing block" pra qualquer position:fixed dentro dele —
-    // tanto o pin quanto a faixa ficavam relativos a ESSE ancestral errado,
-    // não à viewport real, daí o descompasso. pinType:"transform" (o padrão
-    // do ScrollTrigger) evita isso por completo: em vez de position:fixed,
-    // ele compensa o scroll com um translate3d relativo — contínuo por
-    // construção, sem recalcular referência nenhuma no meio do caminho.
-    // Como consequência, a faixa deixou de ser position:fixed (relativa à
-    // TELA) e virou position:absolute (relativa à PRÓPRIA .izi-pre04-
-    // simple-zone, que agora tem position:relative) — o "top" não pode mais
-    // ser um simples "50vh" fixo (a zone tem 105vh, mais alta que a tela, e
-    // só uma fatia dela fica visível durante o travamento). Por isso o
-    // onEnter/onEnterBack abaixo MEDE ao vivo (getBoundingClientRect, não
-    // conta teórica) onde fica o meio da tela relativo ao topo da zone
-    // exatamente no instante em que o pin engata, e só então posiciona a
-    // faixa — mesma filosofia de "medir o real, não calcular teórico" já
-    // usada no resto do arquivo (fitSimples/measureInkHeight).
+    // Histórico: o travamento era um pin do GSAP (fixed, depois transform).
+    // Ambos deram solavanco: "transform" recompensa o scroll por JS a cada
+    // frame (a palavra tremia em scroll real); "fixed" troca a caixa de
+    // fluxo normal pra position:fixed NO MEIO do scroll, troca que não é
+    // contínua frame a frame (travinha no engate, pior ainda quando a
+    // palavra ainda está em movimento nesse instante, caso da desaceleração
+    // acima). Agora é position:sticky NATIVO no título (CSS), sem troca
+    // nenhuma — o navegador resolve no compositor.
     //
-    // SETTLE_VH: tentativa de separar "para de crescer" e "trava a posição"
-    // em dois instantes diferentes (12vh de scroll normal entre os dois),
-    // pra não parecer um freio duplo simultâneo. Efeito colateral: nesses
-    // 12vh a palavra já sobe mais um pouco ANTES de travar, saindo da
-    // posição "cheia" que a print aprovada mostrava — sobrava vazio embaixo
-    // e cortava mais em cima. Como o "duro" de verdade era o BUG do salto
-    // de ~55px (containing block, ver comentário do pinType acima, já
-    // corrigido), zerado aqui: trava exatamente onde o estica termina,
-    // igual à print aprovada.
+    // Como o sticky engata sozinho: o título (h2) tem "top" = posição em
+    // que a caixa da linha está no instante em que o "estica" termina,
+    // (altura da tela - BOTTOM_MARGIN - F1*altura da linha). O topo do
+    // título rola 1:1 com o scroll até chegar nesse "top", e aí o navegador
+    // o segura — exatamente onde o "estica" (ScrollTrigger acima) acaba.
+    // Quanto tempo segura = altura da .izi-pre04-simple-zone - altura do
+    // título; por isso a zone ganha min-height = título + totalPx. A altura
+    // original da zone (105vh) vira margin-bottom pra o resto da página
+    // ficar no MESMO lugar de antes (antes o pin criava esse espaço extra).
+    //
+    // A faixa é position:fixed FORA da zone (a zone tem container-type,
+    // que viraria containing block do fixed) e só aparece via opacity.
     const band = document.getElementById("iziPre04SimpleBand");
     const simpleZoneEl = document.querySelector(".izi-pre04-simple-zone");
+    const simpleTitleEl = line.closest(".izi-pre04-simple-title");
     let freezeTween = null;
     function setupSimplesFreeze(){
-      if(!band || !simpleZoneEl) return;
+      if(!band || !simpleZoneEl || !simpleTitleEl) return;
       const stretchST = simplesStretchTween && simplesStretchTween.scrollTrigger;
       if(!stretchST) return;
       if(freezeTween){
@@ -618,27 +665,41 @@ addEventListener("resize",()=>{
         freezeTween.kill();
       }
       gsap.set(band,{xPercent:-100,opacity:0});
-      function placeBandOnScreenCenter(){
-        const zr = simpleZoneEl.getBoundingClientRect();
-        band.style.top = (window.innerHeight/2 - zr.top) + "px";
-      }
-      const FREEZE_VH = 45; // duração (scroll) do travamento + faixa, a partir do fim do estica
+      const FREEZE_VH = 45; // duração (scroll) só da parte da FAIXA (depois da desaceleração)
+      const dec = simplesDecel;
+      const vh = window.innerHeight;
+      const bandPx = vh * (FREEZE_VH/100);
+      const totalPx = dec.W + bandPx;
+      const decFrac = totalPx ? dec.W / totalPx : 0; // parte da timeline gasta na desaceleração
+      const bandFrac = 1 - decFrac;
+
+      // layout do sticky (ver comentário acima)
+      const h = line.offsetHeight;
+      const titleH = simpleTitleEl.offsetHeight;
+      simpleTitleEl.style.top = (vh - BOTTOM_MARGIN - dec.F1 * h) + "px";
+      const baseMin = (window.innerWidth <= 700 ? 1.10 : 1.05) * vh; // min-height original da zone (CSS)
+      simpleZoneEl.style.setProperty("min-height", (titleH + totalPx) + "px", "important");
+      simpleZoneEl.style.setProperty("margin-bottom", Math.max(0, baseMin - titleH) + "px", "important");
+
       freezeTween = gsap.timeline({
         scrollTrigger:{
           trigger:line,
           start:() => stretchST.end,
-          end:() => stretchST.end + window.innerHeight * (FREEZE_VH/100),
-          scrub:true,
-          pin:simpleZoneEl,
-          pinType:"transform",
-          onEnter:placeBandOnScreenCenter,
-          onEnterBack:placeBandOnScreenCenter
+          end:() => stretchST.end + totalPx,
+          scrub:true
         }
       })
-      .set(band,{opacity:1})
-      .to(band,{xPercent:0,ease:"none",duration:.6})
-      .to({},{duration:.15}) // segura a faixa visível um pouco antes de sumir
-      .to(band,{opacity:0,ease:"none",duration:.25});
+      // 1) desaceleração: palavra segue crescendo e subindo, velocidade → 0
+      // (immediateRender:false — o "estica" acima é quem manda no scaleY
+      // antes do travamento; sem isso esse fromTo escreveria F1/0 já no load)
+      .fromTo(line,{scaleY:dec.F1,y:0},{scaleY:dec.F,y:-dec.D,ease:"power1.out",duration:decFrac,immediateRender:false})
+      // 2) faixa (posição em .at = depois da desaceleração)
+      .set(band,{opacity:1},decFrac)
+      .to(band,{xPercent:0,ease:"none",duration:.6*bandFrac})
+      .to({},{duration:.15*bandFrac}) // segura a faixa visível um pouco antes de sumir
+      .to(band,{opacity:0,ease:"none",duration:.25*bandFrac});
+      // a zone mudou de altura: recalcula os triggers das seções seguintes
+      ScrollTrigger.refresh();
     }
 
     // (window.__iziSimplesReady || Promise.resolve()) é defensivo — se o
