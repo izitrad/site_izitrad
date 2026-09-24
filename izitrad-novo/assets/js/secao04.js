@@ -700,6 +700,50 @@ addEventListener("resize",()=>{
       .to(band,{opacity:0,ease:"none",duration:.25*bandFrac});
       // a zone mudou de altura: recalcula os triggers das seções seguintes
       ScrollTrigger.refresh();
+      setupHeaderContrast();
+    }
+
+    // Triângulo do menu: ele é rosa (mesmo rosa do SIMPLES) e some quando a
+    // palavra passa por baixo dele — só as linhas brancas do hambúrguer
+    // apareciam. Enquanto as letras cobrem o botão, o header ganha
+    // [data-over-pink] e o CSS pinta o triângulo de preto (secao04.css).
+    // Janela: começa quando o topo das letras sobe até a borda de baixo do
+    // botão (scaleY = (vh - BOTTOM_MARGIN - btn.bottom) / capExtent, e o
+    // "estica" é linear em scroll) e termina quando, depois do travamento,
+    // a base das letras sobe até o topo do botão.
+    const siteHeader = document.querySelector("[data-header]");
+    let headerST = null;
+    function setupHeaderContrast(){
+      if(!siteHeader) return;
+      if(headerST){ headerST.kill(); headerST = null; }
+      siteHeader.removeAttribute("data-over-pink");
+      const stretchST = simplesStretchTween && simplesStretchTween.scrollTrigger;
+      const freezeST = freezeTween && freezeTween.scrollTrigger;
+      if(!stretchST || !freezeST) return;
+      const E = measureCapExtent();
+      if(!E) return;
+      const btn = siteHeader.querySelector(".menu-toggle");
+      let r = btn ? btn.getBoundingClientRect() : null;
+      // no desktop o botão pode estar display:none (rect zerado): usa a
+      // caixa padrão dele (66x75, colada no topo direito)
+      const btnTop = r && r.height ? r.top : 10;
+      const btnBottom = r && r.height ? r.bottom : 85;
+      const vh = window.innerHeight;
+      headerST = ScrollTrigger.create({
+        start:() => {
+          const need = (vh - BOTTOM_MARGIN - btnBottom) / E; // scaleY em que o topo das letras chega no botão
+          const d = simplesDecel;
+          if(!d.F1) return stretchST.end;
+          const p = need / d.F1;
+          if(p < 1) return stretchST.start + p * (stretchST.end - stretchST.start); // ainda no estica (linear)
+          // caso comum: só chega no botão durante a desaceleração (scaleY F1→F com
+          // ease power1.out: scale = F1 + (F-F1)*(1-(1-u)^2)) — inverte pra achar u
+          const ratio = d.F > d.F1 ? Math.min(1, Math.max(0, (need - d.F1) / (d.F - d.F1))) : 1;
+          return stretchST.end + (1 - Math.sqrt(1 - ratio)) * d.W;
+        },
+        end:() => freezeST.end + (vh - BOTTOM_MARGIN - btnTop),
+        onToggle:self => siteHeader.toggleAttribute("data-over-pink", self.isActive)
+      });
     }
 
     // (window.__iziSimplesReady || Promise.resolve()) é defensivo — se o

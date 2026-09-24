@@ -781,3 +781,13 @@
   height:.7477em;
   max-width:none;
 }
+
+/* Triângulo do menu preto enquanto o SIMPLES (rosa) passa por baixo dele
+   — rosa sobre rosa some (só as linhas brancas apareciam). O atributo é
+   ligado/desligado por scroll em secao04.js (setupHeaderContrast). */
+.site-header .menu-toggle__tri{
+  transition:fill .25s ease;
+}
+.site-header[data-over-pink] .menu-toggle__tri{
+  fill:#111;
+}
