@@ -655,6 +655,23 @@ addEventListener("resize",()=>{
     const band = document.getElementById("iziPre04SimpleBand");
     const simpleZoneEl = document.querySelector(".izi-pre04-simple-zone");
     const simpleTitleEl = line.closest(".izi-pre04-simple-title");
+    // Divide o texto da faixa em letras (uma <span> por caractere) pra elas
+    // entrarem em sequência DEPOIS da faixa (ver timeline abaixo).
+    const bandTextEl = band ? band.querySelector(".izi-pre04-simple-band-text") : null;
+    let bandChars = [];
+    if(bandTextEl){
+      const txt = bandTextEl.textContent;
+      bandTextEl.setAttribute("aria-label", txt);
+      bandTextEl.textContent = "";
+      Array.from(txt).forEach(function(ch){
+        const sp = document.createElement("span");
+        sp.className = "izi-band-ch";
+        sp.setAttribute("aria-hidden", "true");
+        sp.textContent = ch;
+        bandTextEl.appendChild(sp);
+        bandChars.push(sp);
+      });
+    }
     let freezeTween = null;
     function setupSimplesFreeze(){
       if(!band || !simpleZoneEl || !simpleTitleEl) return;
@@ -665,7 +682,17 @@ addEventListener("resize",()=>{
         freezeTween.kill();
       }
       gsap.set(band,{xPercent:-100,opacity:0});
-      const FREEZE_VH = 45; // duração (scroll) só da parte da FAIXA (depois da desaceleração)
+      // Efeito copiado da pergunta "E como é fazer isso com a izi?" (ver
+      // questionWords acima): autoAlpha 0→1 + blur→nítido, ease none, com
+      // stagger .04 e duration .2 — ou seja, cada elemento leva 5x o
+      // intervalo entre um e o próximo, então há uma ONDA com vários
+      // elementos meio-desfocados ao mesmo tempo (em vez de um por vez).
+      // Aqui os elementos são as letras da faixa. BAND_BLUR_PX é fixo em px
+      // (a pergunta usa 10px*vw/1440 em fonte de ~130px; 20px de texto
+      // pede bem menos) — ajustar aqui se quiser mais/menos desfoque.
+      const BAND_BLUR_PX = 6;
+      gsap.set(bandChars,{autoAlpha:0,filter:"blur("+BAND_BLUR_PX+"px)"});
+      const FREEZE_VH = 60; // duração (scroll) só da parte da FAIXA (depois da desaceleração)
       const dec = simplesDecel;
       const vh = window.innerHeight;
       const bandPx = vh * (FREEZE_VH/100);
@@ -695,8 +722,16 @@ addEventListener("resize",()=>{
       .fromTo(line,{scaleY:dec.F1,y:0},{scaleY:dec.F,y:-dec.D,ease:"power1.out",duration:decFrac,immediateRender:false})
       // 2) faixa (posição em .at = depois da desaceleração)
       .set(band,{opacity:1},decFrac)
-      .to(band,{xPercent:0,ease:"none",duration:.6*bandFrac})
-      .to({},{duration:.15*bandFrac}) // segura a faixa visível um pouco antes de sumir
+      .to(band,{xPercent:0,ease:"none",duration:.25*bandFrac})
+      // 3) a frase entra em sequência (letra por letra, blur→nítido, mesmo
+      // efeito das outras frases da seção) SÓ depois que a faixa entrou
+      // janela da frase = .40*bandFrac (era .25: as letras de "JEITO" passavam
+      // rápido demais no scroll — ~95px pra 9 letras — e o efeito só era
+      // perceptível no fim, no "IZI"), dividida na MESMA proporção da
+      // pergunta (duration .2 / stagger total .32 → 38,5% / 61,5%)
+      .fromTo(bandChars,{autoAlpha:0,filter:"blur("+BAND_BLUR_PX+"px)"},
+        {autoAlpha:1,filter:"blur(0px)",ease:"none",duration:.40*bandFrac*(.2/.52),stagger:{amount:.40*bandFrac*(.32/.52)}})
+      .to({},{duration:.10*bandFrac}) // segura a faixa visível um pouco antes de sumir
       .to(band,{opacity:0,ease:"none",duration:.25*bandFrac});
       // a zone mudou de altura: recalcula os triggers das seções seguintes
       ScrollTrigger.refresh();

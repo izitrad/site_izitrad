@@ -687,13 +687,23 @@
    referência mostra — a referência é texto corrido normal). */
 .izi-pre04-simple-band-text{
   font-family:"DM Sans","Outfit",Arial,sans-serif;
-  font-weight:300;
+  font-weight:200;
   font-size:20px;
   line-height:1;
   text-transform:uppercase;
-  letter-spacing:.01em;
+  /* espaçamento largo (pedido: "J   E   I  T   O"). margin-right negativo
+     de mesmo valor: o letter-spacing também é aplicado depois da ÚLTIMA
+     letra, o que deslocaria o texto pra esquerda no centro da faixa. */
+  letter-spacing:.4em;
+  margin-right:-.4em;
   color:#fff;
-  white-space:nowrap;
+  white-space:pre;
+}
+/* letras individuais (secao04.js divide o texto) — entram em sequência
+   depois que a faixa termina de entrar */
+.izi-pre04-simple-band-text .izi-band-ch{
+  display:inline-block;
+  white-space:pre;
 }
 @media(max-width:700px){
   .izi-pre04-simple-band{width:52vw}
