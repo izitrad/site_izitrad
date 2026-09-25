@@ -30,7 +30,7 @@
  --font-f-twk-lausanne-250:"TWKLausanne-250";--font-f-twk-lausanne-200:"TWKLausanne-200";--font-f-neo-sans-pro-medium:"NeoSansPro-Medium";
  --font-s-heading-l:5.5555555556vw;--font-lh-heading-l:5.5555555556vw;--font-ls-heading-l:-.030em;
  --font-s-body-r:1.3888888889vw;--font-lh-body-r:1.9444444444vw;--font-ls-body-r:0em;
- --font-s-body-xs:.9722222222vw;--font-lh-body-xs:1.3888888889vw;--font-ls-body-xs:.02em;
+ --font-s-body-xs:.9722222222vw;--font-lh-body-xs:1.3888888889vw;--font-ls-body-xs:-.01em;
  --font-s-title-r:.6944444444vw;--font-lh-title-r:1.0416666667vw;--font-ls-title-r:.14em;
  --app-deg:180deg;
 }
