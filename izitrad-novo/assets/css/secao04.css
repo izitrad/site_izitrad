@@ -54,7 +54,14 @@
 .column:first-child{grid-column:7/10;margin-bottom:10.4166666667vw}
 .column:nth-child(2){grid-column:3/6}
 .column:nth-child(3){grid-column:8/11}
-.heading{font-family:var(--font-f-twk-lausanne-200);font-size:var(--font-s-heading-l);font-weight:400;letter-spacing:var(--font-ls-heading-l);line-height:var(--font-lh-heading-l);padding-bottom:1.3888888889vw}
+.heading{font-family:'Outfit',Arial,sans-serif;font-size:var(--font-s-heading-l);font-weight:200;letter-spacing:var(--font-ls-heading-l);line-height:var(--font-lh-heading-l);padding-bottom:1.3888888889vw}
+/* Título "E por trás do simples?": as linhas não quebram (com a coluna de 3 de
+   12, "E por trás do" no tamanho do título não cabe e viraria 3-4 linhas);
+   "simples" em negrito. */
+.heading div{white-space:nowrap}
+.heading strong{font-weight:400}
+/* Trechos em negrito dos compromissos: mais escuros que o texto corrido */
+.paragraph-s strong{font-weight:700;color:#111;-webkit-text-stroke:.03em currentColor}
 .paragraph{font-family:var(--font-f-twk-lausanne-250);font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
 .number{
  aspect-ratio:320/470;
@@ -78,6 +85,7 @@
  .guiding-principles::before{animation:none;transform:none}
 }
 @media(max-width:600px){
+ .heading div{white-space:normal}
  :root{
   --font-s-m-heading-s:12.8vw;--font-lh-m-heading-s:12.8vw;--font-ls-m-heading-s:-.0229166667em;
   --font-s-body-r:5.3333333333vw;--font-lh-body-r:7.4666666667vw;--font-ls-body-r:0em;
@@ -88,7 +96,7 @@
  .column:first-child{grid-column:1/7;order:2;margin-bottom:0}
  .column:nth-child(2){grid-column:1/4;order:1}
  .column:nth-child(3){grid-column:1/7;order:3}
- .heading{font-family:var(--font-f-twk-lausanne-200);font-size:var(--font-s-m-heading-s);line-height:var(--font-lh-m-heading-s);letter-spacing:var(--font-ls-m-heading-s);padding:10.6666666667vw 0 6.6666666667vw}
+ .heading{font-family:'Outfit',Arial,sans-serif;font-size:var(--font-s-m-heading-s);line-height:var(--font-lh-m-heading-s);letter-spacing:var(--font-ls-m-heading-s);padding:10.6666666667vw 0 6.6666666667vw}
  .paragraph{margin-bottom:13.3333333333vw}
  .principle{border-top:1px solid rgba(17,17,17,.18);padding-top:7.2vw}
  .principle:not(:last-child){padding-bottom:10.6666666667vw;margin-bottom:0}

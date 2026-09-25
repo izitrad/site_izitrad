@@ -39,6 +39,15 @@ function setupTitleDots(){
   });
 }
 
+/* Texto do título ("E por trás do simples?") — em DOIS lugares porque o
+   setupDesktop() reescreve o heading em palavras (cada uma vira um
+   .heading-word animado) e o cleanupDesktop() devolve ao HTML original.
+   Se o texto mudar, mudar aqui E no HTML (h2.heading em index.html). */
+const HEADING_HTML = '<div>E por trás</div><div>do <strong>simples</strong>?</div>';
+const HEADING_WORDS_HTML =
+  '<div><span class="heading-word">E</span> <span class="heading-word">por</span> <span class="heading-word">trás</span></div>' +
+  '<div><span class="heading-word">do</span> <span class="heading-word"><strong>simples</strong>?</span></div>';
+
 function cleanupDesktop(){
   if(drawTween) drawTween.kill();
   desktopAnimations.forEach(a => {
@@ -47,7 +56,7 @@ function cleanupDesktop(){
   });
   desktopAnimations = [];
   if(headingWords.length){
-    heading.innerHTML = '<div>Guiding</div><div>Principles</div>';
+    heading.innerHTML = HEADING_HTML;
     headingWords = [];
   }
 }
@@ -74,9 +83,7 @@ function setupDesktop(){
      The live site uses a custom scroller/scrollerProxy. In this standalone
      normal-scroll reference, "top center" is the equivalent 1/2-viewport
      progression distance, so the visual interpolation remains inspectable. */
-  heading.innerHTML =
-    '<div><span class="heading-word">Guiding</span></div>' +
-    '<div><span class="heading-word">Principles</span></div>';
+  heading.innerHTML = HEADING_WORDS_HTML;
 
   headingWords = gsap.utils.toArray(".heading-word", heading);
   gsap.set(headingWords,{
