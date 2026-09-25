@@ -710,6 +710,7 @@ addEventListener("resize",()=>{
       }
     }
     let freezeTween = null;
+    let exitTween = null;
     let trailTicker = null;
     function setupSimplesFreeze(){
       if(!band || !simpleZoneEl || !simpleTitleEl) return;
@@ -718,6 +719,13 @@ addEventListener("resize",()=>{
       if(freezeTween){
         freezeTween.scrollTrigger.kill();
         freezeTween.kill();
+      }
+      if(exitTween){
+        exitTween.scrollTrigger.kill();
+        exitTween.kill();
+        exitTween = null;
+        simpleTitleEl.style.opacity = "";
+        simpleTitleEl.style.filter = "";
       }
       gsap.set(band,{xPercent:-100,opacity:0});
       // Efeito copiado da pergunta "E como é fazer isso com a izi?" (ver
@@ -935,6 +943,45 @@ addEventListener("resize",()=>{
       // fracionada as duas bordas se encontram em meio pixel cada, e a soma de
       // duas coberturas parciais deixa um fio de fundo aparecendo na emenda
       .to(band,{x:vw + trailLen,ease:"none",duration:f(TRAVERSE_PX),snap:{x:1}}); // + trailLen: o rastro também precisa sair da tela
+      // ===== SAÍDA: a palavra desfoca e some, como a pergunta =====
+      // A pergunta sai desfocando e sumindo enquanto o palco rola (blur +
+      // autoAlpha, ease none, ligado ao scroll). A palavra faz o mesmo DEPOIS
+      // que o travamento solta, enquanto sobe naturalmente pela tela — nunca
+      // durante a faixa (mexer na palavra enquanto a faixa saía, na tentativa
+      // da "soltada com aceleração", tirava a atenção do gesto principal).
+      // Aplicado no TÍTULO (h2, sem transform), não na linha: filter na linha
+      // é aplicado ANTES do scaleY e esticaria o desfoque só na vertical.
+      // Desfoque proporcional à largura (base 24px a 1440), bem menor que os
+      // ~10% da fonte que a pergunta usa (a palavra tem ~790px de altura).
+      // ?saida=0 desliga (pra comparar).
+      if(qs.get("saida") !== "0"){
+        const EXIT_BLUR = 24 * window.innerWidth / 1440;
+        const EXIT_PX = vh * .85; // termina pouco antes da palavra sair da tela
+        // Proxy (p de 0 a 1) e escrita manual de opacity/filter no onUpdate: tweenar
+        // "filter" direto pelo GSAP não interpolava de forma confiável quando a
+        // 1ª renderização vinha de um salto de scroll (opacity andava, filter
+        // ficava em blur(0px)). Assim o estado é sempre função de p, inclusive
+        // na volta (p=0 limpa os estilos).
+        const exitProxy = {p:0};
+        exitTween = gsap.to(exitProxy,{
+          p:1,ease:"none",
+          onUpdate:function(){
+            const p = exitProxy.p;
+            if(p < .001){
+              simpleTitleEl.style.opacity = "";
+              simpleTitleEl.style.filter = "";
+            } else {
+              simpleTitleEl.style.opacity = String(1 - p);
+              simpleTitleEl.style.filter = "blur(" + (EXIT_BLUR * p).toFixed(2) + "px)";
+            }
+          },
+          scrollTrigger:{
+            trigger:line,
+            start:() => stretchST.end + totalPx,
+            end:() => stretchST.end + totalPx + EXIT_PX,
+            scrub:true
+          }});
+      }
       // a zone mudou de altura: recalcula os triggers das seções seguintes
       ScrollTrigger.refresh();
       setupHeaderContrast();
@@ -1020,6 +1067,52 @@ addEventListener("resize",()=>{
   box.style.cssText = "position:fixed;left:10px;bottom:10px;z-index:99999;padding:8px 10px;background:rgba(0,0,0,.82);color:#7CFF9B;font:12px/1.4 ui-monospace,Consolas,monospace;border-radius:6px;pointer-events:none;white-space:pre";
   box.textContent = "FPS: …";
   document.body.appendChild(box);
+  // Botão "Testar": rola sozinho (3 idas pelo trecho) e mostra o tempo por
+  // quadro. Rodar com a aba VISÍVEL (em aba oculta o navegador não desenha).
+  // Compare abrindo também com &saida=0.
+  const btn = document.createElement("button");
+  btn.textContent = "▶ Testar saída e travessia";
+  btn.style.cssText = "position:fixed;left:10px;bottom:118px;z-index:99999;padding:6px 10px;font:12px ui-monospace,Consolas,monospace;background:#111;color:#fff;border:1px solid #7CFF9B;border-radius:6px;cursor:pointer";
+  const out = document.createElement("div");
+  out.style.cssText = "position:fixed;left:10px;bottom:150px;z-index:99999;padding:8px 10px;background:rgba(0,0,0,.88);color:#fff;font:12px/1.5 ui-monospace,Consolas,monospace;border-radius:6px;white-space:pre;display:none";
+  document.body.appendChild(out); document.body.appendChild(btn);
+  function passFn(y0, y1, step){
+    return new Promise(function(res){
+      window.scrollTo(0, y0);
+      let y = y0, lastT = null; const dts = [];
+      setTimeout(function(){
+        requestAnimationFrame(function f(t){
+          if(lastT !== null) dts.push(t - lastT);
+          lastT = t; y += step; window.scrollTo(0, y);
+          if(y < y1) requestAnimationFrame(f); else res(dts);
+        });
+      }, 700);
+    });
+  }
+  function statOf(dts){
+    const s = dts.slice().sort(function(a,b){ return a-b; });
+    const q = function(p){ return s[Math.min(s.length-1, Math.floor(p*s.length))]; };
+    const avg = dts.reduce(function(a,b){ return a+b; }, 0) / dts.length;
+    return "média " + avg.toFixed(1) + "ms | p95 " + q(.95).toFixed(1) + "ms | pior " + s[s.length-1].toFixed(1) + "ms | >16,7ms: " + dts.filter(function(d){ return d > 16.7; }).length + " de " + dts.length;
+  }
+  btn.addEventListener("click", async function(){
+    btn.disabled = true; btn.textContent = "rodando…";
+    const line = document.querySelector("#iziPre04SimpleLine");
+    const sts = ScrollTrigger.getAll().filter(function(s){ return s.trigger === line; }).sort(function(a,b){ return a.start - b.start; });
+    const fr = sts[1], vh = innerHeight;
+    const travA = fr.start + .35*vh + 300 + 205 + 50, travB = fr.end;
+    const exitA = fr.end, exitB = fr.end + .85*vh;
+    const modo = new URLSearchParams(location.search).get("saida") === "0" ? "SEM saída" : "COM saída";
+    const res = [];
+    for(const t of [["Travessia da faixa", travA, travB], ["Saída da palavra", exitA, exitB]]){
+      const all = [];
+      for(let k=0;k<3;k++){ const d = await passFn(t[1], t[2], 10); Array.prototype.push.apply(all, d); }
+      res.push(t[0] + ": " + statOf(all));
+    }
+    out.style.display = "block";
+    out.textContent = "[" + modo + " | tela " + innerWidth + "x" + innerHeight + "]\n" + res.join("\n");
+    btn.disabled = false; btn.textContent = "▶ Testar de novo";
+  });
   const frames = []; // {t, dt}
   let last = performance.now();
   function tick(now){
