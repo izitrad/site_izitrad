@@ -670,7 +670,7 @@
   /* 35px (era 30). Caixa de linha do texto centralizada na faixa (sem
      padding assimétrico): a logo é maior que o texto, então o que importa
      é o conjunto, não as maiúsculas isoladas. */
-  height:40px;
+  height:44px;
   /* 3.5px embaixo: sobe o par texto+logo 1,75px. O vertical-align da logo
      aumenta a caixa de linha do texto, o que deixava o centro das
      maiúsculas 1,77px abaixo do centro da faixa (medido). */

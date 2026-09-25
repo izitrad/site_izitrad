@@ -719,13 +719,19 @@ addEventListener("resize",()=>{
       // pede bem menos) — ajustar aqui se quiser mais/menos desfoque.
       const BAND_BLUR_PX = 6;
       gsap.set(bandChars,{autoAlpha:0,filter:"blur("+BAND_BLUR_PX+"px)"});
-      const FREEZE_VH = 60; // duração (scroll) só da parte da FAIXA (depois da desaceleração)
       const dec = simplesDecel;
       const vh = window.innerHeight;
-      const bandPx = vh * (FREEZE_VH/100);
-      const totalPx = dec.W + bandPx;
-      const decFrac = totalPx ? dec.W / totalPx : 0; // parte da timeline gasta na desaceleração
-      const bandFrac = 1 - decFrac;
+      const vw = window.innerWidth;
+      // Etapas do travamento, em px de scroll, uma depois da outra:
+      //   desaceleração (dec.W) → faixa ENTRA → letras (onda) → segura →
+      //   faixa ATRAVESSA a tela pra direita e sai. Ajustar aqui.
+      const ENTER_PX = 300;          // entrada da faixa (era ~130px: "rápida demais")
+      const LETTERS_PX = 205;        // frase em onda (ver comentário nas letras)
+      const HOLD_PX = 50;            // respiro com a frase completa
+      const TRAVERSE_PX = vh;        // travessia: faixa vai de left:0 até fora da tela (direita)
+      const totalPx = dec.W + ENTER_PX + LETTERS_PX + HOLD_PX + TRAVERSE_PX;
+      const f = function(px){ return px / totalPx; }; // px de scroll → fração da timeline
+      const decFrac = f(dec.W); // parte da timeline gasta na desaceleração
 
       // layout do sticky (ver comentário acima)
       const h = line.offsetHeight;
@@ -747,19 +753,22 @@ addEventListener("resize",()=>{
       // (immediateRender:false — o "estica" acima é quem manda no scaleY
       // antes do travamento; sem isso esse fromTo escreveria F1/0 já no load)
       .fromTo(line,{scaleY:dec.F1,y:0},{scaleY:dec.F,y:-dec.D,ease:"power1.out",duration:decFrac,immediateRender:false})
-      // 2) faixa (posição em .at = depois da desaceleração)
+      // 2) faixa entra (posição = depois da desaceleração). ease power1.out:
+      // "pousa" suave em vez de bater no fim
       .set(band,{opacity:1},decFrac)
-      .to(band,{xPercent:0,ease:"none",duration:.25*bandFrac})
+      .to(band,{xPercent:0,ease:"power1.out",duration:f(ENTER_PX)})
       // 3) a frase entra em sequência (letra por letra, blur→nítido, mesmo
-      // efeito das outras frases da seção) SÓ depois que a faixa entrou
-      // janela da frase = .40*bandFrac (era .25: as letras de "JEITO" passavam
-      // rápido demais no scroll — ~95px pra 9 letras — e o efeito só era
-      // perceptível no fim, no "IZI"), dividida na MESMA proporção da
+      // efeito das outras frases da seção) SÓ depois que a faixa entrou.
+      // Janela de ~205px (era ~95: as letras de "JEITO" passavam rápido
+      // demais e só o "IZI" era perceptível), dividida na MESMA proporção da
       // pergunta (duration .2 / stagger total .32 → 38,5% / 61,5%)
       .fromTo(bandChars,{autoAlpha:0,filter:"blur("+BAND_BLUR_PX+"px)"},
-        {autoAlpha:1,filter:"blur(0px)",ease:"none",duration:.40*bandFrac*(.2/.52),stagger:{amount:.40*bandFrac*(.32/.52)}})
-      .to({},{duration:.10*bandFrac}) // segura a faixa visível um pouco antes de sumir
-      .to(band,{opacity:0,ease:"none",duration:.25*bandFrac});
+        {autoAlpha:1,filter:"blur(0px)",ease:"none",duration:f(LETTERS_PX)*(.2/.52),stagger:{amount:f(LETTERS_PX)*(.32/.52)}})
+      .to({},{duration:f(HOLD_PX)}) // segura a faixa com a frase completa
+      // 4) travessia: a faixa (com texto e logo dentro) desliza pra direita
+      // e sai da tela — linear, 1:1 com o scroll, sem fade. x em px (o
+      // xPercent:0 acima é a posição de repouso; aqui soma o deslocamento)
+      .to(band,{x:vw,ease:"none",duration:f(TRAVERSE_PX)});
       // a zone mudou de altura: recalcula os triggers das seções seguintes
       ScrollTrigger.refresh();
       setupHeaderContrast();
