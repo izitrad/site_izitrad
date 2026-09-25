@@ -974,3 +974,22 @@
   color:transparent !important;
   -webkit-text-fill-color:transparent;
 }
+
+/* ===== ?fundo=preto (TESTE) — fundo preto + verde da izitrad =====
+   Ligado por assets/js/secao04-fundo.js (classe .izi-sec04-dark no wrapper).
+   Sem o parâmetro nada disto vale. O canvas (position:fixed) só aparece dentro
+   da seção porque o .izi-sec04-glow recorta com clip-path (recorta fixed
+   também). Textos e logos claros; o "escurecido" do efeito 3 vira um rosa
+   fundo (o #26001a sumiria no preto). */
+.izi-sec04-unified.izi-sec04-dark{background:#000;color:#fff}
+.izi-sec04-dark .izi-sec04-glow{clip-path:inset(0)}
+.izi-sec04-dark .izi-sec04-glow::before{display:none}
+.izi-sec04-gl{position:fixed;left:0;top:0;width:100vw;height:100vh;display:block;pointer-events:none}
+.izi-sec04-unified.izi-sec04-dark .izi-pre04{color:#fff !important}
+.izi-sec04-dark .guiding-principles{--color-white:#fff;color:#fff}
+.izi-sec04-dark .paragraph-s{color:rgba(255,255,255,.82)}
+.izi-sec04-dark .paragraph-s strong{color:#FF0099}
+.izi-sec04-dark .wm{fill:#fff;stroke:#fff}
+.izi-sec04-dark .izi-inline-logo path:not(:nth-child(2)){fill:#fff;stroke:#fff}
+.izi-sec04-dark .izi-fx-word{--alt:#5c0038}
+.izi-sec04-dark .divider-svg path:first-child,.izi-sec04-dark .divider-svg path:last-child{color:#fff}
