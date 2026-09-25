@@ -995,3 +995,39 @@
 .izi-sec04-dark .divider-svg path:first-child,.izi-sec04-dark .divider-svg path:last-child{color:#fff}
 .izi-sec04-dark .divider-svg path:first-child{opacity:.5}
 .izi-sec04-dark .izi-pre04-kicker{color:#FF0099}
+
+/* ===== ?fundo=preto — vidro CLARO da faixa =====
+   O vidro fumê (rgba(17,17,17,.75)) foi feito pro fundo claro; no preto ele
+   some. Aqui é uma película branca translúcida: tint de 10%, reflexo
+   diagonal mais forte, desfoque maior (12px) e menos brightness (não precisa
+   mais clarear o fundo), com um fio de luz na borda (inset, sem mudar o
+   tamanho) e o realce do topo — é o que "diz" vidro sobre o escuro. A cauda,
+   a cauda reversa e os ecos recebem o mesmo material; o início da cauda
+   (.24) iguala a média do tint da faixa na emenda. O texto e a logo da faixa
+   continuam brancos: sobre o SIMPLES rosa o contraste fica ~3,5 (medido). */
+.izi-sec04-dark .izi-pre04-simple-band,
+.izi-sec04-dark .izi-band-echo{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.42) 0%,rgba(255,255,255,.10) 34%,rgba(255,255,255,.02) 60%,rgba(255,255,255,.22) 100%),
+    rgba(255,255,255,.10);
+  -webkit-backdrop-filter:blur(12px) saturate(1.6) brightness(1.15);
+  backdrop-filter:blur(12px) saturate(1.6) brightness(1.15);
+}
+.izi-sec04-dark .izi-pre04-simple-band{
+  box-shadow:0 10px 28px -10px rgba(0,0,0,.6); /* sem fio de luz na borda (pedido) */
+}
+.izi-sec04-dark .izi-band-trail{
+  background:linear-gradient(to left,rgba(255,255,255,.24) 0%,rgba(255,255,255,.09) 45%,rgba(255,255,255,0) 100%);
+  -webkit-backdrop-filter:blur(12px) saturate(1.6) brightness(1.15);
+  backdrop-filter:blur(12px) saturate(1.6) brightness(1.15);
+}
+.izi-sec04-dark .izi-band-trail-r{
+  background:linear-gradient(to right,rgba(255,255,255,.24) 0%,rgba(255,255,255,.09) 45%,rgba(255,255,255,0) 100%);
+  -webkit-backdrop-filter:blur(12px) saturate(1.6) brightness(1.15);
+  backdrop-filter:blur(12px) saturate(1.6) brightness(1.15);
+}
+/* Logo "izi" da faixa no vidro claro: "i" brancos e "z" no verde da izitrad
+   (o JS pinta os paths por atributo — "i" brancos, "z" rosa —; a regra de CSS
+   vence). */
+.izi-sec04-dark .izi-band-logo path{fill:#fff;stroke:#fff}
+.izi-sec04-dark .izi-band-logo path:nth-child(2){fill:#00FF66;stroke:#00FF66}
