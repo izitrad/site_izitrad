@@ -681,8 +681,10 @@
      passa atrás chega ao olho — pra continuar parecendo VIDRO, o
      backdrop-filter clareia (brightness 1.9) e satura (3) o que está
      atrás ANTES do tint, e o desfoque é menor (8px, era 14px) pra as
-     formas das letras rosa ainda serem reconhecíveis. Sem borda nem brilho branco nas bordas
-     (pedido: "tirar os cantos em branco") — só o reflexo e a sombra. */
+     formas das letras rosa ainda serem reconhecíveis. Sem borda nem brilho
+     branco nas bordas (pedido: "tirar os cantos em branco") — só o reflexo
+     e a sombra. (Uma versão sem reflexo/sombra pra "material único" com a
+     cauda foi testada e a usuária preferiu esta, com reflexo e sombra.) */
   background:
     linear-gradient(135deg,rgba(255,255,255,.30) 0%,rgba(255,255,255,.05) 34%,rgba(255,255,255,0) 60%,rgba(255,255,255,.14) 100%),
     rgba(17,17,17,.75);
@@ -853,4 +855,92 @@
 }
 .site-header[data-over-pink] .menu-toggle__tri{
   fill:#111;
+}
+
+/* ===== Rastro da faixa (teste, ver ?rastro=... em secao04.js) ===== */
+/* 1) Cauda de vidro (elemento separado, ver secao04.js) */
+/* Cauda como ELEMENTO SEPARADO, encostado na borda
+   esquerda da faixa. Tom antigo: tint em degradê + destaque claro que
+   continua o reflexo da faixa, apagados por máscara. A cauda tem 14px A
+   MAIS (JS) que entram por baixo da faixa; nesses 14px a máscara sobe de 0
+   a 100% (rampa) pra a emenda ser uma transição suave. */
+.izi-band-trail{
+  position:fixed;
+  top:calc(50vh + 100px);
+  left:0;
+  height:52px;
+  z-index:4;
+  pointer-events:none;
+  background:
+    linear-gradient(to left,rgba(255,255,255,.20) 0%,rgba(255,255,255,.05) 40%,rgba(255,255,255,0) 100%),
+    linear-gradient(to left,rgba(17,17,17,.75) 0%,rgba(17,17,17,.30) 45%,rgba(17,17,17,0) 100%);
+  -webkit-backdrop-filter:blur(8px) saturate(3) brightness(1.9);
+  backdrop-filter:blur(8px) saturate(3) brightness(1.9);
+  -webkit-mask-image:linear-gradient(to left,transparent 0,#000 14px,rgba(0,0,0,.55) calc(14px + 40%),transparent 100%);
+  mask-image:linear-gradient(to left,transparent 0,#000 14px,rgba(0,0,0,.55) calc(14px + 40%),transparent 100%);
+  will-change:transform;
+}
+/* EFEITO REVERSO (voltando o scroll): a cauda espelhada, do lado DIREITO da
+   faixa — mesmo material, degradê e máscara invertidos; JS a ancora na borda
+   direita da faixa (14px por baixo, com rampa) e só a mostra quando a faixa
+   anda pra esquerda. */
+.izi-band-trail-r{
+  position:fixed;
+  top:calc(50vh + 100px);
+  left:0;
+  height:52px;
+  z-index:4;
+  pointer-events:none;
+  background:
+    linear-gradient(to right,rgba(255,255,255,.20) 0%,rgba(255,255,255,.05) 40%,rgba(255,255,255,0) 100%),
+    linear-gradient(to right,rgba(17,17,17,.75) 0%,rgba(17,17,17,.30) 45%,rgba(17,17,17,0) 100%);
+  -webkit-backdrop-filter:blur(8px) saturate(3) brightness(1.9);
+  backdrop-filter:blur(8px) saturate(3) brightness(1.9);
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 14px,rgba(0,0,0,.55) calc(14px + 40%),transparent 100%);
+  mask-image:linear-gradient(to right,transparent 0,#000 14px,rgba(0,0,0,.55) calc(14px + 40%),transparent 100%);
+  will-change:transform;
+}
+/* 2) Ecos: cópias da faixa (só o vidro, sem texto), cada uma mais
+   transparente e mais atrás — a opacidade de cada uma vem do JS. */
+.izi-band-echo{
+  position:fixed;
+  top:calc(50vh + 100px);
+  left:0;
+  width:22vw;
+  max-width:320px;
+  height:52px;
+  z-index:4;
+  pointer-events:none;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.30) 0%,rgba(255,255,255,.05) 34%,rgba(255,255,255,0) 60%,rgba(255,255,255,.14) 100%),
+    rgba(17,17,17,.75);
+  -webkit-backdrop-filter:blur(8px) saturate(3) brightness(1.9);
+  backdrop-filter:blur(8px) saturate(3) brightness(1.9);
+  will-change:transform;
+}
+
+/* ===== ?efeito=3 — rastro que altera a palavra ===== */
+/* A palavra vira "recorte de texto" de um degradê horizontal que segue a
+   faixa: rosa normal; na cauda (à esquerda da borda da faixa, --tl de
+   comprimento) vai de rosa a um tom escuro colado na faixa; a partir da
+   borda da faixa volta a ser rosa (esse trecho fica por baixo do vidro).
+   --bx = posição da borda esquerda da faixa relativa à palavra, --tl =
+   comprimento do rastro (ambos escritos por JS a cada frame). Com
+   --tl:0 (faixa parada) o degradê é rosa liso. */
+.izi-fx-word{
+  --pink:#FF0099;
+  --alt:#26001a;
+  --bx:-9999px;
+  --tl:0px;
+  /* rastro só do lado ESQUERDO da faixa (faixa indo pra direita). No reverso
+     (voltando o scroll) só a cauda de vidro aparece, sem mudar a palavra. */
+  background-image:linear-gradient(to right,
+    var(--pink) 0,
+    var(--pink) calc(var(--bx) - var(--tl)),
+    var(--alt) calc(var(--bx) - 1px),
+    var(--pink) var(--bx));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent !important;
+  -webkit-text-fill-color:transparent;
 }

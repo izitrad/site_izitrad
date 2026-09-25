@@ -700,6 +700,7 @@ addEventListener("resize",()=>{
       }
     }
     let freezeTween = null;
+    let trailTicker = null;
     function setupSimplesFreeze(){
       if(!band || !simpleZoneEl || !simpleTitleEl) return;
       const stretchST = simplesStretchTween && simplesStretchTween.scrollTrigger;
@@ -722,6 +723,158 @@ addEventListener("resize",()=>{
       const dec = simplesDecel;
       const vh = window.innerHeight;
       const vw = window.innerWidth;
+
+      // ===== RASTRO da faixa (TESTE: comparar variantes por ?rastro=...) =====
+      //   1c = cauda de vidro curta (~300px)   1l = cauda de vidro longa (~metade da tela)
+      //   2c = ecos curtos (~300px)            2l = ecos longos (~metade da tela)
+      // Sem o parâmetro: sem rastro. Os elementos são irmãos fixos da faixa (não
+      // filhos): um filho com backdrop-filter dentro de outro com backdrop-filter
+      // só enxerga o conteúdo do pai (o pai vira "backdrop root"), então a cauda
+      // não desfocaria as letras do SIMPLES. Cada um acompanha o x da faixa
+      // (trailTicker, abaixo).
+      Array.from(document.querySelectorAll(".izi-band-trail,.izi-band-trail-r,.izi-band-echo")).forEach(function(n){ n.remove(); });
+      const qs = new URLSearchParams(location.search);
+      const trailMode = qs.get("rastro") || "1l"; // padrão: cauda longa (escolhida); ?rastro=none desliga
+      const bandW = band.offsetWidth;
+      let trailEls = [];   // {el, offset}: offset = quanto o elemento fica ATRÁS da borda esquerda da faixa
+      let trailLen = 0;    // comprimento total do rastro (a travessia precisa ir até vw + trailLen pra ele sair da tela)
+      if(trailMode === "1c" || trailMode === "1l" || trailMode === "1f" || trailMode === "1r"){ // 1f = 1l com a cauda SEMPRE no comprimento total; 1r = idem só com a cauda do REVERSO (direita) — só pra avaliar o visual
+        trailLen = trailMode === "1c" ? 300 : Math.round(vw * .5);
+        // elemento separado, ancorado na borda direita = borda esquerda da
+        // faixa, com 14px A MAIS entrando por baixo da faixa (rampa na máscara,
+        // ver CSS) pra a emenda ser uma transição suave. (Uma versão com a
+        // cauda EMBUTIDA na própria faixa, sem emenda, foi testada e a usuária
+        // preferiu esta.)
+        const el = document.createElement("div");
+        el.className = "izi-band-trail";
+        el.setAttribute("aria-hidden", "true");
+        el.style.width = (trailLen + 14) + "px";
+        band.parentElement.appendChild(el);
+        trailEls.push({el:el, offset:trailLen, w:trailLen, tail:true});
+        // EFEITO REVERSO: voltando o scroll a faixa anda pra ESQUERDA e a cauda
+        // aparece do lado DIREITO dela (espelhada), começando 14px por baixo da
+        // borda direita. Nunca aparece junto com a da esquerda (só uma direção
+        // por vez), então o custo de desenho não dobra.
+        const elR = document.createElement("div");
+        elR.className = "izi-band-trail-r";
+        elR.setAttribute("aria-hidden", "true");
+        elR.style.width = (trailLen + 14) + "px";
+        band.parentElement.appendChild(elR);
+        trailEls.push({el:elR, offset:-(bandW - 14), w:trailLen, tail:true, side:"r"});
+      } else if(trailMode === "2c" || trailMode === "2l"){
+        const n = trailMode === "2c" ? 3 : 5;
+        const step = trailMode === "2c" ? 100 : 190;
+        trailLen = n * step;
+        for(let k = 1; k <= n; k++){
+          const el = document.createElement("div");
+          el.className = "izi-band-echo";
+          el.setAttribute("aria-hidden", "true");
+          el.style.opacity = String([.55,.38,.24,.14,.07][k-1]);
+          band.parentElement.appendChild(el);
+          trailEls.push({el:el, offset:k * step, w:bandW});
+        }
+      }
+      trailEls.forEach(function(t){
+        // sem sobreposição com a faixa: 1px por baixo dela escurecia duas vezes
+        // e aparecia como uma linha vertical na emenda
+        t.el.style.left = (-t.offset) + "px"; // base: à esquerda da tela
+        gsap.set(t.el,{yPercent:-50,x:-bandW});      // fora da tela até a faixa entrar
+        // cauda nasce recolhida (scaleX 0, ancorada na borda direita = borda
+        // esquerda da faixa) e transparente
+        if(t.tail) gsap.set(t.el,{scaleX:0,opacity:0,transformOrigin:t.side === "r" ? "0% 50%" : "100% 50%"});
+      });
+      // O rastro acompanha a faixa e, nas CAUDAS, só existe enquanto a faixa
+      // está andando pra direita: comprimento (scaleX) e opacidade seguem a
+      // velocidade da faixa (px/s), suavizada — sobe rápido (τ .06s) e recolhe
+      // devagar (τ .25s) quando o scroll para. Voltando o scroll (faixa indo
+      // pra esquerda) não tem cauda. Precisa de ticker (não onUpdate do
+      // scrub): onUpdate só dispara quando o scroll muda, e o recolher depois
+      // que o scroll para tem que continuar rodando sozinho.
+      // Velocidade em que a cauda chega ao comprimento total: 2500 px/s da
+      // FAIXA (~1100 px/s de scroll, uma rolada firme de roda de mouse).
+      const TRAIL_FULL_SPEED = 2500;
+      if(trailTicker){ gsap.ticker.remove(trailTicker); trailTicker = null; }
+
+      // ===== EFEITOS EXTRAS (padrão: 3 e 4 ligados; ?efeito=3 | 4 | 34 | 0) =====
+      //   4 = desfoque de movimento horizontal no texto e na logo da faixa,
+      //       proporcional à velocidade (sensação de velocidade, sem cauda extra)
+      //   3 = rastro que altera a palavra: as letras do SIMPLES que a faixa
+      //       acabou de cobrir ficam escuras e voltam ao rosa ao longo da cauda
+      //       (usa background-clip:text com um degradê que segue a faixa)
+      const fxMode = qs.has("efeito") ? qs.get("efeito") : "34"; // padrão: 3 e 4 ligados; ?efeito=0 desliga
+      const fx3 = fxMode.indexOf("3") >= 0, fx4 = fxMode.indexOf("4") >= 0;
+      const MB_MAX = 9;      // fx4: desfoque horizontal máximo (stdDeviation, px)
+      const WORD_TL_MAX = 620; // fx3: comprimento máximo do rastro na palavra (px)
+      line.classList.toggle("izi-fx-word", fx3);
+      line.style.removeProperty("--bx"); line.style.removeProperty("--tl");
+      bandTextEl.style.filter = "";
+      let mbGauss = null;
+      if(fx4){
+        let svgF = document.getElementById("iziMotionBlurSvg");
+        if(!svgF){
+          svgF = document.createElementNS("http://www.w3.org/2000/svg","svg");
+          svgF.setAttribute("id","iziMotionBlurSvg");
+          svgF.setAttribute("width","0"); svgF.setAttribute("height","0");
+          svgF.setAttribute("aria-hidden","true");
+          svgF.style.cssText = "position:absolute;width:0;height:0;pointer-events:none";
+          svgF.innerHTML = '<filter id="iziMotionBlur" x="-60%" y="-20%" width="220%" height="140%" color-interpolation-filters="sRGB"><feGaussianBlur id="iziMotionBlurG" stdDeviation="0 0"/></filter>';
+          document.body.appendChild(svgF);
+        }
+        mbGauss = document.getElementById("iziMotionBlurG");
+      }
+      const lineLeft = line.getBoundingClientRect().left; // a palavra não anda na horizontal
+
+      if(trailEls.length || fx3 || fx4){
+        let lastLeft = null, lastT = performance.now(), s = 0, sr = 0; // s: faixa indo pra DIREITA (cauda à esquerda) | sr: indo pra ESQUERDA (cauda à direita)
+        trailTicker = function(){
+          const now = performance.now();
+          const dt = Math.max(1, now - lastT) / 1000;
+          lastT = now;
+          // posição real (na tela) da borda esquerda da faixa = xPercent*largura + x
+          const left = Math.round(gsap.getProperty(band,"xPercent")/100 * bandW + gsap.getProperty(band,"x"));
+          // SÓ existe rastro/desfoque/efeito na palavra enquanto o scroll está DENTRO
+          // do trecho da faixa (progress entre 0 e 1). Fora dele a faixa está
+          // parada fora da tela — mas um pulo de scroll (voltar ao topo, clicar no
+          // menu) faz a timeline "voar" de uma ponta à outra em 1 quadro: a
+          // velocidade dispara e as caudas (position:fixed, visíveis em qualquer
+          // seção) apareciam por instantes em outras partes da página. Fora do
+          // trecho zera tudo NA HORA e descarta lastLeft (senão o primeiro quadro
+          // dentro do trecho mediria a velocidade contra uma posição antiga).
+          const stF = freezeTween && freezeTween.scrollTrigger;
+          const inRange = !!stF && stF.progress > 0 && stF.progress < 1;
+          if(!inRange){
+            s = 0; sr = 0; lastLeft = null;
+          } else if(lastLeft !== null){
+            const v = (left - lastLeft) / dt; // px/s, positivo = pra direita
+            const target = trailMode === "1f" ? 1 : Math.min(1, Math.max(0, v) / TRAIL_FULL_SPEED);
+            const targetR = trailMode === "1r" ? 1 : Math.min(1, Math.max(0, -v) / TRAIL_FULL_SPEED);
+            s += (target - s) * (1 - Math.exp(-dt / (target > s ? .06 : .25)));
+            sr += (targetR - sr) * (1 - Math.exp(-dt / (targetR > sr ? .06 : .25)));
+            if(s < .002) s = 0;
+            if(sr < .002) sr = 0;
+          }
+          if(inRange) lastLeft = left;
+          trailEls.forEach(function(t){
+            if(t.tail){
+              const k = t.side === "r" ? sr : s;
+              gsap.set(t.el,{x:left,scaleX:k,opacity:Math.min(1,k*1.6)});
+            }
+            else gsap.set(t.el,{x:left});
+          });
+          if(fx4){
+            // só indo pra DIREITA: no reverso (voltando o scroll) fica só a cauda de vidro
+            if(s > .01){
+              mbGauss.setAttribute("stdDeviation", (s * MB_MAX).toFixed(2) + " 0");
+              bandTextEl.style.filter = "url(#iziMotionBlur)";
+            } else bandTextEl.style.filter = "";
+          }
+          if(fx3){
+            line.style.setProperty("--bx", (left - lineLeft) + "px");
+            line.style.setProperty("--tl", (s * WORD_TL_MAX).toFixed(1) + "px");
+          }
+        };
+        gsap.ticker.add(trailTicker);
+      }
       // Etapas do travamento, em px de scroll, uma depois da outra:
       //   desaceleração (dec.W) → faixa ENTRA → letras (onda) → segura →
       //   faixa ATRAVESSA a tela pra direita e sai. Ajustar aqui.
@@ -768,7 +921,10 @@ addEventListener("resize",()=>{
       // 4) travessia: a faixa (com texto e logo dentro) desliza pra direita
       // e sai da tela — linear, 1:1 com o scroll, sem fade. x em px (o
       // xPercent:0 acima é a posição de repouso; aqui soma o deslocamento)
-      .to(band,{x:vw,ease:"none",duration:f(TRAVERSE_PX)});
+      // x em pixels INTEIROS (snap): faixa e cauda são duas camadas; numa posição
+      // fracionada as duas bordas se encontram em meio pixel cada, e a soma de
+      // duas coberturas parciais deixa um fio de fundo aparecendo na emenda
+      .to(band,{x:vw + trailLen,ease:"none",duration:f(TRAVERSE_PX),snap:{x:1}}); // + trailLen: o rastro também precisa sair da tela
       // a zone mudou de altura: recalcula os triggers das seções seguintes
       ScrollTrigger.refresh();
       setupHeaderContrast();
@@ -841,4 +997,36 @@ addEventListener("resize",()=>{
       }, 500);
     });
   }
+})();
+
+/* ===== Medidor de desempenho (?fps=1) — só pra teste ===== */
+/* Painel fixo no canto inferior esquerdo com: FPS atual, FPS mínimo e pior
+   quadro (ms) dos últimos 2 segundos, e quantos quadros passaram de 20ms
+   (perdidos: acima de ~16,7ms o navegador não fecha o quadro a 60fps).
+   Roda um requestAnimationFrame próprio e só existe com ?fps=1. */
+(function(){
+  if(new URLSearchParams(location.search).get("fps") !== "1") return;
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;left:10px;bottom:10px;z-index:99999;padding:8px 10px;background:rgba(0,0,0,.82);color:#7CFF9B;font:12px/1.4 ui-monospace,Consolas,monospace;border-radius:6px;pointer-events:none;white-space:pre";
+  box.textContent = "FPS: …";
+  document.body.appendChild(box);
+  const frames = []; // {t, dt}
+  let last = performance.now();
+  function tick(now){
+    const dt = now - last; last = now;
+    frames.push({t: now, dt: dt});
+    while(frames.length && now - frames[0].t > 2000) frames.shift();
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  setInterval(function(){
+    if(frames.length < 3) return;
+    const dts = frames.map(function(f){ return f.dt; });
+    const worst = Math.max.apply(null, dts);
+    const avg = dts.reduce(function(a,b){ return a+b; }, 0) / dts.length;
+    const slow = dts.filter(function(d){ return d > 20; }).length;
+    const fps = 1000 / avg, fpsMin = 1000 / worst;
+    box.style.color = fpsMin >= 50 ? "#7CFF9B" : (fpsMin >= 30 ? "#FFD84D" : "#FF6B6B");
+    box.textContent = "FPS médio: " + fps.toFixed(0) + "\nFPS mínimo (2s): " + fpsMin.toFixed(0) + "\nPior quadro: " + worst.toFixed(1) + " ms\nQuadros >20ms: " + slow + " de " + dts.length;
+  }, 250);
 })();
