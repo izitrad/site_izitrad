@@ -137,7 +137,10 @@ function setupDesktop(){
         clearProps:"filter",
         ease:"power3.out",
         scrollTrigger:{
-          start:()=>`-=${viewportH*.8}`,
+          /* "top 80%" = mesmo ponto que o antigo `-=${viewportH*.8}`, mas sem
+             depender da posição de scroll no momento do refresh (o "-=" fazia
+             o start deslocar quando a página recalculava já rolada). */
+          start:"top 80%",
           trigger:principle,
           toggleActions:"play reverse play reverse"
         }

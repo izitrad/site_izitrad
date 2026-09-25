@@ -28,10 +28,10 @@
 :root{
  --color-white:#111;--color-downy:#00FF66;--color-midnight-blue:#fbfbfa;
  --font-f-twk-lausanne-250:"TWKLausanne-250";--font-f-twk-lausanne-200:"TWKLausanne-200";--font-f-neo-sans-pro-medium:"NeoSansPro-Medium";
- --font-s-heading-l:5.5555555556vw;--font-lh-heading-l:5.5555555556vw;--font-ls-heading-l:-.025em;
+ --font-s-heading-l:5.5555555556vw;--font-lh-heading-l:5.5555555556vw;--font-ls-heading-l:-.030em;
  --font-s-body-r:1.3888888889vw;--font-lh-body-r:1.9444444444vw;--font-ls-body-r:0em;
  --font-s-body-xs:.9722222222vw;--font-lh-body-xs:1.3888888889vw;--font-ls-body-xs:.02em;
- --font-s-title-r:.6944444444vw;--font-lh-title-r:1.0416666667vw;--font-ls-title-r:.16em;
+ --font-s-title-r:.6944444444vw;--font-lh-title-r:1.0416666667vw;--font-ls-title-r:.14em;
  --app-deg:180deg;
 }
 .guiding-principles{color:var(--color-white);overflow:hidden;position:relative;background:#fbfbfa;isolation:isolate}
@@ -61,7 +61,7 @@
 .heading div{white-space:nowrap}
 .heading strong{font-weight:400}
 /* Trechos em negrito dos compromissos: mais escuros que o texto corrido */
-.paragraph-s strong{font-weight:700;color:#111;-webkit-text-stroke:.03em currentColor}
+.paragraph-s strong{font-weight:700;color:#111}
 .paragraph{font-family:var(--font-f-twk-lausanne-250);font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
 .number{
  aspect-ratio:320/470;
@@ -73,8 +73,8 @@
 .principle:not(:last-child){margin-bottom:4.1666666667vw}
 .title{align-items:center;display:inline-flex;visibility:hidden}
 .dot{background:var(--color-downy);border-radius:100%;height:.3472222222vw;margin-right:.625vw;width:.3472222222vw}
-.label{font-family:var(--font-f-neo-sans-pro-medium);font-size:var(--font-s-title-r);font-weight:400;letter-spacing:var(--font-ls-title-r);line-height:var(--font-lh-title-r);text-transform:uppercase}
-.paragraph-s{color:rgba(17,17,17,.68);font-family:var(--font-f-twk-lausanne-250);font-size:var(--font-s-body-xs);font-weight:400;letter-spacing:var(--font-ls-body-xs);line-height:var(--font-lh-body-xs);margin-top:1.3888888889vw;visibility:hidden}
+.label{font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-title-r);font-weight:700;letter-spacing:var(--font-ls-title-r);line-height:var(--font-lh-title-r);text-transform:uppercase;white-space:nowrap}
+.paragraph-s{color:rgba(17,17,17,.68);font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-body-xs);font-weight:400;letter-spacing:var(--font-ls-body-xs);line-height:var(--font-lh-body-xs);margin-top:1.3888888889vw;visibility:hidden}
 .background{align-items:center;display:flex;inset:0;justify-content:center;position:absolute;z-index:0}
 .divider-svg{-webkit-mask-image:linear-gradient(180deg,transparent 15%,#000 50%,transparent 90%);mask-image:linear-gradient(180deg,transparent 15%,#000 50%,transparent 90%);position:absolute;height:122.3611111111vw;padding:0 .6944444444vw;top:-2.0833333333vw;transform:translate(-4.1666666667vw);width:8.0555555556vw}
 .divider-svg path{stroke-width:1}
@@ -102,7 +102,7 @@
  .principle:not(:last-child){padding-bottom:10.6666666667vw;margin-bottom:0}
  .title{visibility:visible}
  .dot{height:1.3333333333vw;margin-right:2.4vw;width:1.3333333333vw}
- .label{font-size:var(--font-s-title-r);line-height:var(--font-lh-title-r);letter-spacing:var(--font-ls-title-r)}
+ .label{font-size:var(--font-s-title-r);line-height:var(--font-lh-title-r);letter-spacing:var(--font-ls-title-r);white-space:normal}
  .paragraph-s{font-size:var(--font-s-body-s);line-height:var(--font-lh-body-s);letter-spacing:var(--font-ls-body-s);margin-top:5.3333333333vw;width:73.3333333333vw;visibility:visible}
  .background{display:none}
 }
