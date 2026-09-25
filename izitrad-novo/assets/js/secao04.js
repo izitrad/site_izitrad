@@ -175,7 +175,35 @@ function setupDesktop(){
   );
 }
 
+/* Logo "izitrad" inline nos parágrafos (.izi-inline-logo): reaproveita os 7
+   <path> da logo do hero (i z i T r a d), sem o triângulo — ele aumentaria a
+   caixa e a altura da linha. viewBox: x 96.5→1142.2, y 329.7→588.6. Se o
+   SVG do hero não existir, fica o texto "IZITRAD". */
+function setupInlineLogos(){
+  const src = Array.from(document.querySelectorAll(".logo__img path"));
+  if(src.length !== 7) return;
+  const NS = "http://www.w3.org/2000/svg";
+  document.querySelectorAll(".izi-inline-logo").forEach(function(el){
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "96.5 329.7 1045.7 258.9");
+    svg.setAttribute("aria-hidden", "true");
+    src.forEach(function(s, i){
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("d", s.getAttribute("d"));
+      const color = i === 1 ? "#FF0099" : "#111";
+      p.setAttribute("fill", color);
+      p.setAttribute("stroke", color);
+      p.setAttribute("stroke-width", "3");
+      p.setAttribute("stroke-miterlimit", "10");
+      svg.appendChild(p);
+    });
+    el.textContent = "";
+    el.appendChild(svg);
+  });
+}
+
 setupTitleDots();
+setupInlineLogos();
 
 document.fonts.ready.then(()=>{
   setupDesktop();

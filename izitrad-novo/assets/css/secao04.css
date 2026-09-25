@@ -62,7 +62,15 @@
 .heading strong{font-weight:400}
 /* Trechos em negrito dos compromissos: mais escuros que o texto corrido */
 .paragraph-s strong{font-weight:700;color:#111}
-.paragraph{font-family:var(--font-f-twk-lausanne-250);font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
+.paragraph{font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
+/* Logo "izitrad" (só as letras, sem o triângulo) no lugar do nome nos
+   parágrafos. Altura = altura das maiúsculas (.7031em de DM Sans) + o traço
+   de 3 do viewBox (258.9/255.9); base na linha de base do texto. Em em, então
+   acompanha o tamanho da fonte e não altera a altura da linha. */
+.izi-inline-logo{display:inline-block;height:.75em;width:auto;vertical-align:-.004em;overflow:visible}
+/* nos parágrafos dos compromissos (fonte 18.67px): 15px = .8036em */
+.paragraph-s .izi-inline-logo{height:.8036em}
+.izi-inline-logo svg{display:block;height:100%;width:auto;overflow:visible}
 .number{
  aspect-ratio:320/470;
  background:linear-gradient(var(--app-deg),#fff 0,#82c9d8 100%);
