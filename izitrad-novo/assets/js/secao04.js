@@ -789,6 +789,9 @@ addEventListener("resize",()=>{
         exitTween = null;
         simpleTitleEl.style.opacity = "";
         simpleTitleEl.style.filter = "";
+        Array.from(line.querySelectorAll(".izi-sx-ch")).forEach(function(c){
+          c.style.opacity = ""; c.style.filter = "";
+        });
       }
       gsap.set(band,{xPercent:-100,opacity:0});
       // Efeito copiado da pergunta "E como é fazer isso com a izi?" (ver
@@ -1020,16 +1023,80 @@ addEventListener("resize",()=>{
       if(qs.get("saida") !== "0"){
         const EXIT_BLUR = 24 * window.innerWidth / 1440;
         const EXIT_PX = vh * .85; // termina pouco antes da palavra sair da tela
+        const exitOld = qs.get("saida") === "antiga";
+        const EXIT_LEAD = exitOld ? 0 : TRAVERSE_PX * (1 - vw / (vw + trailLen)); // px de rolagem que o sumiço começa ANTES do fim da trava (0 sem cauda e na versão antiga)
         // Proxy (p de 0 a 1) e escrita manual de opacity/filter no onUpdate: tweenar
         // "filter" direto pelo GSAP não interpolava de forma confiável quando a
         // 1ª renderização vinha de um salto de scroll (opacity andava, filter
         // ficava em blur(0px)). Assim o estado é sempre função de p, inclusive
         // na volta (p=0 limpa os estilos).
         const exitProxy = {p:0};
+        // ===== SAÍDA LETRA POR LETRA (padrão) — ?saida=antiga volta à versão do último commit =====
+        // Cada letra desfoca e some, da DIREITA pra ESQUERDA (S,E,L,P,M,I,S),
+        // com a mesma onda da pergunta (cada uma leva 5x o intervalo entre uma e a
+        // próxima: duration .2 / stagger total .32). Começa no mesmo ponto de hoje
+        // (faixa acabou de sair) e a subida da palavra não muda: só opacity/filter
+        // das letras. Duas armadilhas:
+        //  - as letras ficam DENTRO da linha, que tem scaleY (F): um blur() comum
+        //    seria esticado F vezes na vertical. Por isso o desfoque é um filtro
+        //    SVG com stdDeviation "s s/F" (depois do scaleY fica s x s).
+        //  - o efeito 3 usa background-clip:text na linha (texto transparente):
+        //    filhos com filter/opacity ficam FORA desse recorte e sumiriam. Como a
+        //    faixa já saiu, a classe do efeito 3 é tirada durante a saída (a cor
+        //    volta a ser o rosa normal) e devolvida quando p volta a 0.
+        // ?saida=antiga = a do último commit (palavra inteira, começa só no fim da trava)
+        const letterMode = qs.get("saida") !== "antiga";
+        let exitChars = [], exitGauss = [];
+        if(letterMode){
+          if(!line.querySelector(".izi-sx-ch")){
+            const txt = line.textContent;
+            line.textContent = "";
+            Array.from(txt).forEach(function(chr){
+              const sp = document.createElement("span");
+              sp.className = "izi-sx-ch";
+              sp.textContent = chr;
+              line.appendChild(sp);
+            });
+          }
+          exitChars = Array.from(line.querySelectorAll(".izi-sx-ch")).reverse(); // 0 = última letra (direita)
+          let svgX = document.getElementById("iziExitBlurSvg");
+          if(svgX) svgX.remove();
+          svgX = document.createElementNS("http://www.w3.org/2000/svg","svg");
+          svgX.setAttribute("id","iziExitBlurSvg");
+          svgX.setAttribute("width","0"); svgX.setAttribute("height","0");
+          svgX.setAttribute("aria-hidden","true");
+          svgX.style.cssText = "position:absolute;width:0;height:0;pointer-events:none";
+          svgX.innerHTML = exitChars.map(function(_, k){
+            return '<filter id="iziExitBlur' + k + '" x="-60%" y="-30%" width="220%" height="160%" color-interpolation-filters="sRGB"><feGaussianBlur id="iziExitBlurG' + k + '" stdDeviation="0 0"/></filter>';
+          }).join("");
+          document.body.appendChild(svgX);
+          exitGauss = exitChars.map(function(_, k){ return document.getElementById("iziExitBlurG" + k); });
+        }
+        const EX_DUR = .2 / .52, EX_SPREAD = .32 / .52; // fração da janela: cada letra dura EX_DUR; a última começa em EX_SPREAD
         exitTween = gsap.to(exitProxy,{
           p:1,ease:"none",
           onUpdate:function(){
             const p = exitProxy.p;
+            if(letterMode){
+              const n = exitChars.length;
+              const F = Math.max(1, dec.F);
+              if(p < .001){
+                if(fx3) line.classList.add("izi-fx-word");
+                exitChars.forEach(function(c){ c.style.opacity = ""; c.style.filter = ""; });
+                return;
+              }
+              line.classList.remove("izi-fx-word");
+              exitChars.forEach(function(c, k){
+                const start = n > 1 ? k / (n - 1) * EX_SPREAD : 0;
+                const q = Math.min(1, Math.max(0, (p - start) / EX_DUR));
+                if(q <= 0){ c.style.opacity = ""; c.style.filter = ""; return; }
+                c.style.opacity = String(1 - q);
+                const s = EXIT_BLUR * q;
+                exitGauss[k].setAttribute("stdDeviation", s.toFixed(2) + " " + (s / F).toFixed(2));
+                c.style.filter = "url(#iziExitBlur" + k + ")";
+              });
+              return;
+            }
             if(p < .001){
               simpleTitleEl.style.opacity = "";
               simpleTitleEl.style.filter = "";
@@ -1040,7 +1107,15 @@ addEventListener("resize",()=>{
           },
           scrollTrigger:{
             trigger:line,
-            start:() => stretchST.end + totalPx,
+            // EXIT_LEAD: o sumiço começa quando o CORPO da faixa sai da tela (borda
+            // esquerda dela chega em vw), não no fim da travessia — a faixa anda
+            // vw + trailLen pra a cauda também sair, então o corpo sai com a
+            // fração vw/(vw+trailLen) da travessia e sobrava um vão (~1/3 da
+            // travessia) até o sumiço começar. Só o COMEÇO antecipa: o fim fica
+            // onde estava (senão a palavra sumia ~EXIT_LEAD px antes de sair da
+            // tela), então a janela fica EXIT_LEAD px mais longa e a onda de
+            // letras, mais lenta. (?saida=antiga não antecipa.)
+            start:() => stretchST.end + totalPx - EXIT_LEAD,
             end:() => stretchST.end + totalPx + EXIT_PX,
             scrub:true
           }});
