@@ -993,3 +993,4 @@
 .izi-sec04-dark .izi-inline-logo path:not(:nth-child(2)){fill:#fff;stroke:#fff}
 .izi-sec04-dark .izi-fx-word{--alt:#5c0038}
 .izi-sec04-dark .divider-svg path:first-child,.izi-sec04-dark .divider-svg path:last-child{color:#fff}
+.izi-sec04-dark .divider-svg path:first-child{opacity:.5}

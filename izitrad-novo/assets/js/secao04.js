@@ -193,10 +193,17 @@ function setupDesktop(){
 
   /* Exact divider loop from HomeGuidingPrinciples. */
   drawTween = gsap.timeline({paused:false,repeat:-1});
+  /* Segmento que percorre a linha: 50% do comprimento no original (clarão
+     largo). No fundo preto (?fundo=preto) vira um segmento curto de 20% — a
+     "faísca" que corre (a mesma proporção que a referência usa na linha do
+     hero: "100% 120%" → "0% 20%"), na mesma velocidade (percorre 100% em 5 s). */
+  // (pelo parâmetro, não pela classe .izi-sec04-dark: esta função roda antes de
+  // os módulos do fundo marcarem a seção. Ao tornar o preto o padrão, trocar.)
+  const darkBg = ["preto","meu"].indexOf(new URLSearchParams(location.search).get("fundo")) >= 0;
   drawTween.fromTo(
     dividerPath,
-    {drawSVG:"100% 150%"},
-    {drawSVG:"0% 50%",duration:5,ease:"none"}
+    {drawSVG:darkBg ? "100% 120%" : "100% 150%"},
+    {drawSVG:darkBg ? "0% 20%" : "0% 50%",duration:5,ease:"none"}
   );
 }
 
