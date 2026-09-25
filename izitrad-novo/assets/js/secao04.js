@@ -149,13 +149,38 @@ function setupDesktop(){
     desktopAnimations.push(tween);
   });
 
-  /* Exact number scrub. */
+  /* Number scrub. Mesma lógica da referência (y de 0 até alturaDosPrincípios
+     − alturaDoNúmero, start "top top", end "bottom center"), com uma
+     diferença consciente na CURVA: a referência usa power1.inOut, cujo ponto
+     mais lento (meio da seção) tem velocidade 2·Y/D (Y = deslocamento, D =
+     distância de rolagem). Com o "6" deles (636px de altura) isso dá ~0,82
+     — o número sobe devagar. A nossa logo é baixa (~323px), Y fica maior e a
+     velocidade passa de 1: a logo ficava parada. Aqui a curva mistura linear
+     e power1.inOut (mix = a·p + (1−a)·inOut(p)); a velocidade no meio é
+     (Y/D)·(2−a), então "a" é escolhido pra dar ~0,82 no meio, mantendo o
+     deslocamento final Y original (a logo termina no mesmo ponto).
+     Voltar ao original: ease:"power1.inOut" e sem a conta de "a". */
+  /* EXIT_RISE: a logo termina mais alta que "alturaDosPrincípios − alturaDaLogo"
+     (que a deixava com a base ~.17·altura-da-tela ainda visível no fim, saindo
+     só junto com a página e parecendo arrastada). Tirar .17·altura-da-tela do
+     deslocamento a faz sair da tela por cima até o fim da seção. */
+  const EXIT_RISE = .10;
+  const numberY = principles.clientHeight-number.clientHeight-viewportH*EXIT_RISE;
+  const scrollDist = Math.max(1, section.offsetHeight-viewportH/2);
+  /* NUMBER_MID_SPEED: velocidade do deslocamento (y) no meio da seção, em
+     fração da rolagem — a logo sobe (1 − isso) da velocidade do texto. A
+     referência tem ~0,82 (o "6" sobe a 18% do texto), mas na nossa, com uma
+     logo baixa, isso deixava os parágrafos passando rápido demais por ela.
+     0,5 ≈ curva linear (a logo sobe à metade da velocidade do texto). */
+  const NUMBER_MID_SPEED = .5;
+  const mixA = Math.min(1, Math.max(0, 2-NUMBER_MID_SPEED*scrollDist/Math.max(1,numberY)));
+  const numberEase = p => mixA*p + (1-mixA)*(p<.5 ? 2*p*p : 1-2*(1-p)*(1-p));
   const numberTween = gsap.fromTo(
     number,
     {y:0},
     {
-      y:principles.clientHeight-number.clientHeight,
-      ease:"power1.inOut",
+      y:numberY,
+      ease:numberEase,
       scrollTrigger:{
         scrub:true,
         start:"top top",
