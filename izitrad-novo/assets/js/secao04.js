@@ -1072,7 +1072,12 @@ addEventListener("resize",()=>{
           document.body.appendChild(svgX);
           exitGauss = exitChars.map(function(_, k){ return document.getElementById("iziExitBlurG" + k); });
         }
-        const EX_DUR = .2 / .52, EX_SPREAD = .32 / .52; // fração da janela: cada letra dura EX_DUR; a última começa em EX_SPREAD
+        // fração da janela: cada letra dura EX_DUR; a última começa em EX_SPREAD
+        // (EX_DUR + EX_SPREAD = 1: a última termina junto com a janela). Era
+        // .2/.52 e .32/.52 (mesma proporção da pergunta: 38,5% / 61,5%); agora
+        // cada letra apaga mais devagar, começo e fim da janela iguais.
+        // (Testado 50% x 60%: ficou 60% — a última letra começa em 40%.)
+        const EX_DUR = .6, EX_SPREAD = 1 - EX_DUR;
         exitTween = gsap.to(exitProxy,{
           p:1,ease:"none",
           onUpdate:function(){
