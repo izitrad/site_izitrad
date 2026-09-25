@@ -534,6 +534,16 @@ addEventListener("resize",()=>{
     // tela. Se a medição falhar, cai no cálculo antigo.
     const TOP_MARGIN = 30;
 
+    // Altura de layout ORIGINAL da linha (sem o padding-bottom extra do efeito
+    // 3, ver .izi-fx-word no CSS). O padding faz line.offsetHeight crescer, mas
+    // a margem negativa (com o título em display:flow-root) devolve a altura ao
+    // TÍTULO — então a altura do título é sempre a altura original, com ou sem
+    // o efeito, e é ela que todo cálculo do "estica" usa. (Descontar o padding
+    // de line.offsetHeight dava erro de ~0,5px por arredondamento.)
+    function lineBoxH(){
+      return line.parentElement.offsetHeight;
+    }
+
     function measureInkHeight(){
       const cs = getComputedStyle(line);
       const fontSizeApplied = parseFloat(cs.fontSize);
@@ -564,7 +574,7 @@ addEventListener("resize",()=>{
     // métricas da fonte + meia-entrelinha (line-height .9 < ascent+descent).
     function measureCapExtent(){
       const fs = parseFloat(getComputedStyle(line).fontSize);
-      const h = line.offsetHeight;
+      const h = lineBoxH();
       if(!fs || !h) return 0;
       const ctx = document.createElement("canvas").getContext("2d");
       ctx.font = "normal " + fs + 'px "Steelfish Eb"';
@@ -607,7 +617,7 @@ addEventListener("resize",()=>{
         simplesStretchTween.scrollTrigger.kill();
         simplesStretchTween.kill();
       }
-      const h = line.offsetHeight;
+      const h = lineBoxH();
       let W = window.innerHeight * DECEL_VH;
       let D = W / 2;
       let F1 = h ? FINAL_STRETCH - D / h : FINAL_STRETCH;
@@ -619,7 +629,7 @@ addEventListener("resize",()=>{
         scrollTrigger:{
           trigger:line,
           start:`top bottom-=${BOTTOM_MARGIN}px`,
-          end:function(){ return `top bottom-=${(line.offsetHeight * F1) + BOTTOM_MARGIN}px`; },
+          end:function(){ return `top bottom-=${(lineBoxH() * F1) + BOTTOM_MARGIN}px`; },
           scrub:true
         }
       });
@@ -887,7 +897,7 @@ addEventListener("resize",()=>{
       const decFrac = f(dec.W); // parte da timeline gasta na desaceleração
 
       // layout do sticky (ver comentário acima)
-      const h = line.offsetHeight;
+      const h = lineBoxH();
       const titleH = simpleTitleEl.offsetHeight;
       simpleTitleEl.style.top = (vh - BOTTOM_MARGIN - dec.F1 * h) + "px";
       const baseMin = (window.innerWidth <= 700 ? 1.10 : 1.05) * vh; // min-height original da zone (CSS)

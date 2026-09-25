@@ -654,6 +654,10 @@
    ainda em movimento). Sticky é resolvido pelo compositor, sem troca. */
 .izi-pre04-simple-title{
   position:sticky;
+  /* flow-root: a margem negativa do pé do "S" (.izi-fx-word) fica DENTRO do
+     título e encolhe a altura dele de volta ao original; sem isso ela
+     "vaza" pra fora (margin collapsing) e o título ficava .2em mais alto */
+  display:flow-root;
 }
 /* Faixa: position:fixed relativo à TELA. Fica FORA da .izi-pre04-simple-
    zone (irmã dela, direto na section) porque a zone tem container-type
@@ -928,6 +932,14 @@
    comprimento do rastro (ambos escritos por JS a cada frame). Com
    --tl:0 (faixa parada) o degradê é rosa liso. */
 .izi-fx-word{
+  /* Pé redondo dos "S": com background-clip:text o fundo só pinta DENTRO da
+     caixa da linha, e o "S" desce abaixo dela (line-height .9) — a base dos
+     dois "S" saía cortada em reto. padding-bottom aumenta a área de pintura
+     e a margem negativa de mesmo valor devolve a altura ao layout (o título
+     e tudo em volta ficam exatamente onde estavam; o padding também escala
+     com o scaleY, só que isso é visual). */
+  padding-bottom:.2em;
+  margin-bottom:-.2em;
   --pink:#FF0099;
   --alt:#26001a;
   --bx:-9999px;
