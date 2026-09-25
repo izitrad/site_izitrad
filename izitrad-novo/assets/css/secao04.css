@@ -62,7 +62,7 @@
 .heading strong{font-weight:400}
 /* Trechos em negrito dos compromissos: mais escuros que o texto corrido */
 .paragraph-s strong{font-weight:700;color:#111}
-.paragraph{font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
+.paragraph{white-space:nowrap;font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
 /* Logo "izitrad" (só as letras, sem o triângulo) no lugar do nome nos
    parágrafos. Altura = altura das maiúsculas (.7031em de DM Sans) + o traço
    de 3 do viewBox (258.9/255.9); base na linha de base do texto. Em em, então
@@ -95,6 +95,8 @@
  .guiding-principles::before{animation:none;transform:none}
 }
 @media(max-width:600px){
+ .paragraph{white-space:normal}
+ .paragraph br{display:none}
  .heading div{white-space:normal}
  :root{
   --font-s-m-heading-s:12.8vw;--font-lh-m-heading-s:12.8vw;--font-ls-m-heading-s:-.0229166667em;
@@ -991,7 +993,7 @@
 .izi-sec04-dark .paragraph-s strong{color:#FF0099}
 .izi-sec04-dark .wm{fill:#fff;stroke:#fff}
 .izi-sec04-dark .izi-inline-logo path:not(:nth-child(2)){fill:#fff;stroke:#fff}
-.izi-sec04-dark .izi-fx-word{--alt:#5c0038}
+.izi-sec04-dark .izi-fx-word{--alt:#fff} /* rastro da faixa na palavra (efeito 3): no preto vira BRANCO (era escurecer; #26001a / #5c0038 no escuro) */
 .izi-sec04-dark .divider-svg path:first-child,.izi-sec04-dark .divider-svg path:last-child{color:#fff}
 .izi-sec04-dark .divider-svg path:first-child{opacity:.5}
 .izi-sec04-dark .izi-pre04-kicker{color:#FF0099}
@@ -1031,3 +1033,61 @@
    vence). */
 .izi-sec04-dark .izi-band-logo path{fill:#fff;stroke:#fff}
 .izi-sec04-dark .izi-band-logo path:nth-child(2){fill:#00FF66;stroke:#00FF66}
+/* Cantos da faixa com fade (vidro claro): máscara de 10px nas bordas esquerda
+   e direita e 6px em cima e embaixo (interseção das duas), então os cantos
+   somem suavemente em vez de terminarem retos. Efeito colateral: a máscara
+   também recorta a sombra externa (box-shadow) — a faixa fica sem sombra.
+   A cauda à esquerda continua entrando 14px por baixo da faixa; com a borda
+   esquerda esmaecida a emenda fica ainda mais suave. */
+.izi-sec04-dark .izi-pre04-simple-band,
+.izi-sec04-dark .izi-band-echo{
+  -webkit-mask-image:
+    linear-gradient(to right,transparent 0,#000 10px,#000 calc(100% - 10px),transparent 100%),
+    linear-gradient(to bottom,transparent 0,#000 6px,#000 calc(100% - 6px),transparent 100%);
+  mask-image:
+    linear-gradient(to right,transparent 0,#000 10px,#000 calc(100% - 10px),transparent 100%),
+    linear-gradient(to bottom,transparent 0,#000 6px,#000 calc(100% - 6px),transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-composite:intersect;
+}
+/* Junção do rastro (efeito 3) com a faixa, no vidro claro: o degradê da palavra
+   voltava ao rosa num corte seco em --bx (a borda esquerda da faixa) e o vidro
+   opaco escuro escondia isso; com o vidro claro e as pontas esmaecidas (10px) o
+   corte aparecia. Agora o tom claro (--alt) volta ao rosa numa RAMPA de
+   min(12px, --tl) depois de --bx — a mesma largura do fade da faixa (10px), que
+   é onde o vidro entra: rastro e vidro esmaecem juntos, sem corte.
+   Com --tl:0 (faixa parada) o min() dá 0 e nada muda. */
+.izi-sec04-dark .izi-fx-word{
+  background-image:linear-gradient(to right,
+    var(--pink) 0,
+    var(--pink) calc(var(--bx) - var(--tl)),
+    var(--alt) calc(var(--bx) - 1px),
+    var(--pink) calc(var(--bx) + min(12px, var(--tl))));
+}
+/* Fade do rastro de vidro (cauda) igual ao da faixa (vidro claro): a faixa tem
+   máscara de 10px nas laterais e 6px em cima/embaixo; a cauda era um retângulo de
+   bordas retas em cima e embaixo. Agora a máscara da cauda é a INTERSEÇÃO do
+   fade horizontal dela (comprimento) com o mesmo fade vertical de 6px. Fade
+   cruzado na emenda: a cauda entra 10px por baixo da faixa (OV no secao04.js) e
+   esmaece nos mesmos 10px, em sentido oposto ao da borda esquerda da faixa. */
+.izi-sec04-dark .izi-band-trail{
+  -webkit-mask-image:
+    linear-gradient(to left,transparent 0,#000 10px,rgba(0,0,0,.55) calc(10px + 40%),transparent 100%),
+    linear-gradient(to bottom,transparent 0,#000 6px,#000 calc(100% - 6px),transparent 100%);
+  mask-image:
+    linear-gradient(to left,transparent 0,#000 10px,rgba(0,0,0,.55) calc(10px + 40%),transparent 100%),
+    linear-gradient(to bottom,transparent 0,#000 6px,#000 calc(100% - 6px),transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-composite:intersect;
+}
+.izi-sec04-dark .izi-band-trail-r{
+  -webkit-mask-image:
+    linear-gradient(to right,transparent 0,#000 10px,rgba(0,0,0,.55) calc(10px + 40%),transparent 100%),
+    linear-gradient(to bottom,transparent 0,#000 6px,#000 calc(100% - 6px),transparent 100%);
+  mask-image:
+    linear-gradient(to right,transparent 0,#000 10px,rgba(0,0,0,.55) calc(10px + 40%),transparent 100%),
+    linear-gradient(to bottom,transparent 0,#000 6px,#000 calc(100% - 6px),transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-composite:intersect;
+}
+.izi-sec04-dark .heading strong{color:#FF0099} /* "simples" do título "E por trás do simples?" no rosa da logo */

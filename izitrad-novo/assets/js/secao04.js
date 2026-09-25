@@ -826,6 +826,13 @@ addEventListener("resize",()=>{
       Array.from(document.querySelectorAll(".izi-band-trail,.izi-band-trail-r,.izi-band-echo")).forEach(function(n){ n.remove(); });
       const qs = new URLSearchParams(location.search);
       const trailMode = qs.get("rastro") || "1l"; // padrão: cauda longa (escolhida); ?rastro=none desliga
+      // OV: quantos px a cauda entra POR BAIXO da faixa. 14 no fundo claro. No
+      // preto a borda da faixa esmaece em 20px (máscara), então a cauda entra
+      // 20 e esmaece na mesma largura em sentido oposto (fade cruzado): sem vão
+      // nem soma de transparências na junção. (Também no CSS: .izi-sec04-dark
+      // .izi-band-trail{mask-image ... 10px}.) Pelo parâmetro, não pela classe:
+      // esta função roda antes de os módulos do fundo marcarem a seção.
+      const OV = ["preto","meu"].indexOf(qs.get("fundo")) >= 0 ? 10 : 14;
       const bandW = band.offsetWidth;
       let trailEls = [];   // {el, offset}: offset = quanto o elemento fica ATRÁS da borda esquerda da faixa
       let trailLen = 0;    // comprimento total do rastro (a travessia precisa ir até vw + trailLen pra ele sair da tela)
@@ -839,7 +846,7 @@ addEventListener("resize",()=>{
         const el = document.createElement("div");
         el.className = "izi-band-trail";
         el.setAttribute("aria-hidden", "true");
-        el.style.width = (trailLen + 14) + "px";
+        el.style.width = (trailLen + OV) + "px";
         band.parentElement.appendChild(el);
         trailEls.push({el:el, offset:trailLen, w:trailLen, tail:true});
         // EFEITO REVERSO: voltando o scroll a faixa anda pra ESQUERDA e a cauda
@@ -849,9 +856,9 @@ addEventListener("resize",()=>{
         const elR = document.createElement("div");
         elR.className = "izi-band-trail-r";
         elR.setAttribute("aria-hidden", "true");
-        elR.style.width = (trailLen + 14) + "px";
+        elR.style.width = (trailLen + OV) + "px";
         band.parentElement.appendChild(elR);
-        trailEls.push({el:elR, offset:-(bandW - 14), w:trailLen, tail:true, side:"r"});
+        trailEls.push({el:elR, offset:-(bandW - OV), w:trailLen, tail:true, side:"r"});
       } else if(trailMode === "2c" || trailMode === "2l"){
         const n = trailMode === "2c" ? 3 : 5;
         const step = trailMode === "2c" ? 100 : 190;
@@ -970,8 +977,12 @@ addEventListener("resize",()=>{
       //   desaceleração (dec.W) → faixa ENTRA → letras (onda) → segura →
       //   faixa ATRAVESSA a tela pra direita e sai. Ajustar aqui.
       const ENTER_PX = 300;          // entrada da faixa (era ~130px: "rápida demais")
-      const LETTERS_PX = 205;        // frase em onda (ver comentário nas letras)
-      const HOLD_PX = 50;            // respiro com a frase completa
+      // "O JEITO izi" pediu-se um pouco mais rápido: a onda de letras foi de 205
+      // para 150px de scroll (−27%). Os 55px economizados foram para o respiro
+      // (HOLD_PX 50 → 105), então o total da trava (totalPx) continua IGUAL e
+      // nenhum gatilho posterior (sumiço, fundo, compromissos) se desloca.
+      const LETTERS_PX = 150;        // frase em onda (ver comentário nas letras) — era 205
+      const HOLD_PX = 105;           // respiro com a frase completa — era 50
       const TRAVERSE_PX = vh;        // travessia: faixa vai de left:0 até fora da tela (direita)
       const totalPx = dec.W + ENTER_PX + LETTERS_PX + HOLD_PX + TRAVERSE_PX;
       const f = function(px){ return px / totalPx; }; // px de scroll → fração da timeline
