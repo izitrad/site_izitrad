@@ -978,7 +978,7 @@
 }
 
 /* ===== ?fundo=preto (TESTE) — fundo preto + verde da izitrad =====
-   Ligado por assets/js/secao04-fundo.js (classe .izi-sec04-dark no wrapper).
+   PADRÃO da seção: a classe .izi-sec04-dark já vem no HTML (wrapper) e assets/js/secao04-fundo-1a1.js desenha o fundo. ?fundo=claro remove a classe (volta ao claro de antes).
    Sem o parâmetro nada disto vale. O canvas (position:fixed) só aparece dentro
    da seção porque o .izi-sec04-glow recorta com clip-path (recorta fixed
    também). Textos e logos claros; o "escurecido" do efeito 3 vira um rosa

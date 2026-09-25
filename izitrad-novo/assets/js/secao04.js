@@ -194,12 +194,11 @@ function setupDesktop(){
   /* Exact divider loop from HomeGuidingPrinciples. */
   drawTween = gsap.timeline({paused:false,repeat:-1});
   /* Segmento que percorre a linha: 50% do comprimento no original (clarão
-     largo). No fundo preto (?fundo=preto) vira um segmento curto de 20% — a
+     largo). No fundo preto (padrão) vira um segmento curto de 20% — a
      "faísca" que corre (a mesma proporção que a referência usa na linha do
      hero: "100% 120%" → "0% 20%"), na mesma velocidade (percorre 100% em 5 s). */
-  // (pelo parâmetro, não pela classe .izi-sec04-dark: esta função roda antes de
-  // os módulos do fundo marcarem a seção. Ao tornar o preto o padrão, trocar.)
-  const darkBg = ["preto","meu"].indexOf(new URLSearchParams(location.search).get("fundo")) >= 0;
+  // (preto é o padrão; ?fundo=claro volta ao fundo claro de antes)
+  const darkBg = new URLSearchParams(location.search).get("fundo") !== "claro";
   drawTween.fromTo(
     dividerPath,
     {drawSVG:darkBg ? "100% 120%" : "100% 150%"},
@@ -830,9 +829,8 @@ addEventListener("resize",()=>{
       // preto a borda da faixa esmaece em 20px (máscara), então a cauda entra
       // 20 e esmaece na mesma largura em sentido oposto (fade cruzado): sem vão
       // nem soma de transparências na junção. (Também no CSS: .izi-sec04-dark
-      // .izi-band-trail{mask-image ... 10px}.) Pelo parâmetro, não pela classe:
-      // esta função roda antes de os módulos do fundo marcarem a seção.
-      const OV = ["preto","meu"].indexOf(qs.get("fundo")) >= 0 ? 10 : 14;
+      // .izi-band-trail{mask-image ... 10px}.) Preto é o padrão (?fundo=claro = claro).
+      const OV = qs.get("fundo") !== "claro" ? 10 : 14;
       const bandW = band.offsetWidth;
       let trailEls = [];   // {el, offset}: offset = quanto o elemento fica ATRÁS da borda esquerda da faixa
       let trailLen = 0;    // comprimento total do rastro (a travessia precisa ir até vw + trailLen pra ele sair da tela)

@@ -1,5 +1,5 @@
 /* Seção 04 — fundo preto + verde da izitrad, versão 1:1 do laboratório aprovado
-   (TESTE: só liga com ?fundo=preto; ?fundo=meu liga o shader alternativo).
+   (PADRÃO da seção; ?fundo=claro volta ao fundo claro de antes).
 
    O shader (VS/FS), os presets PREV / STATE_A / STATE_B, os uniforms, a
    suavização da rolagem (lerp .1) e as transições de 3 s (power2.inOut) são os
@@ -21,7 +21,17 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
 
 (function(){
   "use strict";
-  if(new URLSearchParams(location.search).get("fundo") !== "preto") return;
+  // PADRÃO: fundo preto. O HTML já vem com .izi-sec04-dark no wrapper e a logo
+  // "izi" da pergunta em branco (sem piscar em branco antes do módulo carregar).
+  //   ?fundo=claro -> volta ao fundo claro de antes (remove a classe e a logo)
+  const modo = new URLSearchParams(location.search).get("fundo");
+  if(modo === "claro"){
+    const w0 = document.querySelector(".izi-sec04-unified");
+    if(w0) w0.classList.remove("izi-sec04-dark");
+    const l0 = document.querySelector(".izi-q-logo-img");
+    if(l0) l0.src = "assets/logo-izi.png";
+    return;
+  }
   const gsap = window.gsap;
   const wrap = document.querySelector(".izi-sec04-unified");
   const glow = document.querySelector(".izi-sec04-glow");
