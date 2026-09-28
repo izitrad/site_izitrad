@@ -10,7 +10,8 @@
 <link rel="stylesheet" href="assets/css/site.css?v=108">
 <link rel="stylesheet" href="assets/css/solucao-orbital.css?v=6">
 <!-- Seção 04: fonte do "SIMPLES" (Steelfish Eb) hospedada local em assets/fonts/, ver @font-face em secao04.css -->
-<link rel="stylesheet" href="assets/css/secao04.css?v=110">
+<link rel="stylesheet" href="assets/css/secao04.css?v=111">
+<link rel="stylesheet" href="assets/css/secao05.css?v=3">
 </head>
 <body class="pre-anim">
 
@@ -412,8 +413,49 @@
   </section>
   </div>
   </section>
-  <section id="destino" class="sec sec-ph" data-sec="ph">
-    <div class="ph"><span class="ph-num">05</span><h2>DESTINO</h2><p>seção em desenvolvimento</p></div>
+  <!-- ============================ 05 — DESTINO (SEÇÃO 05 - APROVADO) ========
+       Transporte literal do componente aprovado (fonte: _izi-GPT/seção 5/seção 05 -
+       aprovada.html). NÃO redesenhar/recalibrar sem reler esse arquivo primeiro.
+       Único ajuste: isolamento de 6 seletores de CSS/nomes de JS que colidiam com
+       outras seções (ver comentários no topo de secao05.css e secao05.js) — nenhum
+       valor foi alterado. Fora do transporte, por decisão explícita: o badge de
+       debug (.debug-badge/"toggle path", ferramenta de laboratório) e os dois
+       espaçadores de 75vh do arquivo isolado (não fazem parte do componente; só
+       davam espaço de rolagem na página solo — aqui as seções vizinhas já cobrem
+       isso). Copy ainda em inglês/mista (a do laboratório) — troca de texto real
+       fica para depois, como na seção 04. -->
+  <section id="destino" class="sec" data-sec="destino">
+  <section class="technologies" id="technologies">
+    <div class="container">
+      <div class="column"><h1 class="heading" id="mainHeading"><div>Innovating</div><div>the future of</div><div>mental health</div></h1></div>
+      <div class="column">
+        <p class="eyebrow">Frontier Technologies</p>
+        <p class="paragraph">Amaterasu pioneers research at the intersection of quantum computing, neuroscience, and non-linear dynamics towards a frontier pushing mental health care ecosystem. We leverage nature to deliver a degree of personalized mental health care not yet seen before.</p>
+        <svg class="divider-svg" viewBox="0 0 96 676" fill="none"><path d="M1 0V276.031C1 310.885 18.8257 343.318 48.25 362C77.6743 380.682 95.5 413.115 95.5 447.969V676" stroke="currentColor"/></svg>
+      </div>
+      <div class="column">
+        <div class="wrapper" id="wrapper">
+          <div class="technology"><button class="button"><div class="inner"><div class="label">Our Mind,<br>a Quantum World<sup class="super">1</sup></div><i class="plus">+</i><svg class="technology-svg" viewBox="0 0 289 251"><path d="M150.995 4.25 286.528 239c2.887 5-.722 11.25-6.495 11.25H8.967c-5.773 0-9.382-6.25-6.495-11.25L138.005 4.25c2.887-5 10.103-5 12.99 0Z"/></svg></div><div class="hover"></div></button></div>
+          <div class="technology"><button class="button"><div class="inner"><div class="label">Beauty in<br>Nature’s Entropy<sup class="super">2</sup></div><i class="plus">+</i><svg class="technology-svg" viewBox="0 0 289 251"><path d="M150.995 4.25 286.528 239c2.887 5-.722 11.25-6.495 11.25H8.967c-5.773 0-9.382-6.25-6.495-11.25L138.005 4.25c2.887-5 10.103-5 12.99 0Z"/></svg></div><div class="hover"></div></button></div>
+          <div class="technology"><button class="button"><div class="inner"><div class="label">Applied Clinical<br>Best Practices<sup class="super">3</sup></div><i class="plus">+</i><svg class="technology-svg" viewBox="0 0 289 251"><path d="M150.995 4.25 286.528 239c2.887 5-.722 11.25-6.495 11.25H8.967c-5.773 0-9.382-6.25-6.495-11.25L138.005 4.25c2.887-5 10.103-5 12.99 0Z"/></svg></div><div class="hover"></div></button></div>
+        </div>
+      </div>
+    </div>
+    <div class="background">
+      <svg class="path-svg" id="motionPathSvg" viewBox="0 0 1226 1132" fill="none"><path id="motionPath" d="M539.5 1131.5C266.5 1085 -229.5 624.5 122.5 220.5C474.5 -183.5 1023 51.5 1225 276" vector-effect="non-scaling-stroke" stroke="currentColor"/></svg>
+    </div>
+  </section>
+  <aside class="tech-panel" id="techPanel" aria-hidden="true">
+    <div class="tech-panel__backdrop" id="panelBackdrop"></div>
+    <div class="tech-panel__surface" id="panelSurface">
+      <button class="tech-panel__close" id="panelClose" type="button">FECHAR <span class="arrow">→</span></button>
+      <div class="tech-panel__inner" id="panelInner">
+        <h2 class="tech-panel__heading" id="panelHeading"></h2>
+        <div class="tech-panel__label" id="panelLabel"></div>
+        <p class="tech-panel__paragraph" id="panelParagraph"></p>
+      </div>
+    </div>
+  </aside>
   </section>
   <section id="confianca" class="sec sec-ph" data-sec="ph">
     <div class="ph"><span class="ph-num">06</span><h2>CONFIANÇA</h2><p>seção em desenvolvimento</p></div>
@@ -438,10 +480,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/CustomEase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/DrawSVGPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/MotionPathPlugin.min.js"></script>
 <script src="assets/js/solucao-orbital.js?v=21"></script>
 <script src="assets/js/site.js?v=122"></script>
 <script src="assets/js/secao04.js?v=94"></script>
 <script type="module" src="assets/js/secao04-fundo-1a1.js?v=3"></script>
+<script src="assets/js/secao05.js?v=1"></script>
 <script type="module" src="assets/js/solucao-nodes.js?v=8"></script>
 </body>
 </html>

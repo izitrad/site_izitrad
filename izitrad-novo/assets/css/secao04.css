@@ -54,7 +54,9 @@
 .column:first-child{grid-column:7/10;margin-bottom:10.4166666667vw}
 .column:nth-child(2){grid-column:3/6}
 .column:nth-child(3){grid-column:8/11}
-.heading{font-family:'Outfit',Arial,sans-serif;font-size:var(--font-s-heading-l);font-weight:200;letter-spacing:var(--font-ls-heading-l);line-height:var(--font-lh-heading-l);padding-bottom:1.3888888889vw}
+/* Escopado: sem isso, font-family/padding-bottom vazavam pro .heading da
+   seção 05 (mesma classe, ela não declara essas duas propriedades). */
+.guiding-principles .heading{font-family:'Outfit',Arial,sans-serif;font-size:var(--font-s-heading-l);font-weight:200;letter-spacing:var(--font-ls-heading-l);line-height:var(--font-lh-heading-l);padding-bottom:1.3888888889vw}
 /* Título "E por trás do simples?": as linhas não quebram (com a coluna de 3 de
    12, "E por trás do" no tamanho do título não cabe e viraria 3-4 linhas);
    "simples" em negrito. */
@@ -62,7 +64,11 @@
 .heading strong{font-weight:400}
 /* Trechos em negrito dos compromissos: mais escuros que o texto corrido */
 .paragraph-s strong{font-weight:700;color:#111}
-.paragraph{white-space:nowrap;font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
+/* Escopado em .guiding-principles: sem isso, "white-space:nowrap" (pras
+   quebras fixas do parágrafo de introdução da 04) vazava pro .paragraph da
+   seção 05 (mesma classe, sem essa propriedade na regra dela) — o texto
+   inglês, mais longo, virava uma linha só e estourava a coluna. */
+.guiding-principles .paragraph{white-space:nowrap;font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-body-r);font-weight:400;letter-spacing:var(--font-ls-body-r);line-height:var(--font-lh-body-r)}
 /* Logo "izitrad" (só as letras, sem o triângulo) no lugar do nome nos
    parágrafos. Altura = altura das maiúsculas (.7031em de DM Sans) + o traço
    de 3 do viewBox (258.9/255.9); base na linha de base do texto. Em em, então
@@ -83,13 +89,22 @@
 .principle:not(:last-child){margin-bottom:4.1666666667vw}
 .title{align-items:center;display:inline-flex;visibility:hidden}
 .dot{background:var(--color-downy);border-radius:100%;height:.3472222222vw;margin-right:.625vw;width:.3472222222vw}
-.label{font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-title-r);font-weight:800;letter-spacing:var(--font-ls-title-r);line-height:var(--font-lh-title-r);text-transform:uppercase;white-space:nowrap}
+/* Escopado: sem isso, font-family/font-weight/white-space vazavam pro .label
+   da seção 05 (os rótulos dos "technology" cards). */
+.guiding-principles .label{font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-title-r);font-weight:800;letter-spacing:var(--font-ls-title-r);line-height:var(--font-lh-title-r);text-transform:uppercase;white-space:nowrap}
 .paragraph-s{color:rgba(17,17,17,.68);font-family:'DM Sans',system-ui,sans-serif;font-size:var(--font-s-body-xs);font-weight:400;letter-spacing:var(--font-ls-body-xs);line-height:var(--font-lh-body-xs);margin-top:1.3888888889vw;visibility:hidden}
-.background{align-items:center;display:flex;inset:0;justify-content:center;position:absolute;z-index:0}
-.divider-svg{-webkit-mask-image:linear-gradient(180deg,transparent 15%,#000 50%,transparent 90%);mask-image:linear-gradient(180deg,transparent 15%,#000 50%,transparent 90%);position:absolute;height:122.3611111111vw;padding:0 .6944444444vw;top:-2.0833333333vw;transform:translate(-4.1666666667vw);width:8.0555555556vw}
-.divider-svg path{stroke-width:1}
-.divider-svg path:first-child{color:#FF0099;opacity:.34;filter:blur(.2083333333vw)}
-.divider-svg path:last-child{color:#FF0099;opacity:.72}
+/* Escopado: sem isso, display:flex/align-items/justify-content/z-index
+   vazavam pro .background da seção 05 (o container do objeto que voa). */
+.guiding-principles .background{align-items:center;display:flex;inset:0;justify-content:center;position:absolute;z-index:0}
+/* Escopado (o mais sério dos vazamentos): sem isso, -webkit-mask-image e
+   transform (geometria própria da 04) e sobretudo as regras de path (cor
+   ROSA #FF0099, opacidade, desfoque) vazavam pro .divider-svg da seção 05 —
+   a linha divisória dela (deveria ser azul, .technologies .divider-svg)
+   tinha o único <path> pintado de rosa e borrado, igual à faísca da 04. */
+.guiding-principles .divider-svg{-webkit-mask-image:linear-gradient(180deg,transparent 15%,#000 50%,transparent 90%);mask-image:linear-gradient(180deg,transparent 15%,#000 50%,transparent 90%);position:absolute;height:122.3611111111vw;padding:0 .6944444444vw;top:-2.0833333333vw;transform:translate(-4.1666666667vw);width:8.0555555556vw}
+.guiding-principles .divider-svg path{stroke-width:1}
+.guiding-principles .divider-svg path:first-child{color:#FF0099;opacity:.34;filter:blur(.2083333333vw)}
+.guiding-principles .divider-svg path:last-child{color:#FF0099;opacity:.72}
 
 @media (prefers-reduced-motion:reduce){
  .guiding-principles::before{animation:none;transform:none}
