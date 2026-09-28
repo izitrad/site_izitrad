@@ -89,10 +89,19 @@
   text-transform:uppercase;
   text-align:center;
 }
-/* Fundo bem claro (pálido) — troca do azul-claro original por um rosa
-   pálido equivalente, mesmo espírito de "quase branco com um toque da cor
-   de marca". */
-.technologies .background{position:absolute;inset:0;background:linear-gradient(var(--app-deg),#fdf0f5 50%,#ffd3ea 100%)}
+/* Fundo — TRANSPARENTE por padrão: o canvas WebGL da seção 04 se estende
+   pela seção 05 inteira (ver measureExtra/extraZones em
+   secao04-fundo-1a1.js) e precisa aparecer POR BAIXO daqui. Erro real que
+   cometi antes: achei que "o canvas cobre tudo" bastava com um gradiente
+   OPACO aqui — mas .technologies é um irmão POSTERIOR no DOM a
+   .izi-sec04-unified, então mesmo o canvas vazando por baixo dela, um
+   fundo opaco aqui pinta POR CIMA dele na composição final (a leitura de
+   pixel do canvas em si dava certo nos meus testes — só não checava se
+   algo tampava ele depois). .tech-bg-fallback (classe adicionada via JS só
+   se o WebGL falhar de vez, ver secao04-fundo-1a1.js) é que traz o
+   gradiente rosa de reserva. */
+.technologies .background{position:absolute;inset:0;background:transparent}
+.technologies .background.tech-bg-fallback{background:linear-gradient(var(--app-deg),#fdf0f5 50%,#ffd3ea 100%)}
 /* "mais longe" (3ª linha do título) em rosa e peso 400 — mesma relação da
    seção 04 ("E por trás do" peso 200 / "simples" peso 400): a base do
    título (.technologies .heading, abaixo) é 200, essa classe SÓ na última

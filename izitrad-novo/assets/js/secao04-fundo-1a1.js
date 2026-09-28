@@ -68,7 +68,14 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   let renderer;
   try{
     renderer = new THREE.WebGLRenderer({alpha:true,antialias:false,powerPreference:'high-performance',stencil:false,depth:false});
-  }catch(e){ return; } // sem WebGL: fica o preto liso do CSS
+  }catch(e){
+    // sem WebGL: fica o preto liso do CSS da 04, e a 05 precisa do gradiente
+    // rosa de reserva (ver .tech-bg-fallback, secao05.css) já que ela conta
+    // com o canvas pra aparecer.
+    const techBg = document.querySelector('.technologies .background');
+    if(techBg) techBg.classList.add('tech-bg-fallback');
+    return;
+  }
   renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio,1),1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.domElement.className = "izi-sec04-gl";
@@ -127,6 +134,60 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     if(prev > pA && p <= pA) animateTo(STATE_A,3);
   }
 
+  // ===== Zonas extras — seções DEPOIS da 04 que também recebem este mesmo
+  // canvas (hoje só a 05; lista genérica pra a 06 entrar depois só como mais
+  // um item, sem reescrever nada disto). NADA do bloco acima (pA/pB/STATE_A/
+  // STATE_B/measure/crossCallbacks/progressAt) foi tocado — continuam
+  // calculando só sobre .izi-sec04-unified, exatamente como antes. As cores
+  // da 04 (PREV: preto/verde) também não mudam enquanto o scroll está
+  // dentro dela; STATE_PINK só entra depois que a 04 inteira já terminou. */
+  const STATE_PINK = {...STATE_B, color1:'#3d0028', color2:'#8a004f', color3:'#FF3FA8'};
+  const extraZones = [
+    { el: document.querySelector('.technologies'), at:.12, state:STATE_PINK, lastP:0, top:0, height:1 }
+  ].filter(z => z.el);
+  function measureExtra(){
+    extraZones.forEach(z => {
+      const b = z.el.getBoundingClientRect();
+      z.top = b.top + scrollY; z.height = b.height || 1;
+    });
+    if(extraZones.length){
+      const last = extraZones[extraZones.length - 1];
+      // recorte estende pela ALTURA INTEIRA da(s) zona(s) extra — o canvas
+      // sempre desenha 1 tela cheia por frame, então recortar uma janela
+      // mais alta não custa mais caro (o gasto é por pixel de TELA, não por
+      // pixel de altura rolável). Cobrindo a seção inteira, não sobra corte
+      // no MEIO do conteúdo — só uma borda no fim dela, tratada com o fade
+      // abaixo, igual antes.
+      const extendPast = last.height;
+      glow.style.bottom = 'auto';
+      glow.style.height = Math.max(1, (last.top + extendPast) - sectionTop) + 'px';
+      // sem isso, o canvas SOME numa linha reta exatamente onde o recorte
+      // termina (reportado pela usuária: corte visível) — o overflow:hidden
+      // sempre corta seco, então a única forma de suavizar é desvanecer o
+      // PRÓPRIO canvas antes da borda, via máscara, não o clip em si.
+      const fadePx = Math.min(220, extendPast);
+      const mask = `linear-gradient(to bottom, #000 0, #000 calc(100% - ${fadePx}px), transparent 100%)`;
+      glow.style.maskImage = mask;
+      glow.style.webkitMaskImage = mask;
+    }
+  }
+  function checkExtraZones(s){
+    extraZones.forEach(z => {
+      const p = clamp01((innerHeight - (z.top - s)) / z.height);
+      if(z.lastP < z.at && p >= z.at) animateTo(z.state,3);
+      if(z.lastP >= z.at && p < z.at) animateTo(STATE_B,3); // volta pro repouso da 04
+      z.lastP = p;
+    });
+  }
+  function snapExtra(){
+    extraZones.forEach(z => {
+      const p = clamp01((innerHeight - (z.top - scrollY)) / z.height);
+      z.lastP = p;
+      if(p >= z.at) Object.assign(cfg,z.state);
+    });
+    syncU();
+  }
+
   let scrollCurrent = scrollY, lastProgress = 0, last = performance.now(), running = false, inView = true;
   function snapState(p){
     // carregou já no meio da seção: aplica o estado direto, sem o morph de 3 s
@@ -139,6 +200,7 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     scrollCurrent += (scrollY - scrollCurrent) * Math.min(1,.1*fr);
     const p = progressAt(scrollCurrent);
     if(p !== lastProgress){ crossCallbacks(p,lastProgress); lastProgress = p; }
+    checkExtraZones(scrollCurrent);
     U.uTime.value += .01 * fr * cfg.globalSpeed;
     render();
     requestAnimationFrame(tick);
@@ -152,9 +214,38 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   measure();
   lastProgress = progressAt(scrollY);
   snapState(lastProgress);
+  measureExtra();
+  snapExtra();
   render();
+  // A altura das seções só "assenta" no valor final um tempo DEPOIS do
+  // carregamento (fontes, imagens, outros scripts ainda ajustando layout) —
+  // medir só uma vez no início trava o recorte do canvas num valor pequeno
+  // errado (o corte "voltava" mesmo pedindo a altura inteira). Confirmado:
+  // um ScrollTrigger.refresh() manual corrige na hora (o listener abaixo já
+  // existia) — só que nada dispara esse refresh sozinho no carregamento
+  // normal (só resize de janela). Re-medir por tempo garante certo mesmo
+  // sem depender de outro código chamar refresh.
+  setTimeout(() => { measure(); measureExtra(); snapExtra(); render(); }, 1200);
+  setTimeout(() => { measure(); measureExtra(); }, 2800);
+  // ResizeObserver
+  // reage a QUALQUER mudança de altura real da 04 ou da 05, não só resize de
+  // janela/fonte — bem mais robusto que os listeners pontuais abaixo.
+  if("ResizeObserver" in window){
+    const ro = new ResizeObserver(() => { measure(); measureExtra(); });
+    ro.observe(wrap);
+    extraZones.forEach(z => ro.observe(z.el));
+  }
+  // inView agora é OR de todas as fontes observadas (.izi-sec04-unified +
+  // cada zona extra) — sem isso, o loop de animação para assim que a 04
+  // sai da tela, mesmo com a 05 ainda dentro do recorte estendido do
+  // canvas, e checkExtraZones() nunca chega a rodar lá.
+  let inViewWrap = true, inViewExtras = extraZones.map(() => false);
+  function updateInView(){ inView = inViewWrap || inViewExtras.some(Boolean); update(); }
   if("IntersectionObserver" in window){
-    new IntersectionObserver(es => { inView = es[0].isIntersecting; update(); }).observe(wrap);
+    new IntersectionObserver(es => { inViewWrap = es[0].isIntersecting; updateInView(); }).observe(wrap);
+    extraZones.forEach((z,i) => {
+      new IntersectionObserver(es => { inViewExtras[i] = es[0].isIntersecting; updateInView(); }).observe(z.el);
+    });
   }
   document.addEventListener("visibilitychange",update);
   if(reduce){
@@ -163,10 +254,14 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
       const p = progressAt(scrollY);
       if(p !== lastProgress){ crossCallbacks(p,lastProgress); lastProgress = p; }
     },{passive:true});
+    addEventListener("scroll",() => checkExtraZones(scrollY),{passive:true});
   }
   function relayout(){ size(); measure(); render(); }
   addEventListener("resize",relayout,{passive:true});
+  addEventListener("resize",measureExtra,{passive:true});
   if(window.ScrollTrigger && ScrollTrigger.addEventListener) ScrollTrigger.addEventListener("refresh",measure);
+  if(window.ScrollTrigger && ScrollTrigger.addEventListener) ScrollTrigger.addEventListener("refresh",measureExtra);
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(measureExtra);
   update();
 })();
