@@ -171,7 +171,11 @@
 }
 .izi-pre04-kicker{
   position:absolute;top:5%;left:clamp(24px,5vw,72px);
-  font-size:clamp(12px,1vw,16px);font-weight:600;letter-spacing:.08em;
+  /* Padronizado com os demais rótulos de capítulo do site (.section-id/
+     .s3-id/.tech-kicker): 14px fixo/700/.18em, em vez do clamp(12-16px)/
+     600/.08em que só esse tinha. position:absolute — não adiciona altura
+     ao documento, então não desloca o ScrollTrigger da seção. */
+  font-size:14px;font-weight:700;letter-spacing:.18em;
   opacity:0;transform:translateY(18px)
 }
 .izi-pre04-question{

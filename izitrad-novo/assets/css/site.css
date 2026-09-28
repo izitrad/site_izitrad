@@ -246,9 +246,9 @@ img,svg{display:block}
    resto (ex.: "Seu documento/Seu destino/O caminho certo" na Hero) — lá o
    0.8em original já é correto e qualquer aumento desalinha o layout
    apertado daquelas linhas. */
-.section-id .rl-char, .s3-id .rl-char, .intro-eyebrow .rl-char{line-height:1.6}
-.section-id .rl-track, .s3-id .rl-track, .intro-eyebrow .rl-track{transform:translate3d(0,calc(-1.6em*var(--k,0)),0)}
-.section-id .rl-cell, .s3-id .rl-cell, .intro-eyebrow .rl-cell{height:1.6em}
+.section-id .rl-char, .s3-id .rl-char, .intro-eyebrow .rl-char, #iziPre04Kicker .rl-char, .tech-kicker .rl-char{line-height:1.6}
+.section-id .rl-track, .s3-id .rl-track, .intro-eyebrow .rl-track, #iziPre04Kicker .rl-track, .tech-kicker .rl-track{transform:translate3d(0,calc(-1.6em*var(--k,0)),0)}
+.section-id .rl-cell, .s3-id .rl-cell, .intro-eyebrow .rl-cell, #iziPre04Kicker .rl-cell, .tech-kicker .rl-cell{height:1.6em}
 .copy{position:absolute;left:4%;top:21%;width:32%;z-index:4}
 .copy h2{font-size:clamp(46px,5vw,90px);margin:0 0 24px;text-transform:uppercase}
 /* headline nova (2 linhas, sem parágrafo) é mais curta E mais leve que a

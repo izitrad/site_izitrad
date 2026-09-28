@@ -45,6 +45,39 @@
       da usuária, que achou o espaço grande demais. Se em alguma tela o
       corte voltar a aparecer, subir este valor. */
 .technologies{position:relative;overflow:hidden;padding-top:6vw;color:var(--blue);font-family:Arial,Helvetica,sans-serif}
+/* Rótulo do topo da seção ("05 — CONFIANÇA") — segue o MESMO padrão dos
+   outros rótulos de capítulo do site (.section-id/.s3-id/.izi-pre04-kicker
+   em site.css/secao04.css): centralizado (left:50%, giro de letras via
+   buildRollingLabel — ver secao05.js) e MESMA distância do topo da TELA que
+   os outros três. Os outros usam "top:5%", mas o container deles é um
+   estágio fixo de 100vh (pinado/sticky) — 5% ali JÁ é 5% da altura da tela.
+   .technologies NÃO é pinada (seção alta, ~2000px, rola normal); "top:5%"
+   aqui seria 5% da altura da SEÇÃO inteira (quase o dobro em px do que nas
+   outras), ficando visualmente mais baixo — por isso "top:5vh" (unidade de
+   viewport, não do container), pra dar a MESMA distância do topo da tela
+   que "04 — COMO FUNCIONA" tem (conferido por print da usuária). z-index:2
+   pra ficar sempre acima de .container(1) e .background(0). opacity:0 +
+   transform:translate(-50%,70px) é o estado INICIAL (pré-animação) — igual
+   o #iziPre04Kicker da seção 04: entra subindo até y:0 + opacity:1 enquanto
+   a seção entra na tela, sincronizado com o giro (ver buildKicker() em
+   secao05.js). Só é o fallback estático se o JS não rodar
+   (prefers-reduced-motion) — nesse caso buildKicker() nem chama o tween,
+   então o rótulo fica opacity:0 (mesmo comportamento do 04 nesse cenário,
+   não é regressão nova). */
+.tech-kicker{
+  position:absolute;
+  top:5vh;
+  left:50%;
+  transform:translate(-50%,70px);
+  opacity:0;
+  z-index:2;
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  text-align:center;
+}
 .technologies .background{position:absolute;inset:0;background:linear-gradient(var(--app-deg),#f1f6f8 50%,#a2d7f0 100%)}
 .technologies .container{position:relative;z-index:1;display:grid;padding:14.5833333333vw 0 0;grid-template-columns:repeat(12,1fr);column-gap:1.3888888889vw;margin:0 2.7777777778vw}
 .technologies .column{position:relative}.technologies .column:nth-child(1){grid-column:4/10;margin-bottom:3.4722222222vw;z-index:1}.technologies .column:nth-child(2){grid-column:7/10}.technologies .column:nth-child(3){align-items:center;display:flex;grid-column:4/10}
