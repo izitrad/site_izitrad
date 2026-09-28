@@ -15,7 +15,13 @@
    nada. --app-deg já existe (secao04.css, mesmo valor 180deg) — não
    redeclarada aqui. "*{box-sizing:border-box}" já é global (site.css) —
    não repetida aqui. */
-:root{--blue:#1b2978;--white:#fff;--bg:#f1f6f8;--ease-none:cubic-bezier(.25,.25,.75,.75)}
+/* Paleta trocada de azul (Amaterasu original) pra rosa da marca (--pink em
+   site.css, #FF0099) — pedido explícito da usuária a partir de prints de
+   referência. Ainda é uma PRIMEIRA passada (ela avisou que "vamos trabalhar
+   nelas depois"), não a calibração final dos gradientes. --blue fica só
+   como fallback/histórico, não é mais usada pra texto (ver .technologies
+   abaixo). */
+:root{--blue:#1b2978;--pink:#FF0099;--white:#fff;--bg:#f1f6f8;--ease-none:cubic-bezier(.25,.25,.75,.75)}
 .technologies button,.tech-panel button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
 /* overflow:hidden (valor original, MANTIDO) cortava o topo do objeto que
    voa: entre 8% e 47% do voo ele sobe até 188px acima da própria caixa — no
@@ -44,7 +50,11 @@
       folga em telas mais baixas, mas o vão visual ficou menor — a pedido
       da usuária, que achou o espaço grande demais. Se em alguma tela o
       corte voltar a aparecer, subir este valor. */
-.technologies{position:relative;overflow:hidden;padding-top:6vw;color:var(--blue);font-family:Arial,Helvetica,sans-serif}
+/* Ink escura (não azul/rosa) como cor BASE do texto — no print de
+   referência, título e parágrafo são pretos; rosa fica só em pontos
+   específicos (.eyebrow, a última linha do título, o rótulo, o ponto do
+   painel) — ver essas regras abaixo. */
+.technologies{position:relative;overflow:hidden;padding-top:6vw;color:#1a1a1a;font-family:Arial,Helvetica,sans-serif}
 /* Rótulo do topo da seção ("05 — CONFIANÇA") — segue o MESMO padrão dos
    outros rótulos de capítulo do site (.section-id/.s3-id/.izi-pre04-kicker
    em site.css/secao04.css): centralizado (left:50%, giro de letras via
@@ -71,6 +81,7 @@
   transform:translate(-50%,70px);
   opacity:0;
   z-index:2;
+  color:var(--pink);
   font-family:'DM Sans',system-ui,sans-serif;
   font-size:14px;
   font-weight:700;
@@ -78,14 +89,23 @@
   text-transform:uppercase;
   text-align:center;
 }
-.technologies .background{position:absolute;inset:0;background:linear-gradient(var(--app-deg),#f1f6f8 50%,#a2d7f0 100%)}
+/* Fundo bem claro (pálido) — troca do azul-claro original por um rosa
+   pálido equivalente, mesmo espírito de "quase branco com um toque da cor
+   de marca". */
+.technologies .background{position:absolute;inset:0;background:linear-gradient(var(--app-deg),#fdf0f5 50%,#ffd3ea 100%)}
+/* "mais longe" (3ª linha do título) em rosa — as outras duas ficam pretas
+   (herdam de .technologies). Aplicado via classe na própria linha (ver
+   index.html), não no span .word individual — a cor cai em cascata pros
+   .word que o buildHeading() cria depois. */
+.technologies .heading .heading-accent{color:var(--pink)}
+.eyebrow{color:var(--pink)}
 .technologies .container{position:relative;z-index:1;display:grid;padding:14.5833333333vw 0 0;grid-template-columns:repeat(12,1fr);column-gap:1.3888888889vw;margin:0 2.7777777778vw}
 .technologies .column{position:relative}.technologies .column:nth-child(1){grid-column:4/10;margin-bottom:3.4722222222vw;z-index:1}.technologies .column:nth-child(2){grid-column:7/10}.technologies .column:nth-child(3){align-items:center;display:flex;grid-column:4/10}
 .technologies .heading .word{display:inline-block;will-change:filter,opacity}.technologies .heading{font-size:5.5555555556vw;line-height:.96;letter-spacing:-.025em;font-weight:400;text-align:center;margin:0}.eyebrow{font-size:.6944444444vw;line-height:1.0416666667vw;letter-spacing:.16em;text-transform:uppercase;margin:0 0 1.2vw}.technologies .paragraph{font-size:1.3888888889vw;line-height:1.9444444444vw;font-weight:400;margin:2.0833333333vw 0 0}
-.technologies .divider-svg{color:rgba(27,41,120,.2);height:46.9444444444vw;left:-5.2083333333vw;mask-image:linear-gradient(180deg,#000 10%,#000 50%,transparent 90%);position:absolute;top:1.7361111111vw;width:6.6666666667vw}
+.technologies .divider-svg{color:rgba(255,0,153,.2);height:46.9444444444vw;left:-5.2083333333vw;mask-image:linear-gradient(180deg,#000 10%,#000 50%,transparent 90%);position:absolute;top:1.7361111111vw;width:6.6666666667vw}
 .wrapper{display:grid;grid-template-columns:repeat(4,1fr);width:100%;grid-column:4/10;gap:.6944444444vw;margin:27.7777777778vw 0 14.5833333333vw;padding:0 2.7777777778vw}
 .technology{position:relative;transition:opacity .35s var(--ease-none)}.technology:first-child{grid-column:2/4}.technology:nth-child(2){grid-column:1/3}.technology:nth-child(3){grid-column:3/5}
-.button{cursor:pointer;position:relative;transition:color .35s var(--ease-none);width:100%;height:17.4305555556vw}.inner{inset:0;position:absolute}.hover{background:linear-gradient(var(--app-deg),#163854 0,#3d7dbf 36%,#439ec3 65%,#90d3ee 100%);inset:0;position:absolute;opacity:0;transition:opacity .35s var(--ease-none);z-index:-1;
+.button{cursor:pointer;position:relative;transition:color .35s var(--ease-none);width:100%;height:17.4305555556vw}.inner{inset:0;position:absolute}.hover{background:linear-gradient(var(--app-deg),#7a0050 0,#c2007d 36%,#ff0099 65%,#ff8fc7 100%);inset:0;position:absolute;opacity:0;transition:opacity .35s var(--ease-none);z-index:-1;
 -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 289 251'%3E%3Cpath fill='white' d='M150.995 4.24999L286.528 239C289.415 244 285.806 250.25 280.033 250.25H8.96703C3.19353 250.25 -0.414931 244 2.47182 239L138.005 4.25001C140.892 -0.749992 148.108 -0.750008 150.995 4.24999Z'/%3E%3C/svg%3E");
 -webkit-mask-repeat:no-repeat;-webkit-mask-position:center;-webkit-mask-size:100% 100%;
 mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 289 251'%3E%3Cpath fill='white' d='M150.995 4.24999L286.528 239C289.415 244 285.806 250.25 280.033 250.25H8.96703C3.19353 250.25 -0.414931 244 2.47182 239L138.005 4.25001C140.892 -0.749992 148.108 -0.750008 150.995 4.24999Z'/%3E%3C/svg%3E");
@@ -101,13 +121,13 @@ mask-repeat:no-repeat;mask-position:center;mask-size:100% 100%}
 .tech-panel{position:fixed;inset:0;z-index:30;pointer-events:none;visibility:hidden}
 .tech-panel.is-open{visibility:visible}
 .tech-panel__backdrop{position:absolute;inset:0;background:rgba(0,18,45,.20);opacity:0;pointer-events:auto}
-.tech-panel__surface{position:absolute;right:0;top:0;height:100%;width:33.3333333333vw;min-width:440px;background:#fff;color:#1b2978;overflow:hidden;pointer-events:auto;transform:translateX(100%)}
+.tech-panel__surface{position:absolute;right:0;top:0;height:100%;width:33.3333333333vw;min-width:440px;background:#fff;color:#1a1a1a;overflow:hidden;pointer-events:auto;transform:translateX(100%)}
 .tech-panel__inner{height:100%;box-sizing:border-box;padding:5.2083333333vw;overflow-y:auto;transform:translateX(-50%)}
-.tech-panel__close{position:absolute;right:5.2083333333vw;top:3.75vw;z-index:3;border:0;background:none;color:#142776;font:600 .6944444444vw/1.2 Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;opacity:0}
+.tech-panel__close{position:absolute;right:5.2083333333vw;top:3.75vw;z-index:3;border:0;background:none;color:#1a1a1a;font:600 .6944444444vw/1.2 Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;opacity:0}
 .tech-panel__close .arrow{display:inline-block;margin-left:.7vw;color:#cbd3e3;font-size:1.2em;letter-spacing:0}
 .tech-panel__heading{font-family:Arial,sans-serif;font-weight:400;font-size:3.8194444444vw;line-height:1.18;letter-spacing:-.055em;margin:2.8vw 0 2.5vw}
 .tech-panel__label{font-family:Arial,sans-serif;font-size:.6944444444vw;line-height:1.3;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin:0 0 2.8vw;display:flex;gap:.8vw;align-items:flex-start}
-.tech-panel__label:before{content:"";width:.42vw;height:.42vw;border-radius:50%;background:#6dd0dc;flex:none;margin-top:.18vw}
+.tech-panel__label:before{content:"";width:.42vw;height:.42vw;border-radius:50%;background:var(--pink);flex:none;margin-top:.18vw}
 .tech-panel__paragraph{font-family:Arial,sans-serif;font-size:1.3888888889vw;line-height:1.6;font-weight:400;letter-spacing:0;margin:0}
 body.panel-lock{overflow:hidden}
 @media(max-width:600px){

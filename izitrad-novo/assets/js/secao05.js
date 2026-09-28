@@ -99,19 +99,19 @@ let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{buildH
 // === Panels: reconstructed from the original Panel component + visual references ===
 const panelItems = [
   {
-    heading: "O quântico\nnatureza do\npensamento",
-    label: "NOSSA MENTE, UM MUNDO QUÂNTICO",
-    paragraph: "Estamos investindo a longo prazo em pesquisa e hardware de computação quântica para formar o ápice do nosso foco. Acreditamos que, embora o cérebro em si possa não ser quântico por natureza, seus comportamentos codificados frequentemente exibem padrões incrivelmente adequados para a modelagem quântica, permitindo-nos lidar com complexidades comportamentais em ordens de magnitude muito maiores do que os formalismos atuais."
+    heading: "Aproximar pessoas\ne negócios de\nnovos destinos",
+    label: "NOSSA MISSÃO",
+    paragraph: "Tornar simples, seguro e acessível o processo de tradução e apostilamento para quem viaja, estuda, trabalha ou reconstrói a vida em outro país, e para empresas que levam seus negócios ao exterior. Por isso, todo o atendimento acontece no ambiente digital, do orçamento à entrega, permitindo que o cliente resolva tudo de onde estiver."
   },
   {
-    heading: "Entendimento\nordem da\nnatureza",
-    label: "BELEZA NA ENTROPIA DA NATUREZA",
-    paragraph: "Exploramos como pequenas mudanças nos processos mentais podem levar a transformações significativas no comportamento. Nosso trabalho se concentra em desvendar padrões emergentes na tomada de decisões, na regulação emocional e nas interações sociais. Ao expandir os limites da compreensão nessas áreas, buscamos desenvolver tecnologias transformadoras que aprimorem o potencial humano, tanto individual quanto coletivo."
+    heading: "Clareza\ncomo padrão",
+    label: "NOSSA VISÃO",
+    paragraph: "Ser referência em tradução e apostilamento digital para quem leva seus documentos ao exterior, reconhecida pela capacidade de transformar exigências complexas em processos claros, com valores transparentes e uma linguagem simples e direta em cada etapa."
   },
   {
-    heading: "Sabedoria\nhumana,\npersonalizado",
-    label: "MELHORES PRÁTICAS CLÍNICAS APLICADAS",
-    paragraph: "Complementamos de forma intrincada nossa abordagem ao uso de tecnologias de ponta com insights profundos, impulsionados pelos melhores psicólogos, psiquiatras e neurocientistas do mundo, garantindo que nossa pesquisa esteja fundamentada em práticas éticas seguras, empíricas e aplicadas, visando uma experiência humana verdadeiramente acolhedora."
+    heading: "Pessoas antes\nde protocolos",
+    label: "NOSSOS VALORES",
+    paragraph: "Transparência, para que o cliente conheça cada valor e cada etapa antes de decidir. Rigor, porque cada documento carrega um plano importante, seja uma viagem ou um novo começo. Proximidade, com uma equipe que acompanha cada pedido do início ao fim e está pronta para realizar os ajustes necessários."
   }
 ];
 
