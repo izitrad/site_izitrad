@@ -1,0 +1,138 @@
+/* ===== SEÇÃO 05 — DESTINO (transporte literal do componente aprovado) =====
+   Fonte: _izi-GPT/seção 5/seção 05 - aprovada.html. NÃO redesenhar/recalibrar
+   sem reler esse arquivo primeiro — nenhum valor (px/vw/cor/tempo) foi
+   alterado aqui, só o ENCAIXE: no arquivo original esse CSS era o único da
+   página; aqui ele divide a página com as outras seções, então 8 seletores
+   que colidiam com nomes já usados (a seção 04 já tem .container/.heading/
+   .label/.paragraph/.background/.divider-svg/.column:nth-child(2,3), e o
+   "button{}" sem classe resetaria TODOS os botões do site) foram isolados
+   com o prefixo ".technologies" — a própria classe raiz da seção, que já
+   existe no HTML aprovado. .divider-svg era o mais sério: a seção 04 usa
+   essa mesma classe pra linha divisória com a faísca (branca, calibrada em
+   sessão anterior) — sem isolar, a versão desta seção (azul, geometria
+   diferente) sobrescreveria a da 04 inteira, porque carrega depois. As classes
+   .tech-panel__* já vêm prefixadas no arquivo original e não precisaram de
+   nada. --app-deg já existe (secao04.css, mesmo valor 180deg) — não
+   redeclarada aqui. "*{box-sizing:border-box}" já é global (site.css) —
+   não repetida aqui. */
+:root{--blue:#1b2978;--white:#fff;--bg:#f1f6f8;--ease-none:cubic-bezier(.25,.25,.75,.75)}
+.technologies button,.tech-panel button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+/* overflow:hidden (valor original, MANTIDO) cortava o topo do objeto que
+   voa: entre 8% e 47% do voo ele sobe até 188px acima da própria caixa — no
+   laboratório isolado isso já acontecia, mas era invisível (fundo branco dos
+   dois lados); aqui a seção 04 (preta) cola bem na borda de cima da 05 e o
+   corte virou uma linha reta visível.
+   Testei duas correções:
+   1) overflow-x:hidden + overflow-y:visible (auto): tirava o corte num teste
+      isolado, mas ao vivo, na página completa, o resultado ficou inconsistente
+      entre recargas — não confiável o bastante pra manter.
+   2) ESTA (escolhida): mantém overflow:hidden e dá folga por DENTRO da caixa,
+      com padding-top. .background{inset:0} preenche a PADDING BOX de
+      .technologies — padding-top não move o topo dela (overflow:hidden clipa
+      relativo a esse topo, que fica parado), mas ENGORDA a caixa, empurrando
+      o BOTTOM pra baixo; como .path-svg é posicionado a partir do BOTTOM
+      (bottom:45.49vw), ele (e o objeto que voa) desce junto — o topo do voo
+      passa a ficar 188px mais afastado do topo fixo da caixa. O título/
+      parágrafo (dentro de .container, com seu PRÓPRIO padding-top de
+      14.58vw) também descem esse tanto, abrindo mais respiro visual entre o
+      fim da seção 04 e o começo do conteúdo visível da 05 — sem mudar nenhum
+      valor do componente aprovado, só ACRESCENTANDO espaço.
+      12vw cobre os -188px medidos (a 1920px, -188px ≈ -9.79vw) com folga. */
+.technologies{position:relative;overflow:hidden;padding-top:12vw;color:var(--blue);font-family:Arial,Helvetica,sans-serif}
+.technologies .background{position:absolute;inset:0;background:linear-gradient(var(--app-deg),#f1f6f8 50%,#a2d7f0 100%)}
+.technologies .container{position:relative;z-index:1;display:grid;padding:14.5833333333vw 0 0;grid-template-columns:repeat(12,1fr);column-gap:1.3888888889vw;margin:0 2.7777777778vw}
+.technologies .column{position:relative}.technologies .column:nth-child(1){grid-column:4/10;margin-bottom:3.4722222222vw;z-index:1}.technologies .column:nth-child(2){grid-column:7/10}.technologies .column:nth-child(3){align-items:center;display:flex;grid-column:4/10}
+.technologies .heading .word{display:inline-block;will-change:filter,opacity}.technologies .heading{font-size:5.5555555556vw;line-height:.96;letter-spacing:-.025em;font-weight:400;text-align:center;margin:0}.eyebrow{font-size:.6944444444vw;line-height:1.0416666667vw;letter-spacing:.16em;text-transform:uppercase;margin:0 0 1.2vw}.technologies .paragraph{font-size:1.3888888889vw;line-height:1.9444444444vw;font-weight:400;margin:2.0833333333vw 0 0}
+.technologies .divider-svg{color:rgba(27,41,120,.2);height:46.9444444444vw;left:-5.2083333333vw;mask-image:linear-gradient(180deg,#000 10%,#000 50%,transparent 90%);position:absolute;top:1.7361111111vw;width:6.6666666667vw}
+.wrapper{display:grid;grid-template-columns:repeat(4,1fr);width:100%;grid-column:4/10;gap:.6944444444vw;margin:27.7777777778vw 0 14.5833333333vw;padding:0 2.7777777778vw}
+.technology{position:relative;transition:opacity .35s var(--ease-none)}.technology:first-child{grid-column:2/4}.technology:nth-child(2){grid-column:1/3}.technology:nth-child(3){grid-column:3/5}
+.button{cursor:pointer;position:relative;transition:color .35s var(--ease-none);width:100%;height:17.4305555556vw}.inner{inset:0;position:absolute}.hover{background:linear-gradient(var(--app-deg),#163854 0,#3d7dbf 36%,#439ec3 65%,#90d3ee 100%);inset:0;position:absolute;opacity:0;transition:opacity .35s var(--ease-none);z-index:-1;
+-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 289 251'%3E%3Cpath fill='white' d='M150.995 4.24999L286.528 239C289.415 244 285.806 250.25 280.033 250.25H8.96703C3.19353 250.25 -0.414931 244 2.47182 239L138.005 4.25001C140.892 -0.749992 148.108 -0.750008 150.995 4.24999Z'/%3E%3C/svg%3E");
+-webkit-mask-repeat:no-repeat;-webkit-mask-position:center;-webkit-mask-size:100% 100%;
+mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 289 251'%3E%3Cpath fill='white' d='M150.995 4.24999L286.528 239C289.415 244 285.806 250.25 280.033 250.25H8.96703C3.19353 250.25 -0.414931 244 2.47182 239L138.005 4.25001C140.892 -0.749992 148.108 -0.750008 150.995 4.24999Z'/%3E%3C/svg%3E");
+mask-repeat:no-repeat;mask-position:center;mask-size:100% 100%}
+.technology-svg{display:block;width:100%;height:100%;opacity:.2;transition:opacity .35s var(--ease-none)}.technology-svg path{fill:none;stroke:currentColor;vector-effect:non-scaling-stroke}.technologies .label{position:absolute;bottom:1.3888888889vw;font-size:.6944444444vw;line-height:1.0416666667vw;letter-spacing:.16em;margin:0 6.9444444444vw 0 3.125vw;text-align:left;text-transform:uppercase}.super{bottom:0;position:absolute;font-size:50%;right:-.5555555556vw;transform:translateY(-.1388888889vw)}.technology:nth-child(3) .super{right:.1388888889vw}.plus{font-style:normal;position:absolute;bottom:1.3888888889vw;font-size:1.3888888889vw;right:3.125vw}
+@media(hover:hover){.button:hover{color:#fff}.button:hover .hover{opacity:1}.button:hover .technology-svg{opacity:0}}
+.is-scrolling{pointer-events:none}.is-scrolling .technology:first-child .inner{opacity:0}.is-scrolling .technology:first-child .hover{opacity:1}.is-scrolling .technology:nth-child(2),.is-scrolling .technology:nth-child(3){opacity:0}
+.path-svg{bottom:45.4861111111vw;height:78.6111111111vw;left:6.7361111111vw;position:absolute;transform:translate(5.7638888889vw,4.1666666667vw);visibility:hidden;width:85.1388888889vw}
+.debug .path-svg{visibility:visible;color:rgba(255,0,153,.35);z-index:20}.debug .path-svg path{stroke-width:2}.debug-badge{position:fixed;right:12px;bottom:12px;z-index:100;background:#fff;border:1px solid rgba(27,41,120,.25);padding:8px 10px;font:11px/1.2 monospace;color:#1b2978}.debug-badge button{font:inherit;text-decoration:underline}
+@media(max-width:600px){.technologies .container{display:block;margin:0 5.3333333333vw;padding:36vw 0 48vw}.technologies .column:first-child{margin-bottom:8vw}.technologies .column:nth-child(1),.technologies .column:nth-child(2),.technologies .column:nth-child(3){display:block;margin-left:0;margin-right:0}.technologies .heading{font-size:13.3333333333vw;line-height:13.3333333333vw;text-align:left}.eyebrow{font-size:2.6666666667vw;line-height:4vw;letter-spacing:.16em;margin-bottom:8vw}.technologies .paragraph{font-size:5.3333333333vw;line-height:7.4666666667vw;margin:0}.technologies .divider-svg,.path-svg{display:none}.technologies .column:nth-child(3){margin-top:16vw}.wrapper{grid-template-columns:repeat(4,1fr);gap:1.3333333333vw;margin:0;padding:0}.technology{height:38.6666666667vw}.button{cursor:pointer;height:38.6666666667vw;color:#fff}.inner{display:flex;justify-content:center}.hover{opacity:1}.technology-svg{opacity:0}.technologies .label{bottom:2.6666666667vw;font-size:2.1333333333vw;line-height:3.7333333333vw;letter-spacing:.15em;margin:0;text-align:center}.plus{font-size:2.6666666667vw;top:4vw;bottom:auto;right:3vw}.super{font-size:60%;right:-2.1333333333vw;transform:translateY(-.5333333333vw)}}
+
+/* === Original-style technology panel === */
+.tech-panel{position:fixed;inset:0;z-index:30;pointer-events:none;visibility:hidden}
+.tech-panel.is-open{visibility:visible}
+.tech-panel__backdrop{position:absolute;inset:0;background:rgba(0,18,45,.20);opacity:0;pointer-events:auto}
+.tech-panel__surface{position:absolute;right:0;top:0;height:100%;width:33.3333333333vw;min-width:440px;background:#fff;color:#1b2978;overflow:hidden;pointer-events:auto;transform:translateX(100%)}
+.tech-panel__inner{height:100%;box-sizing:border-box;padding:5.2083333333vw;overflow-y:auto;transform:translateX(-50%)}
+.tech-panel__close{position:absolute;right:5.2083333333vw;top:3.75vw;z-index:3;border:0;background:none;color:#142776;font:600 .6944444444vw/1.2 Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;opacity:0}
+.tech-panel__close .arrow{display:inline-block;margin-left:.7vw;color:#cbd3e3;font-size:1.2em;letter-spacing:0}
+.tech-panel__heading{font-family:Arial,sans-serif;font-weight:400;font-size:3.8194444444vw;line-height:1.18;letter-spacing:-.055em;margin:2.8vw 0 2.5vw}
+.tech-panel__label{font-family:Arial,sans-serif;font-size:.6944444444vw;line-height:1.3;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin:0 0 2.8vw;display:flex;gap:.8vw;align-items:flex-start}
+.tech-panel__label:before{content:"";width:.42vw;height:.42vw;border-radius:50%;background:#6dd0dc;flex:none;margin-top:.18vw}
+.tech-panel__paragraph{font-family:Arial,sans-serif;font-size:1.3888888889vw;line-height:1.6;font-weight:400;letter-spacing:0;margin:0}
+body.panel-lock{overflow:hidden}
+@media(max-width:600px){
+ .tech-panel__surface{width:100%;min-width:0;height:100%;overflow-y:auto}
+ .tech-panel__inner{padding:18vw 10.6666666667vw 14vw;min-height:100%;transform:translateX(-50%)}
+ .tech-panel__close{right:10.6666666667vw;top:8vw;font-size:2.6666666667vw}
+ .tech-panel__heading{font-size:11.7333333333vw;line-height:1.04;margin:9vw 0 10vw}
+ .tech-panel__label{font-size:2.6666666667vw;line-height:1.4;gap:2.6vw;margin-bottom:9vw}
+ .tech-panel__label:before{width:1.6vw;height:1.6vw;margin-top:1vw}
+ .tech-panel__paragraph{font-size:5.0666666667vw;line-height:1.55}
+}
+
+
+/* === V5 panel visual calibration ===
+   Match the original panel proportions more closely on 1440/desktop. */
+@media (min-width:601px){
+  .tech-panel__surface{
+    width:33.3333333333vw;
+    min-width:0;
+  }
+  .tech-panel__inner{
+    padding:5.2083333333vw 5.2083333333vw 4.5vw;
+  }
+  .tech-panel__close{
+    top:3.4722222222vw;
+    right:4.8611111111vw;
+    font-size:.5555555556vw;
+  }
+  .tech-panel__heading{
+    font-size:3.0555555556vw;
+    line-height:1.08;
+    letter-spacing:-.055em;
+    margin:5.9vw 0 2.35vw;
+  }
+  .tech-panel__label{
+    font-size:.5555555556vw;
+    line-height:1.35;
+    margin-bottom:2.35vw;
+    gap:.6944444444vw;
+  }
+  .tech-panel__label:before{
+    width:.3472222222vw;
+    height:.3472222222vw;
+    margin-top:.18vw;
+  }
+  .tech-panel__paragraph{
+    font-size:1.1111111111vw;
+    line-height:1.58;
+  }
+}
+
+
+/* === V6 structural panel fix === */
+.tech-panel{overflow:hidden}
+.tech-panel__surface{
+  right:0 !important;
+  left:auto !important;
+  top:0 !important;
+  bottom:0 !important;
+  height:100vh !important;
+  max-height:100vh !important;
+  box-sizing:border-box;
+}
+.tech-panel__inner{
+  width:100%;
+  box-sizing:border-box;
+}
