@@ -37,8 +37,14 @@
       14.58vw) também descem esse tanto, abrindo mais respiro visual entre o
       fim da seção 04 e o começo do conteúdo visível da 05 — sem mudar nenhum
       valor do componente aprovado, só ACRESCENTANDO espaço.
-      12vw cobre os -188px medidos (a 1920px, -188px ≈ -9.79vw) com folga. */
-.technologies{position:relative;overflow:hidden;padding-top:12vw;color:var(--blue);font-family:Arial,Helvetica,sans-serif}
+      Era 12vw (cobria os -188px medidos antes das correções de vazamento de
+      CSS — depois delas, uma tela grande (1920x911) mediu ZERO corte mesmo
+      sem padding nenhum, sugerindo que consertar os vazamentos já pode ter
+      resolvido o corte por si só). Reduzido pra 6vw, um meio-termo: ainda dá
+      folga em telas mais baixas, mas o vão visual ficou menor — a pedido
+      da usuária, que achou o espaço grande demais. Se em alguma tela o
+      corte voltar a aparecer, subir este valor. */
+.technologies{position:relative;overflow:hidden;padding-top:6vw;color:var(--blue);font-family:Arial,Helvetica,sans-serif}
 .technologies .background{position:absolute;inset:0;background:linear-gradient(var(--app-deg),#f1f6f8 50%,#a2d7f0 100%)}
 .technologies .container{position:relative;z-index:1;display:grid;padding:14.5833333333vw 0 0;grid-template-columns:repeat(12,1fr);column-gap:1.3888888889vw;margin:0 2.7777777778vw}
 .technologies .column{position:relative}.technologies .column:nth-child(1){grid-column:4/10;margin-bottom:3.4722222222vw;z-index:1}.technologies .column:nth-child(2){grid-column:7/10}.technologies .column:nth-child(3){align-items:center;display:flex;grid-column:4/10}
