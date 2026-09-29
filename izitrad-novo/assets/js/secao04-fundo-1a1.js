@@ -96,7 +96,19 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   geo.setAttribute('uv',new THREE.BufferAttribute(new Float32Array([0,0,1,0,1,1,0,0,1,1,0,1]),2));
   const mat = new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:FS,uniforms:U,depthTest:false,depthWrite:false,dithering:true,defines:{USE_NOISE:true}});
   const mesh = new THREE.Mesh(geo,mat); mesh.frustumCulled = false; scene.add(mesh);
-  function syncU(){ for(const [u,k] of Object.entries(map)) U[u].value = cfg[k]; }
+  // color1/2/3 ficam FORA do "map" de propósito no código original: até
+  // aqui nada nunca precisava trocar de cor (só a 04 rodava, cores fixas
+  // desde a criação de U). STATE_PINK é a PRIMEIRA vez que algo tenta mudar
+  // cfg.color1/2/3 depois da criação — sem sincronizar esses 3 uniforms
+  // também, o gsap.to(cfg,{...}) do animateTo() muda o OBJETO cfg
+  // perfeitamente, mas o shader nunca via a mudança (bug real, achado
+  // testando: "sem mudança de cor nenhuma" reportado pela usuária).
+  function syncU(){
+    for(const [u,k] of Object.entries(map)) U[u].value = cfg[k];
+    U.uColor1.value.set(cfg.color1).convertLinearToSRGB();
+    U.uColor2.value.set(cfg.color2).convertLinearToSRGB();
+    U.uColor3.value.set(cfg.color3).convertLinearToSRGB();
+  }
   function size(){
     const w = Math.max(1,innerWidth), h = Math.max(1,innerHeight);
     renderer.setSize(w,h,false);
@@ -141,51 +153,112 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   // calculando só sobre .izi-sec04-unified, exatamente como antes. As cores
   // da 04 (PREV: preto/verde) também não mudam enquanto o scroll está
   // dentro dela; STATE_PINK só entra depois que a 04 inteira já terminou. */
-  const STATE_PINK = {...STATE_B, color1:'#3d0028', color2:'#8a004f', color3:'#FF3FA8'};
+  // Só família verde→branco, reaproveitando os verdes EXATOS que a própria
+  // 04 já usa (PREV.color2/color3) — sem inventar um preto novo, sem rosa
+  // por enquanto. O preto "existe" na transição porque é a PRÓPRIA seção 04
+  // (ainda no seu estado original) que aparece na hora da costura, antes
+  // desse estado assumir — não precisa duplicar isso aqui.
+  // colorWeightFactor/applyNoise sobrescritos (STATE_B tinha .39/.3,
+  // calibrados pro efeito de revelação preto/verde da 04) — a usuária achou
+  // a transição "abrupta/estranha" herdando esses valores: .39 concentra a
+  // cor do meio numa faixa estreita (~39% da curva) e salta rápido pra
+  // seguinte, como um "flash". .5 dá espaço mais equilibrado; ruído
+  // reduzido pra não "sujar" o branco.
+  // color2 trocado de #00FF66 (neon, exato da 04) pra um verde CLARO —
+  // pedido explícito pra suavizar logo de cara, não só no 2º estágio.
+  // color3 não é mais branco puro (#ffffff) — a usuária achou o salto pro
+  // branco "forte demais". #e0f5e8 é um branco puxado pro verde, mantendo a
+  // família de cor mais contínua em vez de saltar direto pra um branco
+  // neutro.
+  const STATE_PINK = {...STATE_B, color1:'#05421f', color2:'#8fe8c4', color3:'#e0f5e8', colorWeightFactor:.5, applyNoise:.15};
+  // STATE_B (original) nunca define color1/2/3 — a 04 nunca precisava
+  // resetar cor, só mudava geometria. Sem isso, "voltar pro repouso da 04"
+  // (ver checkExtraZones) deixava as cores PARADAS no branco/verde de
+  // STATE_PINK pra sempre, mesmo já de volta dentro da seção 04 — prejudica
+  // a leitura do texto branco de lá (reportado pela usuária).
+  const STATE_B_RESTORE = {...STATE_B, color1:PREV.color1, color2:PREV.color2, color3:PREV.color3};
+  // 2º estágio: verde claro (#99FF99, tom pedido) -> branco -> rosa claro.
+  const STATE_SUBTLE = {...STATE_B, color1:'#99FF99', color2:'#ffffff', color3:'#ffcbe4', colorWeightFactor:.5, applyNoise:.1};
+  // triggerPx: pixels DENTRO da própria zona (não fração da altura dela)
+  // até disparar a troca — bem mais direto que reaproveitar a fórmula de
+  // "progresso" da 04 (pensada pra seção comprida dela mesma). Essa fórmula
+  // teria cruzado o limiar cedo demais, com a 04 ainda ocupando a tela toda.
+  // Reduzido de 250 pra 40: a transição em si (animateTo, ver
+  // checkExtraZones abaixo) leva um tempo REAL pra completar — disparando
+  // cedo demais perto da costura, ela ainda está "no meio do caminho" (fundo
+  // escuro) quando o usuário chega no título (mais abaixo), deixando o texto
+  // escuro quase ilegível num fundo escuro (reportado com print).
+  // "Escada" de estágios de cor, em ORDEM (triggerPx crescente) — não mais
+  // zonas independentes. Cada estágio dispara ao passar do seu próprio
+  // ponto; ao voltar, usa o ÚLTIMO estágio ainda válido pra trás (ou
+  // STATE_B_RESTORE se nenhum). Isso resolve o caso de ter passado do 1º
+  // estágio mas não do 2º: recuar um pouco não pulava direto pro preto da
+  // 04, ficava preso no estágio errado com a lógica antiga (zonas
+  // independentes, cada uma resetando tudo pro repouso da 04 ao sair).
+  // extraZones = mesmo nome de antes só por compatibilidade com
+  // measureExtra abaixo, que também é usada pra dimensionar o recorte do
+  // canvas (união de todos os elementos únicos das etapas).
   const extraZones = [
-    { el: document.querySelector('.technologies'), at:.12, state:STATE_PINK, lastP:0, top:0, height:1 }
+    { el: document.querySelector('.technologies'), triggerPx:40, state:STATE_PINK },
+    // Era 200, depois 900 — ainda aparecia neon na altura do título. Colado
+    // bem perto do 1º estágio (40) pra virar quase um "flash" rápido de
+    // verde bem na costura, já suavizado bem antes do título aparecer.
+    { el: document.querySelector('.technologies'), triggerPx:80, state:STATE_SUBTLE }
   ].filter(z => z.el);
+  let activeStageIndex = -1;
   function measureExtra(){
     extraZones.forEach(z => {
       const b = z.el.getBoundingClientRect();
       z.top = b.top + scrollY; z.height = b.height || 1;
     });
     if(extraZones.length){
-      const last = extraZones[extraZones.length - 1];
-      // recorte estende pela ALTURA INTEIRA da(s) zona(s) extra — o canvas
-      // sempre desenha 1 tela cheia por frame, então recortar uma janela
-      // mais alta não custa mais caro (o gasto é por pixel de TELA, não por
-      // pixel de altura rolável). Cobrindo a seção inteira, não sobra corte
-      // no MEIO do conteúdo — só uma borda no fim dela, tratada com o fade
-      // abaixo, igual antes.
-      const extendPast = last.height;
+      // recorte estende pela ALTURA INTEIRA das zonas (união, caso tenham
+      // elementos diferentes no futuro) — o canvas sempre desenha 1 tela
+      // cheia por frame, então recortar uma janela mais alta não custa mais
+      // caro (o gasto é por pixel de TELA, não por pixel de altura rolável).
+      let maxBottom = -Infinity, refHeight = 1;
+      extraZones.forEach(z => { maxBottom = Math.max(maxBottom, z.top + z.height); refHeight = z.height; });
       glow.style.bottom = 'auto';
-      glow.style.height = Math.max(1, (last.top + extendPast) - sectionTop) + 'px';
+      glow.style.height = Math.max(1, maxBottom - sectionTop) + 'px';
       // sem isso, o canvas SOME numa linha reta exatamente onde o recorte
       // termina (reportado pela usuária: corte visível) — o overflow:hidden
       // sempre corta seco, então a única forma de suavizar é desvanecer o
       // PRÓPRIO canvas antes da borda, via máscara, não o clip em si.
-      const fadePx = Math.min(220, extendPast);
+      const fadePx = Math.min(220, refHeight);
       const mask = `linear-gradient(to bottom, #000 0, #000 calc(100% - ${fadePx}px), transparent 100%)`;
       glow.style.maskImage = mask;
       glow.style.webkitMaskImage = mask;
     }
   }
+  function stageIndexFor(s){
+    let idx = -1;
+    extraZones.forEach((z,i) => { if(s >= z.top + z.triggerPx) idx = i; });
+    return idx;
+  }
+  // Título branco enquanto o fundo ainda está escuro/verde (estágio 0,
+  // "PINK"), preto assim que clarear (estágio 1, "SUBTLE" em diante) —
+  // mesmos gatilhos da cor de fundo, ver .tech-on-dark em secao05.css.
+  const techWrapEl = document.querySelector('.technologies');
+  function syncTextColor(idx){
+    if(!techWrapEl) return;
+    techWrapEl.classList.toggle('tech-on-dark', idx < 1);
+  }
   function checkExtraZones(s){
-    extraZones.forEach(z => {
-      const p = clamp01((innerHeight - (z.top - s)) / z.height);
-      if(z.lastP < z.at && p >= z.at) animateTo(z.state,3);
-      if(z.lastP >= z.at && p < z.at) animateTo(STATE_B,3); // volta pro repouso da 04
-      z.lastP = p;
-    });
+    const idx = stageIndexFor(s);
+    if(idx !== activeStageIndex){
+      // .3s (era .6s, 1.2s, e 3s como a 04 usa pra suas próprias trocas) —
+      // pedido da usuária pra mudar mais rápido ainda.
+      animateTo(idx >= 0 ? extraZones[idx].state : STATE_B_RESTORE, .3);
+      activeStageIndex = idx;
+      syncTextColor(idx);
+    }
   }
   function snapExtra(){
-    extraZones.forEach(z => {
-      const p = clamp01((innerHeight - (z.top - scrollY)) / z.height);
-      z.lastP = p;
-      if(p >= z.at) Object.assign(cfg,z.state);
-    });
+    const idx = stageIndexFor(scrollY);
+    activeStageIndex = idx;
+    if(idx >= 0) Object.assign(cfg, extraZones[idx].state);
     syncU();
+    syncTextColor(idx);
   }
 
   let scrollCurrent = scrollY, lastProgress = 0, last = performance.now(), running = false, inView = true;
@@ -225,13 +298,19 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   // existia) — só que nada dispara esse refresh sozinho no carregamento
   // normal (só resize de janela). Re-medir por tempo garante certo mesmo
   // sem depender de outro código chamar refresh.
-  setTimeout(() => { measure(); measureExtra(); snapExtra(); render(); }, 1200);
-  setTimeout(() => { measure(); measureExtra(); }, 2800);
+  // snapExtra() SEMPRE junto de measureExtra() — sem isso (bug real, achado
+  // testando: "sem mudança de cor nenhuma"), a altura podia se corrigir
+  // certinho mas a cor nunca era reavaliada contra o valor novo, ficando
+  // presa em PREV pra sempre se o primeiro snapExtra() não tivesse pego a
+  // altura certa a tempo.
+  function remeasureAll(){ measure(); measureExtra(); snapExtra(); render(); }
+  setTimeout(remeasureAll, 1200);
+  setTimeout(remeasureAll, 2800);
   // ResizeObserver
   // reage a QUALQUER mudança de altura real da 04 ou da 05, não só resize de
   // janela/fonte — bem mais robusto que os listeners pontuais abaixo.
   if("ResizeObserver" in window){
-    const ro = new ResizeObserver(() => { measure(); measureExtra(); });
+    const ro = new ResizeObserver(remeasureAll);
     ro.observe(wrap);
     extraZones.forEach(z => ro.observe(z.el));
   }
@@ -258,10 +337,10 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   }
   function relayout(){ size(); measure(); render(); }
   addEventListener("resize",relayout,{passive:true});
-  addEventListener("resize",measureExtra,{passive:true});
+  addEventListener("resize",remeasureAll,{passive:true});
   if(window.ScrollTrigger && ScrollTrigger.addEventListener) ScrollTrigger.addEventListener("refresh",measure);
-  if(window.ScrollTrigger && ScrollTrigger.addEventListener) ScrollTrigger.addEventListener("refresh",measureExtra);
+  if(window.ScrollTrigger && ScrollTrigger.addEventListener) ScrollTrigger.addEventListener("refresh",remeasureAll);
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
-  if(document.fonts && document.fonts.ready) document.fonts.ready.then(measureExtra);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(remeasureAll);
   update();
 })();

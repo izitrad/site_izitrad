@@ -108,6 +108,14 @@
    linha sobe pra 400. Aplicado via classe na própria linha (ver index.html),
    não no span .word individual — cor/peso caem em cascata pros .word que o
    buildHeading() cria depois. */
+/* Título fica BRANCO enquanto o fundo ainda está escuro/verde (estágio 1 da
+   transição 04→05, ver secao04-fundo-1a1.js) e volta pro escuro assim que
+   o fundo clareia (estágio 2) — classe .tech-on-dark alternada via JS nos
+   MESMOS gatilhos que já controlam a cor de fundo. Antes disso: precisa vir
+   ANTES da regra .heading-accent abaixo (mesma especificidade — quem vier
+   DEPOIS no arquivo vence — "mais longe" tem que continuar rosa nos dois
+   estados, não virar branco junto). */
+.technologies.tech-on-dark .heading{color:#fff}
 .technologies .heading .heading-accent{color:var(--pink);font-weight:400}
 .eyebrow{color:var(--pink);font-weight:800;font-family:'DM Sans',system-ui,sans-serif}
 .technologies .container{position:relative;z-index:1;display:grid;padding:14.5833333333vw 0 0;grid-template-columns:repeat(12,1fr);column-gap:1.3888888889vw;margin:0 2.7777777778vw}
