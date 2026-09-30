@@ -124,6 +124,7 @@ const panelHeading = document.querySelector('#panelHeading');
 const panelLabel = document.querySelector('#panelLabel');
 const panelParagraph = document.querySelector('#panelParagraph');
 const technologiesWrapper = document.querySelector('.technologies .wrapper') || document.querySelector('.wrapper');
+const navMenuToggle = document.querySelector('[data-nav-toggle]');
 let panelTimeline = null;
 let activePanel = -1;
 
@@ -144,7 +145,7 @@ function openPanel(index){
   techPanel.setAttribute('aria-hidden','false');
   document.body.classList.add('panel-lock');
 
-  gsap.killTweensOf([panelSurface,panelInner,panelBackdrop,panelClose,technologiesWrapper]);
+  gsap.killTweensOf([panelSurface,panelInner,panelBackdrop,panelClose,technologiesWrapper,navMenuToggle]);
   gsap.set(panelSurface,{x:0,xPercent:100});
   gsap.set(panelInner,{x:0,xPercent:-50});
   gsap.set(panelBackdrop,{autoAlpha:0});
@@ -160,10 +161,15 @@ function openPanel(index){
     .to(panelInner,{xPercent:0},0)
     .to(panelBackdrop,{autoAlpha:1},0)
     .to(panelClose,{autoAlpha:1},.5);
+  // Menu hamburguer soma com o "FECHAR" no canto superior direito — some
+  // enquanto o painel tá aberto pra não disputar espaço (pedido da usuária).
+  // Rápido de propósito (.3s) — precisa sumir logo no início da abertura,
+  // não arrastar junto com o resto (que usa .7s).
+  if(navMenuToggle) panelTimeline.to(navMenuToggle,{autoAlpha:0,duration:.3,ease:'power2.out'},0);
 }
 function closePanel(){
   if(activePanel < 0) return;
-  gsap.killTweensOf([panelSurface,panelInner,panelBackdrop,panelClose,technologiesWrapper]);
+  gsap.killTweensOf([panelSurface,panelInner,panelBackdrop,panelClose,technologiesWrapper,navMenuToggle]);
   const tl = gsap.timeline({
     defaults:{duration:.7,ease:'power3.inOut'},
     onComplete:()=>{
@@ -178,6 +184,9 @@ function closePanel(){
     .to(panelInner,{xPercent:-50},0)
     .to(panelSurface,{xPercent:100},0)
     .to(panelBackdrop,{autoAlpha:0},0);
+  // Volta só perto do fim do fechamento (não no início) — senão reaparece
+  // rápido demais, antes da caixa terminar de sair, e fica dessincronizado.
+  if(navMenuToggle) tl.to(navMenuToggle,{autoAlpha:1,duration:.5,ease:'power2.out'},.2);
 }
 document.querySelectorAll('.technology').forEach((el,index)=>{
   el.addEventListener('click',(ev)=>{
