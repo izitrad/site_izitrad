@@ -163,9 +163,9 @@ function openPanel(index){
     .to(panelClose,{autoAlpha:1},.5);
   // Menu hamburguer soma com o "FECHAR" no canto superior direito — some
   // enquanto o painel tá aberto pra não disputar espaço (pedido da usuária).
-  // Rápido de propósito (.3s) — precisa sumir logo no início da abertura,
-  // não arrastar junto com o resto (que usa .7s).
-  if(navMenuToggle) panelTimeline.to(navMenuToggle,{autoAlpha:0,duration:.3,ease:'power2.out'},0);
+  // Bem rápido de propósito (.15s) — precisa sumir quase instantâneo no
+  // início da abertura, não arrastar junto com o resto (que usa .7s).
+  if(navMenuToggle) panelTimeline.to(navMenuToggle,{autoAlpha:0,duration:.15,ease:'power1.out'},0);
 }
 function closePanel(){
   if(activePanel < 0) return;
@@ -184,9 +184,9 @@ function closePanel(){
     .to(panelInner,{xPercent:-50},0)
     .to(panelSurface,{xPercent:100},0)
     .to(panelBackdrop,{autoAlpha:0},0);
-  // Volta só perto do fim do fechamento (não no início) — senão reaparece
-  // rápido demais, antes da caixa terminar de sair, e fica dessincronizado.
-  if(navMenuToggle) tl.to(navMenuToggle,{autoAlpha:1,duration:.5,ease:'power2.out'},.2);
+  // Só volta quando a caixa branca já saiu quase toda da tela (perto do
+  // fim dos .7s do fechamento), não no início.
+  if(navMenuToggle) tl.to(navMenuToggle,{autoAlpha:1,duration:.15,ease:'power1.out'},.55);
 }
 document.querySelectorAll('.technology').forEach((el,index)=>{
   el.addEventListener('click',(ev)=>{
