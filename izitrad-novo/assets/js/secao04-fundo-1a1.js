@@ -177,8 +177,8 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   // STATE_PINK pra sempre, mesmo já de volta dentro da seção 04 — prejudica
   // a leitura do texto branco de lá (reportado pela usuária).
   const STATE_B_RESTORE = {...STATE_B, color1:PREV.color1, color2:PREV.color2, color3:PREV.color3};
-  // 2º estágio: verde claro (#99FF99, tom pedido) -> branco -> rosa claro.
-  const STATE_SUBTLE = {...STATE_B, color1:'#99FF99', color2:'#ffffff', color3:'#ffcbe4', colorWeightFactor:.5, applyNoise:.1};
+  // 2º estágio: verde #006633 -> #CCFFCC (mais claro, era #99FFCC) -> #FF9999.
+  const STATE_SUBTLE = {...STATE_B, color1:'#006633', color2:'#CCFFCC', color3:'#FF9999', colorWeightFactor:.5, applyNoise:.1};
   // triggerPx: pixels DENTRO da própria zona (não fração da altura dela)
   // até disparar a troca — bem mais direto que reaproveitar a fórmula de
   // "progresso" da 04 (pensada pra seção comprida dela mesma). Essa fórmula
