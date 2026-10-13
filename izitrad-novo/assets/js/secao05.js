@@ -136,6 +136,8 @@ function setPanelContent(index){
   panelHeading.innerHTML = data.heading.split('\n').map(x=>`<div>${x}</div>`).join('');
   panelLabel.textContent = data.label;
   panelParagraph.textContent = data.paragraph;
+  // CSS usa isso pra pintar o triângulo do "FECHAR" na cor do botão aberto
+  techPanel.setAttribute('data-panel', index);
 }
 function openPanel(index){
   if(activePanel >= 0) return;

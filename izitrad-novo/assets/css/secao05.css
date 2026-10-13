@@ -161,7 +161,22 @@ mask-repeat:no-repeat;mask-position:center;mask-size:100% 100%}
 .tech-panel__surface{position:absolute;right:0;top:0;height:100%;width:33.3333333333vw;min-width:440px;background:#fff;color:#1a1a1a;overflow:hidden;pointer-events:auto;transform:translateX(100%)}
 .tech-panel__inner{height:100%;box-sizing:border-box;padding:5.2083333333vw;overflow-y:auto;transform:translateX(-50%)}
 .tech-panel__close{position:absolute;right:5.2083333333vw;top:3.75vw;z-index:3;border:0;background:none;color:#1a1a1a;font:600 .6944444444vw/1.2 Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;opacity:0}
-.tech-panel__close .arrow{display:inline-block;margin-left:.7vw;color:#cbd3e3;font-size:1.2em;letter-spacing:0}
+/* Triângulo da logo no lugar da seta "→" (pedido da usuária), na cor do botão
+   aberto: Missão #FF0099, Visão #00FF66, Valores #FF3333 (mesmas cores dos
+   triângulos da seção; data-panel é setado em secao05.js, setPanelContent).
+   Tamanho: .85em do texto (pedido: "um pouco maior" que .7em, mas não grande;
+   1.05em ficou maior que as letras). ALINHAMENTO: o centro do triângulo tem
+   que ficar no centro das MAIÚSCULAS de "FECHAR" (cap-height da DM Sans =
+   .72em -> centro a .36em da linha de base), não na "linha média" (x-height)
+   que o vertical-align:middle usa — com .middle ele ficava ~1.7px abaixo
+   (medido). .arrow = inline-block de line-height 0, cuja base fica na linha
+   de base do texto; vertical-align = (cap-height - altura)/2 sobe/desce o
+   conjunto pra o centro bater. */
+.tech-panel__close .arrow{display:inline-block;line-height:0;vertical-align:calc((.72em - .85em)/2);margin-left:.7vw;color:#FF0099;letter-spacing:0}
+.tech-panel__close .arrow svg{display:block;height:.85em;width:auto}
+.tech-panel[data-panel="0"] .tech-panel__close .arrow{color:#FF0099}
+.tech-panel[data-panel="1"] .tech-panel__close .arrow{color:#00FF66}
+.tech-panel[data-panel="2"] .tech-panel__close .arrow{color:#FF3333}
 /* -.065em (era -.055em) — só assim "Aproximar pessoas" (linha 1 do painel
    Missão) cabe numa linha só; texto precisava de 313px, cabiam só 308px. */
 .tech-panel__heading{font-family:'Outfit',Arial,sans-serif;font-weight:400;font-size:3.8194444444vw;line-height:1.18;letter-spacing:-.065em;margin:2.8vw 0 2.5vw}
