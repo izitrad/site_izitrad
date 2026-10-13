@@ -232,7 +232,13 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
       let maxBottom = -Infinity, refHeight = 1;
       extraZones.forEach(z => { maxBottom = Math.max(maxBottom, z.top + z.height); refHeight = z.height; });
       glow.style.bottom = 'auto';
-      glow.style.height = Math.max(1, maxBottom - sectionTop) + 'px';
+      // + innerHeight: o recorte passa 1 tela do fim da última zona (06). O
+      // palco dos cards fica nos últimos 100vh da 06, então com o recorte
+      // terminando no fim da seção, o esmaecimento de baixo (máscara abaixo)
+      // caía justo no rodapé da tela durante a leitura — "faixa" reportada
+      // pela usuária. Passando 1 tela, o esmaecimento acontece embaixo da 07
+      // (bloco opaco que cobre o canvas), fora da vista.
+      glow.style.height = Math.max(1, maxBottom - sectionTop + innerHeight) + 'px';
       // sem isso, o canvas SOME numa linha reta exatamente onde o recorte
       // termina (reportado pela usuária: corte visível) — o overflow:hidden
       // sempre corta seco, então a única forma de suavizar é desvanecer o
