@@ -42,7 +42,7 @@
    escondido por padrão (secao06.js só mostra com o mouse sobre os cards). */
 .ama-cursor{
   align-items:center;color:#000;display:flex;justify-content:center;
-  pointer-events:none;position:fixed;
+  pointer-events:none;position:fixed;top:0;left:0;
   transition:color .25s cubic-bezier(.25,.25,.75,.75),transform 1s cubic-bezier(.215,.61,.355,1);
   visibility:hidden;z-index:99999
 }
