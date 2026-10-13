@@ -1,0 +1,78 @@
+/* ===== SEÇÃO 06 — AVALIAÇÕES (carrossel 3D "Stories") =====
+   Fonte: _izi-GPT/seção 6/_APROVADO.html. Layout/tipografia/mecânica 1:1 do
+   aprovado; ADAPTAÇÕES (combinadas com a usuária):
+   - sem canvas WebGL próprio: o fundo é o MESMO canvas da 04/05 (ver
+     STATE_06 / extraZones em secao04-fundo-1a1.js) — claro -> rosa da logo
+     -> preto;
+   - fundo claro/rosa => texto, ponto do nome e anel do cursor PRETOS (no
+     original eram branco/ciano sobre azul-marinho);
+   - cursor customizado e cursor:none só dentro da área dos cards (o
+     original aplicava em html/body, o que escondia o mouse no site todo);
+   - removidos estilos globais do laboratório (html/body, lab-spacer etc.). */
+.sec06-stories{min-height:calc(13.8888888889vw + 100vh);color:#000;overflow:hidden;background:transparent;font-family:'DM Sans',system-ui,sans-serif}
+.sec06-stories *{box-sizing:border-box}
+
+/* Rótulo do topo ("06 — AVALIAÇÕES"): mesmo padrão dos outros capítulos
+   (ver .tech-kicker em secao05.css) — centralizado, DM Sans 14px/700,
+   top:5vh, entra subindo + giro de letras (ver secao06.js). Cor preta (e
+   não rosa) porque o fundo desta seção passa pelo rosa da logo. */
+.s06-kicker{
+  position:absolute;top:5vh;left:50%;transform:translate(-50%,70px);opacity:0;z-index:2;
+  color:#000;font-family:'DM Sans',system-ui,sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;text-align:center;
+}
+
+.s06-container{position:relative;z-index:2;display:grid;grid-template-columns:repeat(12,1fr);grid-column-gap:1.3888888889vw;margin:0 2.7777777778vw}
+.s06-column{align-items:center;display:flex;flex-direction:column;justify-content:center;position:relative}
+.s06-intro{grid-column:4/10;padding:13.8888888889vw 0 0;text-align:center}
+.s06-stage{height:100vh;height:calc(var(--vh,1vh)*100);transform-style:preserve-3d;cursor:none;grid-column:1/13;perspective:83.3333333333vw}
+.s06-stage *{cursor:none}
+.s06-heading{font-family:"DM Sans",sans-serif;font-size:5.5555555556vw;font-weight:400;letter-spacing:-.025em;line-height:5.5555555556vw;padding-bottom:2.0833333333vw;margin:0}
+.s06-heading-word{display:inline-block;will-change:opacity,filter}
+.s06-paragraph{font-family:"DM Sans",sans-serif;font-size:1.3888888889vw;line-height:1.9444444444vw;margin:0;width:34.7222222222vw}
+.s06-story{position:absolute;transform-style:preserve-3d;perspective:83.3333333333vw;width:36.1111111111vw;will-change:transform}
+.s06-position,.s06-inner,.s06-parallax{will-change:transform}
+.s06-paragraph-m{font-family:"DM Sans",sans-serif;font-size:1.8055555556vw;line-height:2.2222222222vw;margin:0}
+.s06-paragraph-m .s06-word{display:inline;opacity:.4;visibility:inherit;will-change:opacity}
+.s06-meta{align-items:center;display:flex;font-family:"DM Sans",sans-serif;font-size:.6944444444vw;line-height:1.0416666667vw;letter-spacing:.16em;text-transform:uppercase;visibility:hidden;margin-top:2.7777777778vw}
+.s06-dot{display:block;background:#000;border-radius:50%;height:.3472222222vw;margin-right:.625vw;width:.3472222222vw}
+.s06-label{opacity:.4;margin-left:.3472222222vw}
+
+/* Cursor customizado (ponto/seta + anel de progresso) — position:fixed,
+   escondido por padrão (secao06.js só mostra com o mouse sobre os cards). */
+.ama-cursor{
+  align-items:center;color:#000;display:flex;justify-content:center;
+  pointer-events:none;position:fixed;
+  transition:color .25s cubic-bezier(.25,.25,.75,.75),transform 1s cubic-bezier(.215,.61,.355,1);
+  visibility:hidden;z-index:99999
+}
+@media(min-width:601px){
+  .ama-cursor{height:5.5555555556vw;transform:translate(-2.7777777778vw,-2.7777777778vw);width:5.5555555556vw}
+}
+.ama-cursor.is-arrow,.ama-cursor.is-label{transform:translate(-3.4722222222vw,-3.4722222222vw)}
+.ama-outline{inset:0;position:absolute}
+.ama-circle-svg{transform:rotate(-90deg)}
+.ama-circle-svg circle{stroke:currentColor;stroke-width:1;fill:none}
+.ama-circle-svg circle:first-child{opacity:1}
+.ama-circle-svg circle:nth-child(2){opacity:.2}
+.ama-inner{align-items:center;display:flex;height:.2777777778vw;justify-content:center;width:.2777777778vw;position:absolute}
+.ama-dot{background:currentcolor;border-radius:100%;inset:0;position:absolute;transition:opacity .5s cubic-bezier(.25,.25,.75,.75)}
+.ama-cursor.is-arrow .ama-dot,.ama-cursor.is-label .ama-dot{opacity:0}
+.ama-arrow-svg{height:.5555555556vw;opacity:0;position:absolute;transition:opacity .5s cubic-bezier(.25,.25,.75,.75)}
+.ama-cursor.is-arrow .ama-arrow-svg{opacity:1}
+.ama-cursor svg{display:block;pointer-events:none;user-select:none;overflow:visible}
+
+@media(max-width:600px){
+  .s06-container{display:block;margin:0 5.3333333333vw}
+  .s06-intro{padding:0}
+  .s06-stage{perspective:320vw;cursor:auto}
+  .s06-stage *{cursor:auto}
+  .s06-heading{font-size:12.8vw;line-height:12.8vw;padding-bottom:8vw}
+  .s06-paragraph{font-size:5.3333333333vw;line-height:7.4666666667vw;width:auto}
+  .s06-story{perspective:320vw;width:100%}
+  .s06-paragraph-m{font-size:6.4vw;line-height:7.4666666667vw}
+  .s06-meta{font-size:2.6666666667vw;line-height:4vw;margin-top:9.3333333333vw}
+  .s06-dot{height:1.3333333333vw;margin-right:2.4vw;width:1.3333333333vw}
+  .s06-label{margin-left:1.3333333333vw}
+  .ama-cursor{display:none}
+}

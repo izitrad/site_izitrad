@@ -179,6 +179,14 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   const STATE_B_RESTORE = {...STATE_B, color1:PREV.color1, color2:PREV.color2, color3:PREV.color3};
   // 2º estágio: verde #006633 -> #CCFFCC (mais claro, era #99FFCC) -> #FF9999.
   const STATE_SUBTLE = {...STATE_B, color1:'#006633', color2:'#CCFFCC', color3:'#FF9999', colorWeightFactor:.5, applyNoise:.1};
+  // Seção 06 (avaliações): claro (topo da tela) -> rosa da logo #FF0099
+  // (meio, onde ficam os depoimentos) -> preto (embaixo). Geometria = STATE_B
+  // (a mesma do original aprovado da 06 depois dos 50% de progresso).
+  // colorWeightFactor .62: o rosa só "fecha" a 62% da altura da tela (de
+  // cima pra baixo) — mais alto que o .39 do original pra o preto não subir
+  // até o nome do cliente (abaixo do depoimento). Primeira passada: tons e
+  // pesos ajustados depois com a usuária.
+  const STATE_06 = {...STATE_B, color1:'#FFE9F4', color2:'#FF0099', color3:'#000000', colorWeightFactor:.62};
   // triggerPx: pixels DENTRO da própria zona (não fração da altura dela)
   // até disparar a troca — bem mais direto que reaproveitar a fórmula de
   // "progresso" da 04 (pensada pra seção comprida dela mesma). Essa fórmula
@@ -203,7 +211,12 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     // Era 200, depois 900 — ainda aparecia neon na altura do título. Colado
     // bem perto do 1º estágio (40) pra virar quase um "flash" rápido de
     // verde bem na costura, já suavizado bem antes do título aparecer.
-    { el: document.querySelector('.technologies'), triggerPx:80, state:STATE_SUBTLE }
+    { el: document.querySelector('.technologies'), triggerPx:80, state:STATE_SUBTLE },
+    // 06: dispara 40% da altura da tela ANTES do topo da seção chegar no
+    // topo da tela — com a 05 ainda ocupando os 40% de cima (rótulos escuros
+    // sobre o topo CLARO do novo degradê) e o título da 06 (preto) ainda
+    // entrando por baixo. Getter pra acompanhar a altura da janela.
+    { el: document.querySelector('#confianca'), get triggerPx(){ return -innerHeight*.4; }, state:STATE_06 }
   ].filter(z => z.el);
   let activeStageIndex = -1;
   function measureExtra(){
