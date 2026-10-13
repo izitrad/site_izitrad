@@ -50,15 +50,24 @@
   .ama-cursor{height:5.5555555556vw;transform:translate(-2.7777777778vw,-2.7777777778vw);width:5.5555555556vw}
 }
 .ama-cursor.is-arrow,.ama-cursor.is-label{transform:translate(-3.4722222222vw,-3.4722222222vw)}
-.ama-outline{inset:0;position:absolute}
-.ama-circle-svg{transform:rotate(-90deg)}
-.ama-circle-svg circle{stroke:currentColor;stroke-width:1;fill:none}
-.ama-circle-svg circle:first-child{opacity:1}
-.ama-circle-svg circle:nth-child(2){opacity:.2}
+/* flex + centro: o SVG do triângulo (viewBox 412x475) tem altura MAIOR que a
+   caixa quadrada do cursor; sem centralizar, ele ficava colado no topo e
+   escorregava ~6px pra baixo do centro (seta parecia alta demais). */
+.ama-outline{inset:0;position:absolute;display:flex;align-items:center;justify-content:center}
+.ama-circle-svg{flex:none;width:100%;height:auto}
+/* Anel em forma de triângulo da logo (era círculo, rotacionado -90deg pra
+   começar às 12h — o triângulo começa na ponta direita, sem rotação). */
+.ama-circle-svg path{stroke:currentColor;stroke-width:1;fill:none;stroke-linejoin:round}
+.ama-circle-svg path:first-child{opacity:1}
+.ama-circle-svg path:nth-child(2){opacity:.2}
 .ama-inner{align-items:center;display:flex;height:.2777777778vw;justify-content:center;width:.2777777778vw;position:absolute}
 .ama-dot{background:currentcolor;border-radius:100%;inset:0;position:absolute;transition:opacity .5s cubic-bezier(.25,.25,.75,.75)}
 .ama-cursor.is-arrow .ama-dot,.ama-cursor.is-label .ama-dot{opacity:0}
-.ama-arrow-svg{height:.5555555556vw;opacity:0;position:absolute;transition:opacity .5s cubic-bezier(.25,.25,.75,.75)}
+/* translateX: o centro do TRIÂNGULO (centroide) fica 57.6 unidades do viewBox
+   (412 de largura = 5.5556vw) à esquerda do centro da caixa — ponta à direita,
+   base à esquerda: 57.6/412*5.5556vw = .7767vw. Sem isso a seta fica no centro
+   da caixa, visualmente à direita do triângulo. */
+.ama-arrow-svg{height:.5555555556vw;opacity:0;position:absolute;transform:translateX(-.7767vw);transition:opacity .5s cubic-bezier(.25,.25,.75,.75)}
 .ama-cursor.is-arrow .ama-arrow-svg{opacity:1}
 .ama-cursor svg{display:block;pointer-events:none;user-select:none;overflow:visible}
 
