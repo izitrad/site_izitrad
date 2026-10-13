@@ -66,8 +66,15 @@
 /* translateX: o centro do TRIÂNGULO (centroide) fica 57.6 unidades do viewBox
    (412 de largura = 5.5556vw) à esquerda do centro da caixa — ponta à direita,
    base à esquerda: 57.6/412*5.5556vw = .7767vw. Sem isso a seta fica no centro
-   da caixa, visualmente à direita do triângulo. */
-.ama-arrow-svg{height:.5555555556vw;opacity:0;position:absolute;transform:translateX(-.7767vw);transition:opacity .5s cubic-bezier(.25,.25,.75,.75)}
+   da caixa, visualmente à direita do triângulo.
+   + .111vw: a cabeça da seta é "pesada" — o CENTRO DE MASSA do desenho dela
+   (medido por pixel, 45.68 de 75 do viewBox) fica 8.18 unidades à direita do
+   centro da caixa, então o olho lê a seta deslocada pra direita mesmo com a
+   caixa no lugar certo. -.7767 - .111 = -.8877vw (centro EXATO do triângulo).
+   Ajuste visual pedido pela usuária: "mova um pouco pra direita" -> +.3377vw
+   (≈5px a 1440) = -.55vw. Pontos de referência: -.8877 = centroide exato;
+   0 = meio da caixa (ponto mais à direita possível). */
+.ama-arrow-svg{height:.5555555556vw;opacity:0;position:absolute;transform:translateX(-.55vw);transition:opacity .5s cubic-bezier(.25,.25,.75,.75)}
 .ama-cursor.is-arrow .ama-arrow-svg{opacity:1}
 .ama-cursor svg{display:block;pointer-events:none;user-select:none;overflow:visible}
 
