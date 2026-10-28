@@ -175,7 +175,36 @@
     const lead = intro ? root.querySelector('.s3o-lead') : null;
     const introMovers = lead ? titleLines.concat([lead]) : titleLines;
     if(intro) gsap.set(intro, { autoAlpha: 0 });
-    if(introMovers.length) gsap.set(introMovers, { autoAlpha: 0, y: () => innerHeight*1.0 });
+    // Efeito de BLUR palavra por palavra (o mesmo da pergunta da seção 04,
+    // secao04.js): cada palavra vai de invisível+desfocada a nítida, uma
+    // depois da outra. Os elementos que SOBEM (linhas do título e o
+    // parágrafo) continuam subindo como antes (pedido da usuária: manter a
+    // subida E acrescentar o blur); quem controla a opacidade agora são as
+    // palavras — os elementos que sobem ficam sempre autoAlpha:1 (o
+    // container .s3o-intro é quem esconde tudo antes do introAt).
+    function splitWords(el){
+      Array.from(el.childNodes).forEach(function(n){
+        if(n.nodeType === 3){
+          const parts = n.textContent.split(/(\s+)/);
+          const frag = document.createDocumentFragment();
+          parts.forEach(function(p){
+            if(!p) return;
+            if(/^\s+$/.test(p)){ frag.appendChild(document.createTextNode(' ')); return; }
+            const w = document.createElement('span'); w.className = 's3o-w'; w.textContent = p; frag.appendChild(w);
+          });
+          n.parentNode.replaceChild(frag, n);
+        }else if(n.nodeType === 1 && n.tagName !== 'BR'){
+          splitWords(n);   // .s3o-hl (rosa) — mantém o span, divide o texto dentro
+        }
+      });
+    }
+    introMovers.forEach(splitWords);
+    const wordsOf = introMovers.map(function(el){ return Array.from(el.querySelectorAll('.s3o-w')); });
+    const BLUR_PX = () => innerWidth/1440*10;   // mesmo que a 04 (qScaleBase 1440)
+    if(introMovers.length){
+      gsap.set(introMovers, { autoAlpha: 1, y: () => innerHeight*1.0 });
+      gsap.set(wordsOf.flat(), { autoAlpha: 0, filter: () => 'blur('+BLUR_PX()+'px)' });
+    }
     if(ok){ gsap.set(backC,{autoAlpha:0}); gsap.set(frontC,{autoAlpha:0}); }
 
     // 1) documento faz sozinho centro → direita
@@ -212,12 +241,30 @@
     // espaço que já existe até o documento assentar, sem precisar mexer no
     // timing do documento.
     const INTRO_DUR = OPEN_DUR*0.7;
+    // Cada bloco (linha do título / parágrafo): a SUBIDA dura INTRO_DUR como
+    // antes; o BLUR das palavras só roda nos últimos 70% dessa janela
+    // (REVEAL_FROM=.3) — nos primeiros 30% o texto ainda está abaixo da
+    // tela, revelar ali seria revelar no escuro. As palavras terminam
+    // EXATAMENTE junto com a subida (introAt..+INTRO_DUR), então a duração da
+    // timeline não muda. Proporção stagger/duração = a da 04 (.04 / .2):
+    // unit escala essa proporção pra caber na janela, qualquer nº de palavras.
+    const REVEAL_FROM = 0.3;
+    function addIntroBlock(el, words, at){
+      tl.fromTo(el, { y:()=>innerHeight*1.0 }, { y:0, ease:'none', duration:INTRO_DUR }, at);
+      const n = words.length; if(!n) return;
+      const win = INTRO_DUR*(1-REVEAL_FROM);
+      const unit = win/(0.2 + 0.04*(n-1));
+      tl.fromTo(words,
+        { autoAlpha:0, filter:()=>'blur('+BLUR_PX()+'px)' },
+        { autoAlpha:1, filter:'blur(0px)', ease:'none', duration:0.2*unit, stagger:0.04*unit },
+        at + INTRO_DUR*REVEAL_FROM);
+    }
     titleLines.forEach((el, i)=>{
-      tl.fromTo(el, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:INTRO_DUR }, introAt + i*LINE_STAGGER);
+      addIntroBlock(el, wordsOf[i], introAt + i*LINE_STAGGER);
     });
     if(lead){
       const leadAt = introAt + titleLines.length*LINE_STAGGER + GROUP_GAP;
-      tl.fromTo(lead, { autoAlpha:0, y:()=>innerHeight*1.0 }, { autoAlpha:1, y:0, ease:'none', duration:INTRO_DUR }, leadAt);
+      addIntroBlock(lead, wordsOf[titleLines.length], leadAt);
     }
     // 3) Saturno materializa no centro final (fade + scale-in PROVISÓRIO),
     //    cronometrado com a chegada do documento.
