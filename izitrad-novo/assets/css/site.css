@@ -260,9 +260,16 @@ img,svg{display:block}
    quem vem depois ganha. */
 .copy-a{top:8%;left:10px;width:34%}
 .copy-a h2{font-size:clamp(32px,3vw,52px);font-weight:500;letter-spacing:-.01em;line-height:1.08;margin-bottom:14px}
-.copy-a h2 span{color:var(--pink);font-weight:600}
+.copy-a h2 span{color:var(--pink);font-weight:800}
 .copy-a__subtitle{margin:8px 0 0 0;font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:300;font-size:clamp(16px,1.35vw,20px);line-height:1.4;letter-spacing:.005em;text-transform:none;color:#1a1a1e}
 .copy-a__subtitle--2{margin-top:0}
+/* palavras do texto da 02 (site.js, splitWords): inline-block pra poder aplicar
+   blur/opacidade a cada uma (efeito palavra por palavra, igual à pergunta da 04) */
+.s2-w{display:inline-block;will-change:opacity,filter}
+/* as palavras são <span>, e ".copy-a h2 span" (rosa/600) pegaria TODAS: aqui cada
+   palavra herda cor e peso do pai (h2 = escuro/500, span rosa = rosa/600) →
+   design idêntico ao de antes do efeito */
+.copy-a h2 .s2-w{color:inherit;font-weight:inherit}
 .doc-stage{position:absolute;left:50%;top:50%;width:min(31vw,470px);z-index:9;perspective:1000px;transform:translate(-50%,-50%) rotate(-4deg);will-change:transform}
 /* sombra reativa ao mouse — fica FORA do .doc (que tem overflow:hidden) pra
    poder borrar/vazar livremente atrás dele. Some visualmente por baixo da

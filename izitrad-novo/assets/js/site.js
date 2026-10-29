@@ -1012,10 +1012,43 @@ function initSolucao(root){
      tocado, continua isolado. INTRO = quanto essa apresentação empurra o
      resto da timeline; a altura da seção (site.css) cresce na mesma
      proporção pra não acelerar o resto do scroll. */
-  gsap.set(q('.copy-a'),{opacity:0,y:32});
+  // Texto "UM DOCUMENTO. CINCO JEITOS DE CHEGAR LÁ." com o BLUR palavra por
+  // palavra da pergunta da 04 (secao04.js): cada palavra vai de invisível +
+  // desfocada a nítida, uma depois da outra. A subida (y 32→0) continua como
+  // antes; quem controla a opacidade agora são as palavras (o .copy-a fica
+  // sempre visível). As palavras terminam dentro da MESMA janela de antes
+  // (0 .. .6, a folha entra em .62) → duração/gatilhos da timeline não mudam.
+  // Proporção stagger/duração = a da 04 (.04/.2): unit escala pra caber na janela.
+  const copyA = q('.copy-a');
+  function splitWords(el){
+    Array.from(el.childNodes).forEach(function(n){
+      if(n.nodeType === 3){
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(function(p){
+          if(!p) return;
+          if(/^\s+$/.test(p)){ frag.appendChild(document.createTextNode(' ')); return; }
+          const w = document.createElement('span'); w.className = 's2-w'; w.textContent = p; frag.appendChild(w);
+        });
+        n.parentNode.replaceChild(frag, n);
+      }else if(n.nodeType === 1 && n.tagName !== 'BR'){
+        splitWords(n);   // <span> rosa — mantém o span, divide o texto dentro
+      }
+    });
+  }
+  copyA.forEach(splitWords);
+  const copyWords = Array.from(root.querySelectorAll('.copy-a .s2-w'));
+  const copyBlur = () => innerWidth/1440*10;   // mesmo que a 04 (qScaleBase 1440)
+  gsap.set(copyA,{y:32});
+  gsap.set(copyWords,{autoAlpha:0,filter:()=>'blur('+copyBlur()+'px)'});
   gsap.set(q('.doc-stage'),{opacity:0,y:70,scale:.92});
-  tl.to(q('.copy-a'),{opacity:1,y:0,duration:.42,ease:'power2.out'},0)
+  tl.to(copyA,{y:0,duration:.42,ease:'power2.out'},0)
     .to(q('.doc-stage'),{opacity:1,y:0,scale:1,duration:.75,ease:'power2.out'},0.62);
+  if(copyWords.length){
+    const COPY_WIN = 0.6, copyUnit = COPY_WIN/(0.2 + 0.04*(copyWords.length-1));
+    tl.fromTo(copyWords,
+      {autoAlpha:0,filter:()=>'blur('+copyBlur()+'px)'},
+      {autoAlpha:1,filter:'blur(0px)',ease:'none',duration:0.2*copyUnit,stagger:0.04*copyUnit},0);
+  }
   // rótulo "02 / O CAMINHO" já nasce visível (sem gsap.set/opacity antes
   // disso) — o giro das letras (rolling text) é a própria entrada dele.
   // Padronizado pro giro SINCRONIZADO (mesmo padrão de addSyncedRollingTween,

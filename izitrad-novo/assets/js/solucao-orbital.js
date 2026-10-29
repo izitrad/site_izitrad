@@ -24,6 +24,27 @@
   // em window pra site.js (script separado, outro closure) ler o mesmo
   // valor. Calibração inicial — se mudar, só este número.
   window.DOC_FINAL_Y_OFFSET = 40;
+  // VARIANTES DE COMPARAÇÃO da entrada dos anéis (temporário, pra decidir):
+  //   (sem parâmetro)  = opção 1: anéis acendem em sequência, do menor ao maior (PADRÃO, aprovada)
+  //   ?aneis=abraco    = opção 2: metades de trás primeiro, depois as da frente
+  //   ?aneis=onda      = opção 3: opção 1 + onda de luz só no núcleo
+  //   ?aneis=desenho   = opção 4: anéis se desenham por máscara cônica (CARA em desempenho)
+  //   ?aneis=expande   = opção 5: anéis nascem pequenos no centro e se expandem
+  //   ?aneis=expandidos = versão 6: os ANÉIS entram MAIORES e bem expandidos e vão
+  //                      encolhendo até o tamanho original conforme o scroll (os
+  //                      triângulos, em tamanho normal, acompanham o anel deles)
+  //   ?aneis=d1..d6    = opção 4 (desenho) USANDO A ROLAGEM QUE SOBRA (a entrada normal
+  //                      dura <1 de timeline; o miolo livre vai de ~18.8 a ~24.4):
+  //     d1 um anel por vez (sem sobreposição)      d2 lento, com sobreposição
+  //     d3 um por vez, desenhando pros DOIS lados  d4 um por vez, serviços aparecem
+  //     d5 = d3 + d4 (dois lados + serviços)          conforme o traço passa
+  //     d6 um por vez com PAUSAS entre os anéis
+  //   &ordem=fora      = em d1..d6, desenha do anel maior pro menor (padrão: menor → maior)
+  const VARIANT = (function(){
+    const v = (new URLSearchParams(location.search).get('aneis')||'').toLowerCase();
+    return ['abraco','onda','desenho','expande','expandidos','d1','d2','d3','d4','d5','d6'].indexOf(v) >= 0 ? v : '';
+  })();
+  const ORDEM_FORA = (new URLSearchParams(location.search).get('ordem')||'').toLowerCase() === 'fora';
   const DOC_SHIFT_X = 0.135;   // fração de innerWidth: centro → posição final (direita)
   const OPEN_DUR    = 1.3;     // duração (unidades da timeline) da abertura
   const FINAL_SCALE = 0.55;    // escala em que a transição assenta o documento
@@ -36,9 +57,14 @@
     { sy:.53, rot:-8, scale:1.22 }
   ];
 
-  const state = { ready:false };
+  // rr = "fator de revelação" de cada anel (por PLANO, 0 = menor ... 3 = maior):
+  // 0 -> 1 durante a abertura (ver init). O módulo dos triângulos
+  // (solucao-nodes.js) multiplica a opacidade de cada nó/rótulo pelo fator do
+  // anel em que ele viaja, então o triângulo aparece junto com o SEU anel.
+  // Padrão 1 (tudo visível) pra nunca esconder nada se a timeline não rodar.
+  const state = { ready:false, rr:{p0:1,p1:1,p2:1,p3:1} };
   let solStage, docStage, backC, frontC;
-  let backLayer, frontLayer, glow, ringsB=[], ringsF=[];
+  let backLayer, frontLayer, glow, wave, waveI, ringsB=[], ringsF=[];
   const layers = {};
 
   function el(tag, cls){ const e=document.createElement(tag); if(cls) e.className=cls; return e; }
@@ -56,7 +82,16 @@
     backLayer  = el('div','saturn-back-layer');
     const nodesBack  = el('div','s3o-nodes-back');
     const labelsBack = el('div','s3o-labels-back');
-    backC.append(glow, backLayer, nodesBack, labelsBack);
+    if(VARIANT === 'onda'){
+      // onda de luz do núcleo (só nesta variante): .orbit-wave fixa (achatada/
+      // inclinada como os anéis, escrita em sync()), .orbit-wave-i é a escalada
+      wave  = el('div','orbit-wave');
+      waveI = el('div','orbit-wave-i');
+      wave.appendChild(waveI);
+      backC.append(glow, wave, backLayer, nodesBack, labelsBack);
+    }else{
+      backC.append(glow, backLayer, nodesBack, labelsBack);
+    }
 
     // --- frente (dentro de .s3o-front) ---
     frontLayer = el('div','saturn-front-layer-v23');
@@ -130,10 +165,21 @@
     for(let i=0;i<4;i++){
       const p=PLANES[i], d=g.base*p.scale;
       const w=d+'px', l=(g.cx-d/2)+'px', t=(g.cy-d/2)+'px';
-      const tr='rotate('+p.rot+'deg) scaleY('+p.sy+')';
+      // opção 5 (?aneis=expande): o scale entra no FIM da transformação, via
+      // var --rs (animada pelo GSAP; 1 = tamanho final), então o anel cresce
+      // uniformemente em torno do próprio centro (= centro comum dos anéis).
+      // Nas outras variantes a string é a de sempre.
+      const tr='rotate('+p.rot+'deg) scaleY('+p.sy+')' + ((VARIANT==='expande' || VARIANT==='expandidos') ? ' scale(var(--rs,1))' : '');
       const b=ringsB[i], f=ringsF[i];
       b.style.width=w; b.style.height=w; b.style.left=l; b.style.top=t; b.style.transform=tr;
       f.style.width=w; f.style.height=w; f.style.left=l; f.style.top=t; f.style.transform=tr;
+    }
+    if(wave){
+      // onda (?aneis=onda): mesmo centro/inclinação dos anéis, tamanho do EXTERNO
+      const wp=PLANES[3], wd=g.base*wp.scale;
+      wave.style.width=wd+'px'; wave.style.height=wd+'px';
+      wave.style.left=(g.cx-wd/2)+'px'; wave.style.top=(g.cy-wd/2)+'px';
+      wave.style.transform='rotate('+wp.rot+'deg) scaleY('+wp.sy+')';
     }
     const gd=g.base*GLOW_K;
     glow.style.width=gd+'px'; glow.style.height=gd+'px'; glow.style.left=g.cx+'px'; glow.style.top=g.cy+'px';
@@ -278,8 +324,134 @@
       // anéis forçava re-rasterização por frame do CSS pesado (box-shadow/
       // filter/mask/conic) e travava justo no deslize; opacity é composição
       // barata. A materialização definitiva vem depois (checkpoint).
-      tl.fromTo(backC,  { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:revDur }, revAt);
-      tl.fromTo(frontC, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:revDur }, revAt);
+      // Os anéis acendem em SEQUÊNCIA, de dentro pra fora (plano 0 = menor ...
+      // 3 = maior), em vez de um fade único das duas camadas. Cada anel =
+      // sua metade de trás + sua metade da frente juntas, junto com o
+      // triângulo/rótulo do serviço que viaja nele (state.rr, lido em
+      // solucao-nodes.js). Os containers (.s3o-back/.s3o-front) ligam NA HORA
+      // em revAt (quem aparece aos poucos agora são os filhos). Tudo cabe na
+      // MESMA janela de antes (revAt .. revAt+revDur): a duração da timeline e
+      // os gatilhos de rolagem não mudam. Só opacidade (sem scale) — mesma
+      // razão de antes: scale nas camadas dos anéis re-rasteriza CSS pesado.
+      // VARIANTES (ver VARIANT no topo): o ramo padrão ('') é a opção 1; os
+      // demais existem só pra COMPARAÇÃO via ?aneis=... e todos cabem na MESMA
+      // janela (revAt .. revAt+revDur).
+      tl.set(backC,  { autoAlpha:1 }, revAt);
+      tl.set(frontC, { autoAlpha:1 }, revAt);
+      Object.assign(state.rr, { p0:0, p1:0, p2:0, p3:0 });
+      if(VARIANT === 'abraco'){
+        // OPÇÃO 2 — anéis "abraçam" o documento: FASE A (1ª metade): metades de
+        // TRÁS (ringsB) em sequência + brilho; FASE B (2ª metade): metades da
+        // FRENTE (ringsF) fecham cada anel — triângulo/energia entram aqui.
+        const HALF = revDur*0.25, HGAP = (revDur*0.5 - HALF)/3, PHASE_B = revAt + revDur*0.5;
+        for(let k=0;k<4;k++){
+          tl.fromTo(ringsB[k], { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:HALF }, revAt + k*HGAP);
+          tl.fromTo(ringsF[k], { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:HALF }, PHASE_B + k*HGAP);
+          tl.fromTo(state.rr, { ['p'+k]:0 }, { ['p'+k]:1, ease:'power1.out', duration:HALF }, PHASE_B + k*HGAP);
+        }
+        tl.fromTo(glow, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:HALF+HGAP }, revAt);
+        if(layers.energy) tl.fromTo(layers.energy, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:HALF }, PHASE_B + 2*HGAP);
+      }else if(/^d[1-6]$/.test(VARIANT)){
+        // OPÇÃO 4 (desenho por máscara cônica) espalhada pela rolagem livre. Cada
+        // anel = metade de trás + da frente com a mesma var --draw (0..1). Todos
+        // os tweens ficam entre revAt (17.8) e ~23.5, antes do último trecho da
+        // timeline (24.4→25.3) → duração e gatilhos não mudam.
+        const CFG = {
+          d1:{ dur:1.2, step:1.2 },
+          d2:{ dur:3.0, step:0.9 },
+          d3:{ dur:1.2, step:1.2, two:true },
+          d4:{ dur:1.2, step:1.2, follow:true },
+          d5:{ dur:1.2, step:1.2, two:true, follow:true },
+          d6:{ dur:0.9, step:1.4 }
+        }[VARIANT];
+        const ORDER = ORDEM_FORA ? [3,2,1,0] : [0,1,2,3];   // planos, na ordem em que se desenham
+        const EASE = 'power1.inOut';
+        root.classList.add(CFG.two ? 's3o-rings-draw2' : 's3o-rings-draw');
+        if(CFG.follow){
+          // serviços aparecem conforme o traço passa por eles (lido em placeNodes)
+          Object.assign(state.rr, { p0:1, p1:1, p2:1, p3:1 });
+          state.dr = { p0:0, p1:0, p2:0, p3:0 };
+          state.drTwo = !!CFG.two;
+        }
+        ORDER.forEach((k, i)=>{
+          const at = revAt + i*CFG.step;
+          const pair = [ringsB[k], ringsF[k]];
+          gsap.set(pair, { visibility:'hidden', '--draw':0 });
+          tl.set(pair, { visibility:'visible' }, at);
+          tl.fromTo(pair, { '--draw':0 }, { '--draw':1, ease:EASE, duration:CFG.dur }, at);
+          if(CFG.follow) tl.fromTo(state.dr, { ['p'+k]:0 }, { ['p'+k]:1, ease:EASE, duration:CFG.dur }, at);
+          else tl.fromTo(state.rr, { ['p'+k]:0 }, { ['p'+k]:1, ease:'power1.out', duration:CFG.dur }, at);
+          if(k === 2 && layers.energy) tl.fromTo(layers.energy, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:CFG.dur }, at);
+        });
+        tl.fromTo(glow, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:CFG.dur }, revAt);
+      }else{
+        // OPÇÃO 1 (padrão) + variantes 'onda' / 'desenho' / 'expande': mesma
+        // sequência de dentro pra fora, mudando só COMO cada anel aparece.
+        const RING_DUR = revDur*0.55;
+        const RING_GAP = (revDur - RING_DUR)/3;
+        const INVERT = VARIANT === 'expande' || VARIANT === 'expandidos';   // OPÇÃO 5 e 6: do maior (k=3) pro menor (k=0)
+        const ENTRY_FROM = 2.2;   // escala de onde os anéis da versão 6 começam (fora, maiores)
+        const GROWN = 1 + 0.5;   // escala em que a versão 6 termina a entrada (= 1+EXP abaixo)
+        if(VARIANT === 'desenho') root.classList.add('s3o-rings-draw');   // OPÇÃO 4 (CSS .s3o-rings-draw)
+        for(let k=0;k<4;k++){
+          const at = revAt + (INVERT ? 3-k : k)*RING_GAP;
+          const pair = [ringsB[k], ringsF[k]];
+          if(VARIANT === 'desenho'){
+            // máscara cônica revela o arco (var --draw 0..1); nasce embaixo, sentido horário
+            gsap.set(pair, { visibility:'hidden', '--draw':0 });
+            tl.set(pair, { visibility:'visible' }, at);
+            tl.fromTo(pair, { '--draw':0 }, { '--draw':1, ease:'power1.inOut', duration:RING_DUR }, at);
+          }else if(VARIANT === 'expande'){
+            // OPÇÃO 5: nasce pequeno (--rs .12) no centro comum e cresce até o
+            // tamanho final enquanto aparece (transform via var, ver sync()).
+            tl.fromTo(pair, { autoAlpha:0, '--rs':0.12 }, { autoAlpha:1, '--rs':1, ease:'power2.out', duration:RING_DUR }, at);
+          }else if(VARIANT === 'expandidos'){
+            // VERSÃO 6: os anéis vêm DE FORA PRA DENTRO — nascem maiores que a escala
+            // expandida (ENTRY_FROM), um do maior pro menor, e encolhem até GROWN
+            // enquanto aparecem; depois o scroll encolhe até 1 (abaixo)
+            tl.fromTo(pair, { autoAlpha:0, '--rs':ENTRY_FROM }, { autoAlpha:1, '--rs':GROWN, ease:'power2.out', duration:RING_DUR }, at);
+          }else{
+            tl.fromTo(pair, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:RING_DUR }, at);
+          }
+          tl.fromTo(state.rr, { ['p'+k]:0 }, { ['p'+k]:1, ease:'power1.out', duration:RING_DUR }, at);
+        }
+        // brilho central acompanha o começo (cobre a janela dos 2 primeiros anéis)
+        tl.fromTo(glow, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:RING_DUR+RING_GAP }, revAt);
+        // traço de energia do serviço selecionado (0 = Juramentada = plano 2)
+        // aparece com o anel dele, senão ficaria solto antes do anel acender
+        if(layers.energy) tl.fromTo(layers.energy, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:RING_DUR }, revAt + (INVERT ? 1 : 2)*RING_GAP);
+        if(VARIANT === 'expandidos'){
+          // VERSÃO 6: os ANÉIS aparecem GRANDES e bem expandidos (escala 1+EXP) —
+          // os anéis fazem a entrada da opção 1 (fade em sequência) já nesse
+          // tamanho — e DEPOIS que a entrada termina (revAt+revDur) encolhem até
+          // o tamanho original, em velocidade proporcional ao scroll (ease:'none'),
+          // usando a rolagem que sobra no fim da timeline (ela tem 25.3, a entrada
+          // termina ~18.8; encolher leva SETTLE_DUR e termina ~21.8, sem passar
+          // da duração total → gatilhos não mudam). Os triângulos NÃO mudam de
+          // tamanho, mas o raio da órbita deles segue o mesmo fator dos anéis
+          // (state.settle.v, lido em placeNodes: raio = 1 + EXP*(1-v), mesma reta
+          // linear do --rs dos anéis), senão ficariam soltos fora do anel.
+          // Ajustes: SETTLE_DUR (quanto de scroll) e EXP (.5 = anéis 1.5x no início).
+          const SETTLE_DUR = 3.0, EXP = GROWN - 1;
+          state.settleK = { exp:EXP, size:0 };
+          state.settle  = { v:0 };
+          tl.fromTo(state.settle, { v:0 }, { v:1, ease:'none', duration:SETTLE_DUR }, revAt + revDur);
+          for(let k=0;k<4;k++){
+            tl.fromTo([ringsB[k], ringsF[k]], { '--rs':1+EXP }, { '--rs':1, ease:'none', duration:SETTLE_DUR }, revAt + revDur);
+          }
+        }
+        if(VARIANT === 'onda'){
+          // OPÇÃO 3 (só no NÚCLEO): onda (só degradê, atrás do documento) nasce
+          // no centro e se expande até um pouco além do núcleo (.orbit-glow,
+          // diâmetro base*GLOW_K), em velocidade constante, e some. Não comanda
+          // os anéis. O brilho do núcleo segue com o fade da opção 1 (acima).
+          const WAVE_DUR = revDur*0.6;
+          const S0 = 0.08, S1 = (GLOW_K/PLANES[3].scale)*1.15;
+          tl.fromTo(waveI, { scale:S0 }, { scale:S1, ease:'none', duration:WAVE_DUR }, revAt);
+          tl.fromTo(wave,  { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:WAVE_DUR*0.2 }, revAt);
+          tl.to(wave, { autoAlpha:0, ease:'power1.in', duration:WAVE_DUR*0.35 }, revAt + WAVE_DUR*0.7);
+        }
+      }
       sync();
       addEventListener('resize', sync, {passive:true});
       if(window.ScrollTrigger && ScrollTrigger.addEventListener) ScrollTrigger.addEventListener('refresh', sync);
