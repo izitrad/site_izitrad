@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400;9..40,500;9..40,700;9..40,800&family=Outfit:wght@200;300;400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=123">
+<link rel="stylesheet" href="assets/css/site.css?v=125">
 <link rel="stylesheet" href="assets/css/solucao-orbital.css?v=13">
 <!-- Seção 04: fonte do "SIMPLES" (Steelfish Eb) hospedada local em assets/fonts/, ver @font-face em secao04.css -->
 <link rel="stylesheet" href="assets/css/secao04.css?v=112">
@@ -103,6 +103,15 @@
 
       <!-- Reveal em TEXTO HTML (Outfit 900) — calibrado por JS p/ bater o layout. -->
       <div class="reveal-html" aria-label="Apostilamento de Haia, sem sair de casa">
+        <!-- filtro do CONTORNO LIMPO do "SEM" (.sem-line): tira o miolo (erode 2px)
+             do texto e deixa só o anel na borda EXTERNA da palavra — ao contrário
+             do text-stroke, não mostra os contornos que se sobrepõem entre as letras -->
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+          <filter id="semOutline" x="-5%" y="-10%" width="110%" height="120%" color-interpolation-filters="sRGB">
+            <feMorphology in="SourceAlpha" operator="erode" radius="2" result="miolo"/>
+            <feComposite in="SourceGraphic" in2="miolo" operator="out"/>
+          </filter>
+        </svg>
         <div class="hr-frame">
           <!-- Geometria remedida DIRETO da imagem de referência (1824x862px
                reais, medido em pixel): cada x/w abaixo é a fração (esquerda/
@@ -119,7 +128,7 @@
                em 30px iguais, por instrução explícita. -->
           <div class="ht" data-k="apost"  data-x="137" data-y="140" data-w="1647" data-h="147" style="color:#000"><span class="ht__in"><span class="ht-a">APOSTILA</span><span class="ht-m">MENTO</span></span></div>
           <div class="ht" data-k="haia"   data-x="268" data-y="317" data-w="442"  data-h="84"  style="color:#000"><span class="ht__in"><span class="ht-d">DE</span> <span class="ht-h">HAIA</span></span></div>
-          <div class="ht" data-k="sem"    data-x="740" data-y="317" data-w="465"  data-h="177" style="color:#fff"><span class="ht__in">SEM</span></div>
+          <div class="ht" data-k="sem"    data-x="740" data-y="317" data-w="465"  data-h="177" style="color:#fff"><span class="ht__in">SEM<span class="sem-line" aria-hidden="true">SEM</span></span></div>
           <div class="ht" data-k="sair"   data-x="1235" data-y="317" data-w="504" data-h="177" style="color:#fff"><span class="ht__in">SAIR</span></div>
           <div class="ht" data-k="decasa" data-x="740" data-y="524" data-w="999"  data-h="180" style="color:#fff"><span class="ht__in">DE CASA</span></div>
         </div>
@@ -520,7 +529,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/DrawSVGPlugin.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/MotionPathPlugin.min.js"></script>
 <script src="assets/js/solucao-orbital.js?v=40"></script>
-<script src="assets/js/site.js?v=132"></script>
+<script src="assets/js/site.js?v=136"></script>
 <script src="assets/js/secao04.js?v=94"></script>
 <script type="module" src="assets/js/secao04-fundo-1a1.js?v=36"></script>
 <script src="assets/js/secao05.js?v=13"></script>
