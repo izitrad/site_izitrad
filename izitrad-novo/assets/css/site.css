@@ -193,6 +193,15 @@ img,svg{display:block}
    tudo). .fc-word mantém cada palavra inteira numa "caixa" só (nowrap) pra
    o wrap de linha nunca cortar no meio de uma palavra. */
 .fc-word{display:inline-block;white-space:nowrap}
+/* DESKTOP: parágrafo e botão acompanham a escala do quadro dos títulos
+   (calibrateHTML, site.js: o quadro 1920 escala por innerWidth/1920). Valem 25px
+   / 16px a partir de 1920px de largura e diminuem junto com a tela; o padding e
+   a margem do botão passam pra em (mesmos valores a 16px). Celular (<900) não muda. */
+@media(min-width:900px){
+  .hero-layer .reveal-copy{font-size:clamp(12px,.8334vw,16px);width:min(510px,31.5vw)}
+  .hero-layer .reveal-copy p{font-size:clamp(14px,1.3021vw,25px)}
+  .hero-layer .reveal-copy .btn{padding:.85em 1.7em;margin-top:2.2em}
+}
 .fc-char{display:inline-block;opacity:0;transform-origin:50% 50%;backface-visibility:hidden;will-change:transform,filter,opacity}
 .hero-layer .reveal-html{position:absolute;z-index:5;inset:0;overflow:hidden;pointer-events:none}
 .hero-layer .reveal-html .hr-frame{position:absolute;top:55%;left:50%;width:1920px;height:1080px;transform:translate(-50%,-50%);transform-origin:center}

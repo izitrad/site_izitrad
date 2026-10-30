@@ -208,12 +208,45 @@ function initHeroS2Story(root){
 
   // calibra cada trecho HTML pro tamanho/posição exato medido no SVG original
   const DESKTOP_MIN = 900;
+  // RENTE ÀS BORDAS (pedido da usuária): o quadro 1920x1080 dos títulos agora
+  // ESCALA pela largura da tela (s = innerWidth/1920), então o hero fica igual
+  // em qualquer largura. "APOSTILAMENTO" ocupa a tela toda menos EDGE_PX de
+  // folga de cada lado, e o bloco "SEM SAIR / DE CASA" termina EDGE_PX antes da
+  // borda direita. A folga é em px REAIS (EDGE_PX/s em unidades do quadro).
+  // Geometria BASE (data-x/y/w/h no HTML): apost 1647x147, haia 442x84, sem
+  // 465x177, sair 504x177, decasa 999x180, bloco branco começando em x=740, gap
+  // de 30 entre linhas. k1 estica a linha de cima até a largura toda; k2 estica
+  // o bloco branco (e "DE HAIA", que acompanha ele) até a borda direita,
+  // mantendo a borda ESQUERDA dele em 740 (onde o parágrafo já termina).
+  const FRAME_W = 1920, EDGE_PX = 10;
+  function heroGeometry(s){
+    const mu = EDGE_PX/s;
+    const k1 = (FRAME_W - 2*mu)/1647;
+    const R = FRAME_W - mu, X0 = 740, k2 = (R - X0)/999, GAP = 30;
+    const y1 = 140, h1 = 147*k1, y2 = y1 + h1 + GAP, hRow = 177*k2, y3 = y2 + hRow + GAP;
+    const wHaia = 442*k2;
+    return {
+      apost: {x:mu,                   y:y1, w:FRAME_W - 2*mu, h:h1},
+      haia:  {x:X0 - 30*k2 - wHaia,   y:y2, w:wHaia,          h:84*k2},
+      sem:   {x:X0,                   y:y2, w:465*k2,         h:hRow},
+      sair:  {x:X0 + 495*k2,          y:y2, w:504*k2,         h:hRow},
+      decasa:{x:X0,                   y:y3, w:R - X0,         h:180*k2}
+    };
+  }
   function calibrateHTML(){
     const desktop = innerWidth >= DESKTOP_MIN;
+    const frame = root.querySelector('.reveal-html .hr-frame');
+    // largura REAL do palco (sem a barra de rolagem, que come ~15px do innerWidth)
+    const stageW = (root.querySelector('.reveal-html') || {}).clientWidth || innerWidth;
+    const s = stageW/FRAME_W;
+    const geo = desktop ? heroGeometry(s) : null;
+    // mede SEM escala (getBoundingClientRect devolveria px já escalados)
+    if(frame) frame.style.transform = desktop ? 'translate(-50%,-50%)' : '';
     root.querySelectorAll('.reveal-html .ht').forEach((box)=>{
       const inner = box.querySelector('.ht__in');
       if(!desktop){ box.style.left=''; box.style.top=''; inner.style.fontSize=''; inner.style.transform=''; return; }
-      const tx=parseFloat(box.dataset.x), ty=parseFloat(box.dataset.y), tw=parseFloat(box.dataset.w), th=parseFloat(box.dataset.h);
+      const g = geo[box.dataset.k];
+      const tx=g.x, ty=g.y, tw=g.w, th=g.h;
       box.style.left=tx+'px'; box.style.top=ty+'px';
       inner.style.transform='none'; inner.style.fontSize='300px';
       let r=inner.getBoundingClientRect();
@@ -221,6 +254,7 @@ function initHeroS2Story(root){
       r=inner.getBoundingClientRect();
       inner.style.transform='scaleX('+(tw/r.width).toFixed(4)+')';
     });
+    if(frame && desktop) frame.style.transform = 'translate(-50%,-50%) scale('+s.toFixed(5)+')';
   }
   calibrateHTML();
   addEventListener('resize', calibrateHTML);
