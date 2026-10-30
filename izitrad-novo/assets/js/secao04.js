@@ -206,28 +206,82 @@ function setupDesktop(){
   );
 }
 
-/* Logo "izitrad" inline nos parágrafos (.izi-inline-logo): reaproveita os 7
-   <path> da logo do hero (i z i T r a d), sem o triângulo — ele aumentaria a
-   caixa e a altura da linha. viewBox: x 96.5→1142.2, y 329.7→588.6. Se o
-   SVG do hero não existir, fica o texto "IZITRAD". */
+/* Letras da logo do hero (i z i T r a d) pra reaproveitar na faixa "o jeito izi" e nos
+   parágrafos. Logo NOVA: cada letra é um <g> (forma + anel do contorno de 5pt, 2 <path>) dentro
+   de um <g transform>; devolvo os 7 <g> e o transform. Logo ANTIGA (?logo=antiga): 7 <path>
+   soltos, sem transform. Sem o SVG do hero devolve null. */
+function getHeroLetters(){
+  const hero = document.querySelector("svg.logo__img");
+  if(!hero) return null;
+  const wrap = hero.querySelector(":scope > g[transform]");
+  if(wrap){
+    const letters = Array.from(wrap.children).filter(function(n){ return n.tagName === "g"; });
+    return letters.length === 7 ? { letters: letters, transform: wrap.getAttribute("transform") } : null;
+  }
+  const paths = Array.from(hero.querySelectorAll("path"));
+  return paths.length === 7 ? { letters: paths, transform: null } : null;
+}
+
+/* Copia uma letra da logo do hero pra dentro de "parent" na cor dada. Logo nova: clona o <g>
+   (sem as classes .wm/.wm-z, cujo <style> da logo antiga vaza pro documento com traço de 3px)
+   e pinta só com preenchimento. Logo antiga: <path> com o traço de 3 de sempre. */
+function cloneHeroLetter(src, parent, color){
+  const NS = "http://www.w3.org/2000/svg";
+  if(src.tagName === "g"){
+    const g = src.cloneNode(true);
+    g.removeAttribute("class");
+    g.querySelectorAll("path").forEach(function(p){
+      p.removeAttribute("class");
+      p.setAttribute("fill", color);
+      p.setAttribute("stroke", "none");
+    });
+    parent.appendChild(g);
+    return g;
+  }
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", src.getAttribute("d"));
+  p.setAttribute("fill", color);
+  p.setAttribute("stroke", color);
+  p.setAttribute("stroke-width", "3");
+  p.setAttribute("stroke-miterlimit", "10");
+  parent.appendChild(p);
+  return p;
+}
+
+/* Logo "izitrad" inline nos parágrafos (.izi-inline-logo): reaproveita as 7 letras da logo do
+   hero (i z i T r a d). Logo antiga: sem o triângulo (aumentaria a caixa e a altura da linha),
+   viewBox x 96.5→1142.2, y 329.7→588.6. Logo nova (transform do hero já aplicado): as letras
+   ocupam x 100.1→1138.4, y 329.6→588.6 e o TRIÂNGULO (copiado do .wipe, x 1175→1307, y 190→330)
+   entra no viewBox só na LARGURA (x até 1310); na altura ele vaza pra cima da caixa
+   (overflow:visible), então a altura da linha não muda. Se o SVG do hero não existir, fica
+   o texto "IZITRAD". */
 function setupInlineLogos(){
-  const src = Array.from(document.querySelectorAll(".logo__img path"));
-  if(src.length !== 7) return;
+  const hero = getHeroLetters();
+  if(!hero) return;
   const NS = "http://www.w3.org/2000/svg";
   document.querySelectorAll(".izi-inline-logo").forEach(function(el){
     const svg = document.createElementNS(NS, "svg");
-    svg.setAttribute("viewBox", "96.5 329.7 1045.7 258.9");
+    const triEl = hero.transform ? document.querySelector(".hero-layer .wipe path") : null;
+    const triD = triEl ? triEl.getAttribute("d") : null;
+    svg.setAttribute("viewBox", hero.transform ? (triD ? "100.1 329.6 1210 259" : "100.1 329.6 1038.3 259") : "96.5 329.7 1045.7 258.9");
     svg.setAttribute("aria-hidden", "true");
-    src.forEach(function(s, i){
-      const p = document.createElementNS(NS, "path");
-      p.setAttribute("d", s.getAttribute("d"));
-      const color = i === 1 ? "#FF0099" : "#111";
-      p.setAttribute("fill", color);
-      p.setAttribute("stroke", color);
-      p.setAttribute("stroke-width", "3");
-      p.setAttribute("stroke-miterlimit", "10");
-      svg.appendChild(p);
+    let parent = svg;
+    if(hero.transform){
+      parent = document.createElementNS(NS, "g");
+      parent.setAttribute("transform", hero.transform);
+      svg.appendChild(parent);
+    }
+    hero.letters.forEach(function(s, i){
+      const letra = cloneHeroLetter(s, parent, i === 1 ? "#FF0099" : "#111");
+      if(i === 1) letra.classList.add("izi-inline-z");
     });
+    if(triD){
+      const tri = document.createElementNS(NS, "path");
+      tri.setAttribute("d", triD);
+      tri.setAttribute("class", "izi-inline-tri");
+      tri.setAttribute("fill", "#FF0099");
+      svg.appendChild(tri);
+    }
     el.textContent = "";
     el.appendChild(svg);
   });
@@ -742,11 +796,11 @@ addEventListener("resize",()=>{
       const txt = bandTextEl.textContent;
       bandTextEl.setAttribute("aria-label", txt);
       bandTextEl.textContent = "";
-      // "izi" no fim vira a LOGO (os 3 primeiros <path> do SVG da hero: i, z, i
+      // "izi" no fim vira a LOGO (as 3 primeiras letras do SVG da hero: i, z, i
       // — reaproveita as mesmas formas, sem PNG, porque o PNG tem os "i"
-      // pretos e sumiriam na faixa preta). Cada path entra como uma "letra".
-      const heroPaths = Array.from(document.querySelectorAll(".logo__img path")).slice(0,3);
-      const useLogo = /izi$/i.test(txt) && heroPaths.length === 3;
+      // pretos e sumiriam na faixa preta). Cada letra entra como uma "letra".
+      const hero = getHeroLetters();
+      const useLogo = /izi$/i.test(txt) && !!hero;
       const letters = useLogo ? txt.slice(0,-3) : txt;
       Array.from(letters).forEach(function(ch){
         const sp = document.createElement("span");
@@ -757,23 +811,24 @@ addEventListener("resize",()=>{
         bandChars.push(sp);
       });
       if(useLogo){
-        // viewBox = união das 3 caixas (medidas: x 98→406,6; y 331,2→587,1;
-        // base dos "i" e do "z" ~ y 587) + 1,5 de cada lado pro traço de 3
+        // viewBox = união das 3 letras. Logo nova (transform do hero já aplicado, contorno
+        // incluído): x 100.1→411.3, y 329.6→588.6. Logo antiga: x 96.5→408.1 (traço de 3 incluído).
         const NS = "http://www.w3.org/2000/svg";
         const svgLogo = document.createElementNS(NS, "svg");
-        svgLogo.setAttribute("class", "izi-band-logo");
-        svgLogo.setAttribute("viewBox", "96.5 329.7 311.6 258.9");
+        svgLogo.setAttribute("class", hero.transform ? "izi-band-logo izi-band-logo--nova" : "izi-band-logo");
+        svgLogo.setAttribute("viewBox", hero.transform ? "100.1 329.6 311.2 259" : "96.5 329.7 311.6 258.9");
         svgLogo.setAttribute("aria-hidden", "true");
-        heroPaths.forEach(function(src, i){
-          const p = document.createElementNS(NS, "path");
-          p.setAttribute("d", src.getAttribute("d"));
+        let parent = svgLogo;
+        if(hero.transform){
+          parent = document.createElementNS(NS, "g");
+          parent.setAttribute("transform", hero.transform);
+          svgLogo.appendChild(parent);
+        }
+        hero.letters.slice(0,3).forEach(function(src, i){
           const color = i === 1 ? "#FF0099" : "#fff"; // "z" rosa, "i" brancos
-          p.setAttribute("fill", color);
-          p.setAttribute("stroke", color);
-          p.setAttribute("stroke-width", "3");
-          p.setAttribute("stroke-miterlimit", "10");
-          svgLogo.appendChild(p);
-          bandChars.push(p);
+          const el = cloneHeroLetter(src, parent, color);
+          if(i === 1) el.classList.add("izi-band-z");
+          bandChars.push(el);
         });
         bandTextEl.appendChild(svgLogo);
       }
