@@ -198,9 +198,15 @@ img,svg{display:block}
    / 16px a partir de 1920px de largura e diminuem junto com a tela; o padding e
    a margem do botão passam pra em (mesmos valores a 16px). Celular (<900) não muda. */
 @media(min-width:900px){
-  .hero-layer .reveal-copy{font-size:clamp(12px,.8334vw,16px);width:min(510px,31.5vw)}
-  .hero-layer .reveal-copy p{font-size:clamp(14px,1.3021vw,25px)}
-  .hero-layer .reveal-copy .btn{padding:.85em 1.7em;margin-top:2.2em}
+  /* posição/tamanho vêm de variáveis que o calibrateHTML (site.js) calcula a partir
+     dos títulos: esquerda do "DE HAIA", topo e altura do "DE CASA" (o parágrafo no
+     topo e o botão na base, space-between), largura até antes do "DE CASA". Os
+     valores depois da vírgula só valem se o JS ainda não rodou. */
+  .hero-layer .reveal-copy{font-size:clamp(12px,.8334vw,16px);left:var(--copy-left,6%);top:var(--copy-top,50%);width:var(--copy-w,min(510px,31.5vw));height:var(--copy-h,auto);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start}
+  .hero-layer .reveal-copy p{font-size:clamp(14px,1.4583vw,28px);font-weight:400}
+  /* margin-top só é a folga MÍNIMA entre parágrafo e botão: o espaço de verdade vem
+     do space-between do .reveal-copy (em telas menores o bloco encolhe com os títulos) */
+  .hero-layer .reveal-copy .btn{padding:.85em 1.7em;margin-top:.3em}
 }
 .fc-char{display:inline-block;opacity:0;transform-origin:50% 50%;backface-visibility:hidden;will-change:transform,filter,opacity}
 .hero-layer .reveal-html{position:absolute;z-index:5;inset:0;overflow:hidden;pointer-events:none}

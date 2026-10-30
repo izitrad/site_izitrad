@@ -222,7 +222,7 @@ function initHeroS2Story(root){
   function heroGeometry(s){
     const mu = EDGE_PX/s;
     const k1 = (FRAME_W - 2*mu)/1647;
-    const R = FRAME_W - mu, X0 = 740, k2 = (R - X0)/999, GAP = 30;
+    const R = FRAME_W - mu, X0 = 740, k2 = (R - X0)/999, GAP = 45;   // GAP = entrelinha VERTICAL entre as 3 linhas (era 30)
     const y1 = 140, h1 = 147*k1, y2 = y1 + h1 + GAP, hRow = 177*k2, y3 = y2 + hRow + GAP;
     // "DE HAIA" 25% maior (HAIA_SCALE): a borda DIREITA (junto do "SEM") e o topo
     // (alinhado com o "SEM") ficam onde estavam; cresce pra esquerda e pra baixo.
@@ -230,7 +230,10 @@ function initHeroS2Story(root){
     const wHaia = 442*k2*HAIA_SCALE;
     return {
       apost: {x:mu,                   y:y1, w:FRAME_W - 2*mu, h:h1},
-      haia:  {x:X0 - 30*k2 - wHaia,   y:y2, w:wHaia,          h:84*k2*HAIA_SCALE},
+      // y: "DE HAIA" CENTRALIZADO na altura do "SEM SAIR" (meio-termo entre alinhar o
+      // topo, y2, e alinhar a base, y2+hRow-h): divide o espaço vazio da coluna
+      // esquerda em duas metades, em cima e embaixo dele.
+      haia:  {x:X0 - 30*k2 - wHaia,   y:y2 + (hRow - 84*k2*HAIA_SCALE)/2, w:wHaia, h:84*k2*HAIA_SCALE},
       sem:   {x:X0,                   y:y2, w:465*k2,         h:hRow},
       sair:  {x:X0 + 495*k2,          y:y2, w:504*k2,         h:hRow},
       decasa:{x:X0,                   y:y3, w:R - X0,         h:180*k2}
@@ -307,6 +310,27 @@ function initHeroS2Story(root){
       }
     });
     if(frame && desktop) frame.style.transform = 'translate(-50%,-50%) scale('+s.toFixed(5)+')';
+    // PARÁGRAFO + BOTÃO como um bloco ancorado nos títulos (variáveis CSS lidas em
+    // site.css, só em desktop): a esquerda alinha com a esquerda (tinta) do "DE
+    // HAIA"; o topo com o topo do "DE CASA" e a altura é a do "DE CASA" (o botão
+    // fica na base dele; o miolo se distribui por flex space-between); a largura
+    // vai até 44px antes de onde o "DE CASA" começa. O topo do quadro na tela é
+    // 55% da altura do palco - 540*s (quadro centrado em top:55%).
+    const copy = root.querySelector('.reveal-copy');
+    if(copy){
+      if(desktop){
+        const stageH = (root.querySelector('.reveal-html') || {}).clientHeight || innerHeight;
+        const frameTop = 0.55*stageH - 540*s;
+        const dc = geo.decasa, hz = geo.haia;
+        const left = hz.x*s;
+        copy.style.setProperty('--copy-left', left.toFixed(1)+'px');
+        copy.style.setProperty('--copy-top', (frameTop + dc.y*s).toFixed(1)+'px');
+        copy.style.setProperty('--copy-h', (dc.h*s).toFixed(1)+'px');
+        copy.style.setProperty('--copy-w', Math.max(200, dc.x*s - 44 - left).toFixed(1)+'px');
+      }else{
+        ['--copy-left','--copy-top','--copy-h','--copy-w'].forEach((p)=>copy.style.removeProperty(p));
+      }
+    }
   }
   calibrateHTML();
   addEventListener('resize', calibrateHTML);
