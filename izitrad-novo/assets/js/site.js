@@ -415,9 +415,13 @@ function initHeroS2Story(root){
   // 0.15 depois — atraso curto porque o "DE" é uma palavra curta. Os outros
   // títulos adiantam 0.15: o último ("DE CASA") termina em 3.93, antes da fase
   // seguinte (ENTRY_START 4.23) → duração e gatilhos iguais.
-  // A ORDEM DAS CHAMADAS abaixo importa só pro "from" compartilhado de IN
-  // (vale o do último, decasa): hoje só o decasa usa IN direto (sobe de baixo);
-  // todos os outros usam cópia própria ({...IN}).
+  // Todos os títulos usam cópia própria de IN ({...IN}), então o "from" de cada
+  // um vale (o IN compartilhado já não é usado direto por nenhum).
+  // "DE CASA" também dividido: "DE" (da esquerda) em 3.43 e "CASA" (de baixo) 0.15
+  // depois; o .ht fica visível desde já e cada metade esconde a si mesma.
+  const decasaD = root.querySelector('.ht[data-k="decasa"] .ht-d2');
+  const decasaC = root.querySelector('.ht[data-k="decasa"] .ht-c');
+  gsap.set(decasa,{autoAlpha:1});
   const haiaD = root.querySelector('.ht[data-k="haia"] .ht-d');
   const haiaH = root.querySelector('.ht[data-k="haia"] .ht-h');
   gsap.set(haia,{autoAlpha:1});
@@ -427,7 +431,8 @@ function initHeroS2Story(root){
     .fromTo(haiaH,{autoAlpha:0,x:0,y:55},{...IN},3.08)   // sobe de baixo, curto (55) pra não invadir o parágrafo
     .fromTo(sem,{autoAlpha:0,x:0,y:-200},{...IN},3.23)   // desce de cima, de longe: passa POR CIMA das letras do APOSTILAMENTO (pedido da usuária)
     .fromTo(sair,{autoAlpha:0,x:320,y:0},{...IN},3.33)   // vem da direita
-    .fromTo(decasa,{autoAlpha:0,y:90},IN,3.43);
+    .fromTo(decasaD,{autoAlpha:0,x:-320,y:0},{...IN},3.43)   // "DE" da esquerda
+    .fromTo(decasaC,{autoAlpha:0,x:0,y:90},{...IN},3.58);    // "CASA" sobe de baixo, 0.15 depois (acaba em 4.08, antes da fase seguinte em 4.23)
   // "SEM" desce só como CONTORNO LIMPO e PREENCHE no MESMO tempo em que o "SAIR"
   // entra (3.33→3.83, mesma duração/ease do IN). O contorno é o anel branco
   // (.sem-line + filtro SVG #semOutline, ver CSS) que fica sempre ligado — por

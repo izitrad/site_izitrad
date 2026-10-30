@@ -215,7 +215,7 @@ img,svg{display:block}
    na referência. */
 .hero-layer .ht__in{display:inline-block;font-family:var(--reveal-font),sans-serif;font-weight:var(--reveal-weight,700);line-height:1;letter-spacing:-.03em;white-space:nowrap;transform-origin:left top;text-box-trim:trim-both;text-box-edge:cap alphabetic}
 /* "APOSTILA" / "MENTO": metades animadas separadamente (initHeroS2Story, site.js) */
-.hero-layer .ht-a,.hero-layer .ht-m,.hero-layer .ht-d,.hero-layer .ht-h{display:inline-block}
+.hero-layer .ht-a,.hero-layer .ht-m,.hero-layer .ht-d,.hero-layer .ht-h,.hero-layer .ht-d2,.hero-layer .ht-c{display:inline-block}
 /* "SEM": entra como CONTORNO e depois preenche (site.js). O contorno é uma
    segunda cópia do texto (.sem-line), exatamente sobre o original (mesma fonte/
    tamanho/trim), passada por um filtro SVG (#semOutline, no index.html) que
