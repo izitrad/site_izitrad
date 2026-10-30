@@ -222,6 +222,10 @@ img,svg{display:block}
    deixa só o anel da borda externa; o miolo do .ht__in é que anima (transparente
    -> branco). O anel é branco e fica por dentro da silhueta, então o tamanho
    final não muda. */
+/* "CASA" usa o MESMO contorno (.sem-line + #semOutline). A cópia leva o texto
+   "DE CASA" inteiro com o "DE " invisível (.skip), pra "CASA" cair exatamente no
+   mesmo lugar do original, e é animada junto com o .ht-c (site.js). */
+.hero-layer .casa-line .skip{visibility:hidden}
 .hero-layer .sem-line{position:absolute;left:0;top:0;color:#fff;filter:url(#semOutline);pointer-events:none;white-space:nowrap;text-box-trim:trim-both;text-box-edge:cap alphabetic}
 .hero-layer .hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:#000;opacity:.55;animation:hintPulse 1.8s ease-in-out infinite}
 @keyframes hintPulse{50%{opacity:.15;transform:translate(-50%,4px)}}

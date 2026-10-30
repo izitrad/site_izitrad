@@ -421,6 +421,7 @@ function initHeroS2Story(root){
   // depois; o .ht fica visível desde já e cada metade esconde a si mesma.
   const decasaD = root.querySelector('.ht[data-k="decasa"] .ht-d2');
   const decasaC = root.querySelector('.ht[data-k="decasa"] .ht-c');
+  const casaLine = root.querySelector('.ht[data-k="decasa"] .casa-line');
   gsap.set(decasa,{autoAlpha:1});
   const haiaD = root.querySelector('.ht[data-k="haia"] .ht-d');
   const haiaH = root.querySelector('.ht[data-k="haia"] .ht-h');
@@ -432,7 +433,15 @@ function initHeroS2Story(root){
     .fromTo(sem,{autoAlpha:0,x:0,y:-200},{...IN},3.23)   // desce de cima, de longe: passa POR CIMA das letras do APOSTILAMENTO (pedido da usuária)
     .fromTo(sair,{autoAlpha:0,x:320,y:0},{...IN},3.33)   // vem da direita
     .fromTo(decasaD,{autoAlpha:0,x:-320,y:0},{...IN},3.43)   // "DE" da esquerda
-    .fromTo(decasaC,{autoAlpha:0,x:0,y:90},{...IN},3.58);    // "CASA" sobe de baixo, 0.15 depois (acaba em 4.08, antes da fase seguinte em 4.23)
+    .fromTo([decasaC,casaLine],{autoAlpha:0,x:0,y:90},{...IN},3.58);   // "CASA" sobe de baixo, 0.15 depois (acaba em 4.08, antes da fase seguinte em 4.23); o contorno (casaLine) sobe junto
+  // "CASA" entra como CONTORNO LIMPO (o mesmo do "SEM": .sem-line + #semOutline) e
+  // PREENCHE: o miolo (cor do .ht-c) vai de transparente a branco em 3.68→4.18
+  // (começa 0.1 depois da entrada e dura o mesmo, como o "SEM" em relação ao seu
+  // próprio movimento). O contorno tem cor branca própria (CSS), não herda isso.
+  tl.fromTo(decasaC,
+    {color:'rgba(255,255,255,0)'},
+    {color:'rgb(255,255,255)', ease:'power2.out', duration:0.5},
+    3.68);
   // "SEM" desce só como CONTORNO LIMPO e PREENCHE no MESMO tempo em que o "SAIR"
   // entra (3.33→3.83, mesma duração/ease do IN). O contorno é o anel branco
   // (.sem-line + filtro SVG #semOutline, ver CSS) que fica sempre ligado — por
