@@ -152,6 +152,10 @@ img,svg{display:block}
 /* left:6.9% desloca a img p/ a direita → CENTRALIZA o texto "izitrad" (ignora o
    triângulo, que sobra à direita). % da largura da logo → escala em qualquer tamanho. */
 .hero-layer .logo__img{position:relative;left:6.9%;width:min(750px,74vw);height:auto;margin:0 auto}
+/* logo nova já traz o contorno (5pt) convertido em forma; o <style> da logo antiga da seção 04
+   (.wm{stroke:#111;stroke-width:3px}) vaza pro documento e engordava o desenho. Sem traço aqui. */
+html:not([data-logo="antiga"]) .hero-layer .logo__img .wm,html:not([data-logo="antiga"]) .hero-layer .logo__img .wm-z{stroke:none}
+html:not([data-logo="antiga"]) .hero-layer .logo__img .wm{fill:#000}
 
 /* abertura "Olá, somos a": entra em sequência só no carregamento (não é
    scroll-reveal, por isso usa @keyframes com animation-delay em vez do
