@@ -236,6 +236,45 @@ function initHeroS2Story(root){
       decasa:{x:X0,                   y:y3, w:R - X0,         h:180*k2}
     };
   }
+  // ALINHAMENTO PELA TINTA (não pela caixa): a caixa do texto não coincide com a
+  // tinta das letras — cada letra tem folga lateral própria (o "O" é mais
+  // afastado que o "R"/"A") e o letter-spacing negativo também vale DEPOIS da
+  // última letra, então a tinta do fim passa um pouco da caixa. Pra a folga de
+  // EDGE_PX valer pra tinta, medimos onde a tinta realmente começa e termina:
+  // a POSIÇÃO do 1º e do último glifo vem do próprio DOM (Range, então já inclui
+  // letter-spacing/kerning/arredondamento reais) e a folga lateral da forma de
+  // cada um vem do canvas (measureText de UM glifo, no mesmo tamanho). Uma versão
+  // que desenhava o texto inteiro no canvas errava uns 5px no fim das palavras
+  // largas (o canvas e o DOM arredondam o avanço das letras de jeito diferente).
+  // Tudo medido SEM escala (calibrateHTML zera transform do inner e do quadro);
+  // o x do GSAP das metades animadas (.ht-a, .ht-m...) é descontado.
+  const inkCtx = document.createElement('canvas').getContext('2d');
+  function gsapShiftX(node, inner){
+    let sh = 0;
+    for(let e = node.parentElement; e && e !== inner; e = e.parentElement){
+      sh += (window.gsap && gsap.getProperty(e,'x')) || 0;
+    }
+    return sh;
+  }
+  function inkEdges(inner){
+    const w = document.createTreeWalker(inner, NodeFilter.SHOW_TEXT, {acceptNode:(n)=>
+      (n.parentElement.closest('.sem-line') || !n.textContent.trim()) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+    let first = null, last = null;
+    while(w.nextNode()){ if(!first) first = w.currentNode; last = w.currentNode; }
+    if(!first) return null;
+    const cs = getComputedStyle(inner);
+    inkCtx.font = cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;
+    if('letterSpacing' in inkCtx) inkCtx.letterSpacing = '0px';
+    const base = inner.getBoundingClientRect().left;
+    const i1 = first.textContent.search(/\S/), i2 = last.textContent.search(/\S\s*$/);
+    const rg = document.createRange();
+    rg.setStart(first, i1); rg.setEnd(first, i1+1);
+    const o1 = rg.getBoundingClientRect().left - base - gsapShiftX(first, inner);
+    rg.setStart(last, i2); rg.setEnd(last, i2+1);
+    const o2 = rg.getBoundingClientRect().left - base - gsapShiftX(last, inner);
+    const m1 = inkCtx.measureText(first.textContent[i1]), m2 = inkCtx.measureText(last.textContent[i2]);
+    return {l: o1 - m1.actualBoundingBoxLeft, r: o2 + m2.actualBoundingBoxRight};
+  }
   function calibrateHTML(){
     const desktop = innerWidth >= DESKTOP_MIN;
     const frame = root.querySelector('.reveal-html .hr-frame');
@@ -253,9 +292,19 @@ function initHeroS2Story(root){
       box.style.left=tx+'px'; box.style.top=ty+'px';
       inner.style.transform='none'; inner.style.fontSize='300px';
       let r=inner.getBoundingClientRect();
-      inner.style.fontSize=(300*th/r.height)+'px';
-      r=inner.getBoundingClientRect();
-      inner.style.transform='scaleX('+(tw/r.width).toFixed(4)+')';
+      const fs = 300*th/r.height;
+      inner.style.fontSize=fs+'px';
+      const ink = inkEdges(inner);
+      if(ink && ink.r > ink.l){
+        // tinta de tx a tx+tw: escala pela LARGURA DA TINTA e recua a caixa pelo
+        // offset esquerdo da tinta (já escalado)
+        const il = ink.l, ir = ink.r, sx = tw/(ir-il);
+        inner.style.transform='scaleX('+sx.toFixed(4)+')';
+        box.style.left=(tx - il*sx)+'px';
+      }else{
+        r=inner.getBoundingClientRect();
+        inner.style.transform='scaleX('+(tw/r.width).toFixed(4)+')';
+      }
     });
     if(frame && desktop) frame.style.transform = 'translate(-50%,-50%) scale('+s.toFixed(5)+')';
   }
