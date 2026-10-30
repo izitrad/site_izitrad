@@ -393,7 +393,22 @@ function initHeroS2Story(root){
   tl.to(grow,{p:1,ease:'power1.in',duration:2.18,onUpdate(){ proxy.w=triW0+(triTargetWidth-triW0)*grow.p; applyGrowth(); }},0)
     .to(hint,{autoAlpha:0,duration:0.25},0.2);
   const IN={autoAlpha:1,x:0,y:0,ease:'power2.out',duration:0.5};
-  tl.fromTo(apost,{autoAlpha:0,x:-320},IN,2.28)
+  // "APOSTILA" entra primeiro (da esquerda, como a palavra inteira entrava) e
+  // "MENTO" logo depois (da direita), na mesma janela dos outros títulos →
+  // duração da timeline e gatilhos inalterados. O .ht fica visível desde já;
+  // quem esconde cada metade antes da hora é o autoAlpha:0 do fromTo.
+  const apostA = root.querySelector('.ht[data-k="apost"] .ht-a');
+  const apostM = root.querySelector('.ht[data-k="apost"] .ht-m');
+  gsap.set(apost,{autoAlpha:1});
+  // OBS: o GSAP grava o "from" DENTRO do objeto "to" do fromTo (toVars.startAt).
+  // Como IN é compartilhado, os títulos abaixo acabam todos usando o "from" do
+  // ÚLTIMO fromTo ({autoAlpha:0,y:90}): na prática "APOSTILAMENTO" e "DE HAIA"
+  // sobem de baixo, não vêm dos lados como os valores abaixo sugerem. Mantido
+  // assim DE PROPÓSITO (é o que está na tela e foi aprovado). "APOSTILA" e
+  // "MENTO" usam cópias próprias ({...IN}) justamente pra o "from" de cada um
+  // valer: "APOSTILA" vem da ESQUERDA; "MENTO" vem da DIREITA.
+  tl.fromTo(apostA,{autoAlpha:0,x:-320,y:0},{...IN},2.28)
+    .fromTo(apostM,{autoAlpha:0,x:320,y:0},{...IN},2.43)
     .fromTo(haia,{autoAlpha:0,x:320},IN,2.43)
     .fromTo(sem,{autoAlpha:0,y:90},IN,2.58)
     .fromTo(sair,{autoAlpha:0,y:90},IN,2.68)
