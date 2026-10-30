@@ -427,7 +427,10 @@ function initHeroS2Story(root){
   // (sem transform), então o gsap.set abaixo não interfere na 1ª medição —
   // só refreshes futuros (onRefresh) precisam da correção via entryY.
   gsap.set([logoWordWrap, triWrap],{autoAlpha:0,y:14});
-  gsap.to([logoWordWrap, triWrap],{autoAlpha:1,y:0,duration:.9,ease:'power3.out',delay:1.25});
+  // delay: a saudação ("Olá," .15s, "somos" .7s, "a" 1.25s + .8s de duração, ver
+  // .logo__greet-word--N em site.css) termina em 2.05s; a logo entra 0.04s DEPOIS
+  // (2.09s), com uma pausa mínima, e não junto com o "a" como era com delay 1.25.
+  gsap.to([logoWordWrap, triWrap],{autoAlpha:1,y:0,duration:.9,ease:'power3.out',delay:2.09});
 
   // marcos de tempo (unidades locais da timeline, não vh/px):
   //  0 .. 4.23        → Hero (crescimento + textos), inalterado
