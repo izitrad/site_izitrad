@@ -203,8 +203,10 @@ img,svg{display:block}
      dos títulos: esquerda do "DE HAIA", topo e altura do "DE CASA" (o parágrafo no
      topo e o botão na base, space-between), largura até antes do "DE CASA". Os
      valores depois da vírgula só valem se o JS ainda não rodou. */
-  .hero-layer .reveal-copy{font-size:clamp(12px,.8334vw,16px);left:var(--copy-left,6%);top:var(--copy-top,50%);width:var(--copy-w,min(510px,31.5vw));height:var(--copy-h,auto);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start}
-  .hero-layer .reveal-copy p{font-size:clamp(14px,1.4583vw,28px);font-weight:400}
+  .hero-layer .reveal-copy{font-size:clamp(13px,1.0417vw,20px);left:var(--copy-left,6%);top:var(--copy-top,50%);width:var(--copy-w,min(510px,31.5vw));height:var(--copy-h,auto);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start}
+  /* text-wrap:balance reparte as palavras entre as linhas (sem "em"/"até" sozinhos no
+     fim); o .reveal-copy ainda dá o font-size do botão (20px a partir de 1920px) */
+  .hero-layer .reveal-copy p{font-size:clamp(14px,1.4583vw,28px);font-weight:400;text-wrap:balance}
   /* margin-top só é a folga MÍNIMA entre parágrafo e botão: o espaço de verdade vem
      do space-between do .reveal-copy (em telas menores o bloco encolhe com os títulos) */
   .hero-layer .reveal-copy .btn{padding:.85em 1.7em;margin-top:.3em}
