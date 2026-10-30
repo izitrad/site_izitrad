@@ -224,10 +224,13 @@ function initHeroS2Story(root){
     const k1 = (FRAME_W - 2*mu)/1647;
     const R = FRAME_W - mu, X0 = 740, k2 = (R - X0)/999, GAP = 30;
     const y1 = 140, h1 = 147*k1, y2 = y1 + h1 + GAP, hRow = 177*k2, y3 = y2 + hRow + GAP;
-    const wHaia = 442*k2;
+    // "DE HAIA" 25% maior (HAIA_SCALE): a borda DIREITA (junto do "SEM") e o topo
+    // (alinhado com o "SEM") ficam onde estavam; cresce pra esquerda e pra baixo.
+    const HAIA_SCALE = 1.25;
+    const wHaia = 442*k2*HAIA_SCALE;
     return {
       apost: {x:mu,                   y:y1, w:FRAME_W - 2*mu, h:h1},
-      haia:  {x:X0 - 30*k2 - wHaia,   y:y2, w:wHaia,          h:84*k2},
+      haia:  {x:X0 - 30*k2 - wHaia,   y:y2, w:wHaia,          h:84*k2*HAIA_SCALE},
       sem:   {x:X0,                   y:y2, w:465*k2,         h:hRow},
       sair:  {x:X0 + 495*k2,          y:y2, w:504*k2,         h:hRow},
       decasa:{x:X0,                   y:y3, w:R - X0,         h:180*k2}
@@ -459,7 +462,10 @@ function initHeroS2Story(root){
   // 3.63), redistribuindo o tempo internamente: não mexe em ENTRY_START/
   // PHASE2_START nem na duração total da timeline (nem cria ScrollTrigger
   // novo — tudo dentro do `tl` já existente, escrubado pelo scroll).
-  const FOCUS_START=2.93, FOCUS_STAGGER=0.0032, FOCUS_CHAR_DUR=0.14;
+  // FOCUS_START era 2.93 (junto com o "DE" do "DE HAIA", cedo demais): agora 3.43,
+  // junto com o "DE" do "DE CASA" (o último título). Letras 3.43→~3.9, botão
+  // ~3.82→4.12, ainda antes da fase seguinte (4.23) → duração/gatilhos iguais.
+  const FOCUS_START=3.43, FOCUS_STAGGER=0.0032, FOCUS_CHAR_DUR=0.14;
   const focusEase = window.CustomEase ? 'focusTextEase' : 'power3.out';
   tl.fromTo(focusChars,
     {opacity:0,scale:.88,filter:'blur(6px)'},
