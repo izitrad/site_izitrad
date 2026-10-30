@@ -425,7 +425,7 @@ function initHeroS2Story(root){
     .fromTo(apostM,{autoAlpha:0,x:320,y:0},{...IN},2.78)
     .fromTo(haiaD,{autoAlpha:0,x:-320,y:0},{...IN},2.93)
     .fromTo(haiaH,{autoAlpha:0,x:0,y:55},{...IN},3.08)   // sobe de baixo, curto (55) pra não invadir o parágrafo
-    .fromTo(sem,{autoAlpha:0,x:0,y:-55},{...IN},3.23)    // desce de cima (curto, pra não passar muito por cima do APOSTILAMENTO)
+    .fromTo(sem,{autoAlpha:0,x:0,y:-200},{...IN},3.23)   // desce de cima, de longe: passa POR CIMA das letras do APOSTILAMENTO (pedido da usuária)
     .fromTo(sair,{autoAlpha:0,x:320,y:0},{...IN},3.33)   // vem da direita
     .fromTo(decasa,{autoAlpha:0,y:90},IN,3.43);
   // "SEM" desce só como CONTORNO LIMPO e PREENCHE no MESMO tempo em que o "SAIR"
