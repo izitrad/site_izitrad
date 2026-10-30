@@ -411,14 +411,22 @@ function initHeroS2Story(root){
   // em 2.78, quando a APOSTILA acabou) e só depois entram os outros títulos,
   // com o mesmo ritmo de antes (+.15, +.15, +.10, +.10). Tudo acaba em 3.78,
   // ainda antes da fase seguinte (ENTRY_START 4.23) → duração e gatilhos iguais.
+  // "DE HAIA" também é dividido: "DE" (da esquerda) em 2.93 e "HAIA" (de baixo)
+  // 0.15 depois — atraso curto porque o "DE" é uma palavra curta. Os outros
+  // títulos adiantam 0.15: o último ("DE CASA") termina em 3.93, antes da fase
+  // seguinte (ENTRY_START 4.23) → duração e gatilhos iguais.
   // A ORDEM DAS CHAMADAS abaixo importa só pro "from" compartilhado de IN
-  // (vale o do último, decasa): mantém haia/sem/sair/decasa por último.
+  // (vale o do último, decasa): mantém sem/sair/decasa por último.
+  const haiaD = root.querySelector('.ht[data-k="haia"] .ht-d');
+  const haiaH = root.querySelector('.ht[data-k="haia"] .ht-h');
+  gsap.set(haia,{autoAlpha:1});
   tl.fromTo(apostA,{autoAlpha:0,x:-320,y:0},{...IN},2.28)
     .fromTo(apostM,{autoAlpha:0,x:320,y:0},{...IN},2.78)
-    .fromTo(haia,{autoAlpha:0,x:320},IN,2.93)
-    .fromTo(sem,{autoAlpha:0,y:90},IN,3.08)
-    .fromTo(sair,{autoAlpha:0,y:90},IN,3.18)
-    .fromTo(decasa,{autoAlpha:0,y:90},IN,3.28);
+    .fromTo(haiaD,{autoAlpha:0,x:-320,y:0},{...IN},2.93)
+    .fromTo(haiaH,{autoAlpha:0,x:0,y:55},{...IN},3.08)   // sobe de baixo, curto (55) pra não invadir o parágrafo
+    .fromTo(sem,{autoAlpha:0,y:90},IN,3.23)
+    .fromTo(sair,{autoAlpha:0,y:90},IN,3.33)
+    .fromTo(decasa,{autoAlpha:0,y:90},IN,3.43);
   // revelação caractere a caractere do parágrafo (ver FOCUS TEXT acima) —
   // ocupa a MESMA janela que antes era só o fade em bloco (2.93 → hold em
   // 3.63), redistribuindo o tempo internamente: não mexe em ENTRY_START/
