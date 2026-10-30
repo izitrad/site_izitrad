@@ -407,12 +407,18 @@ function initHeroS2Story(root){
   // assim DE PROPÓSITO (é o que está na tela e foi aprovado). "APOSTILA" e
   // "MENTO" usam cópias próprias ({...IN}) justamente pra o "from" de cada um
   // valer: "APOSTILA" vem da ESQUERDA; "MENTO" vem da DIREITA.
+  // ORDEM: a palavra "APOSTILAMENTO" termina PRIMEIRO (APOSTILA em 2.28, MENTO
+  // em 2.78, quando a APOSTILA acabou) e só depois entram os outros títulos,
+  // com o mesmo ritmo de antes (+.15, +.15, +.10, +.10). Tudo acaba em 3.78,
+  // ainda antes da fase seguinte (ENTRY_START 4.23) → duração e gatilhos iguais.
+  // A ORDEM DAS CHAMADAS abaixo importa só pro "from" compartilhado de IN
+  // (vale o do último, decasa): mantém haia/sem/sair/decasa por último.
   tl.fromTo(apostA,{autoAlpha:0,x:-320,y:0},{...IN},2.28)
-    .fromTo(apostM,{autoAlpha:0,x:320,y:0},{...IN},2.43)
-    .fromTo(haia,{autoAlpha:0,x:320},IN,2.43)
-    .fromTo(sem,{autoAlpha:0,y:90},IN,2.58)
-    .fromTo(sair,{autoAlpha:0,y:90},IN,2.68)
-    .fromTo(decasa,{autoAlpha:0,y:90},IN,2.78);
+    .fromTo(apostM,{autoAlpha:0,x:320,y:0},{...IN},2.78)
+    .fromTo(haia,{autoAlpha:0,x:320},IN,2.93)
+    .fromTo(sem,{autoAlpha:0,y:90},IN,3.08)
+    .fromTo(sair,{autoAlpha:0,y:90},IN,3.18)
+    .fromTo(decasa,{autoAlpha:0,y:90},IN,3.28);
   // revelação caractere a caractere do parágrafo (ver FOCUS TEXT acima) —
   // ocupa a MESMA janela que antes era só o fade em bloco (2.93 → hold em
   // 3.63), redistribuindo o tempo internamente: não mexe em ENTRY_START/
