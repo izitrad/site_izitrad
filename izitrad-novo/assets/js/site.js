@@ -203,7 +203,7 @@ function initHeroS2Story(root){
   // abaixo) — não troca a animação de entrada, soma a ela. O rótulo
   // "02 — O CAMINHO" (intro-eyebrow) nunca teve entrada nenhuma (só
   // aparece junto com a camada) — aqui ele ganha a mesma, sozinho.
-  const ilDocReels=buildRollingLabel(ilDoc), ilDestReels=buildRollingLabel(ilDest), ilCamReels=buildRollingLabel(ilCam);
+  const ilDocReels=buildRollingLabel(ilDoc, {words:true}), ilDestReels=buildRollingLabel(ilDest), ilCamReels=buildRollingLabel(ilCam);
   const introEyebrowReels=buildRollingLabel(introEyebrow);
 
   // calibra cada trecho HTML pro tamanho/posição exato medido no SVG original
@@ -635,8 +635,13 @@ function buildRollingLabel(el, opts){
   const wrap = document.createElement('span');
   wrap.className = 'rl-wrap';
   const reels = [];
+  // o.words (só o título "SEU DOCUMENTO" da tela escura 02): as letras de cada palavra
+  // ficam num .rl-word (inline-block nowrap), pra a frase poder quebrar linha NO ESPAÇO
+  // sem quebrar no meio da palavra (entre inline-blocks soltos sempre há quebra possível),
+  // e o espaço vira um espaço comum (o padrão é NBSP, que nunca quebra)
+  let wordEl = null;
   chars.forEach((ch,i)=>{
-    if(ch===' '){ wrap.appendChild(document.createTextNode(' ')); return; }
+    if(ch===' '){ wordEl = null; wrap.appendChild(document.createTextNode(o.words ? ' ' : ' ')); return; }
     const rand = rlRand(i*1013+7);
     const cycles = o.minCycles + Math.floor(rand()*o.cycleVariance);
     const dur = o.duration + rand()*o.durationVariance;
@@ -646,7 +651,13 @@ function buildRollingLabel(el, opts){
     const track=document.createElement('span'); track.className='rl-track';
     track.style.setProperty('--k','0');
     for(let c=0;c<=cycles;c++){ const cell=document.createElement('span'); cell.className='rl-cell'; cell.textContent=ch; track.appendChild(cell); }
-    win.appendChild(track); charEl.appendChild(sizer); charEl.appendChild(win); wrap.appendChild(charEl);
+    win.appendChild(track); charEl.appendChild(sizer); charEl.appendChild(win);
+    if(o.words){
+      if(!wordEl){ wordEl = document.createElement('span'); wordEl.className = 'rl-word'; wrap.appendChild(wordEl); }
+      wordEl.appendChild(charEl);
+    }else{
+      wrap.appendChild(charEl);
+    }
     reels.push({track, char:charEl, to:cycles, duration:dur});
   });
   el.appendChild(wrap);

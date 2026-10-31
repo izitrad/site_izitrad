@@ -247,8 +247,29 @@ img,svg{display:block}
 .s2-layer .intro-h1{font-family:var(--reveal-font),'Outfit',sans-serif;font-weight:900;font-size:clamp(58px,8.6vw,150px);line-height:.88;letter-spacing:-.02em;margin:25px 0;text-transform:uppercase}
 .s2-layer .intro-h1 .il{display:block;opacity:0;will-change:transform,opacity}
 .s2-layer .intro-h1 .il--dest{color:var(--rosa)}
+/* "SEU / DOCUMENTO" em duas linhas (só desktop): width:min-content = largura da maior
+   palavra (DOCUMENTO), então a linha quebra no espaço depois de "SEU". Os carretéis de
+   letras ficam num .rl-wrap com white-space:nowrap; aqui ele volta a poder quebrar no
+   espaço entre as palavras (cada palavra é um .rl-word nowrap, ver buildRollingLabel). */
+.rl-word{display:inline-block;white-space:nowrap;vertical-align:top}
+@media(min-width:900px){
+  .s2-layer .intro-h1 .il--doc{width:min-content}
+  .s2-layer .intro-h1 .il--doc .rl-wrap{white-space:normal}
+}
 .s2-layer .intro-copy{font-family:var(--copy-font),'DM Sans',sans-serif;font-weight:400;font-size:clamp(17px,1.5vw,24px);line-height:1.5;max-width:620px;opacity:0}
 .s2-layer .intro-link{display:inline-block;width:max-content;margin-top:28px;color:#fff;text-decoration:underline;text-underline-offset:4px;opacity:0}
+/* Tamanho do bloco da tela escura "02 — O CAMINHO" (só desktop, >=900px): título 150->171px (-5% do 180, pra dar folga na altura)
+   (8.91vw; a linha mais larga, "O CAMINHO CERTO", ~9.5em, só cabe até ~9.4vw), parágrafo
+   24->29px, link 16->19.2px, margens esquerda/direita iguais (5.3vw). "SEU DESTINO" e
+   "O CAMINHO CERTO" ficam inteiras (nowrap). O celular não muda. */
+@media(min-width:900px){
+  .hero-s2-story .s2-layer{padding:9vw 5.3vw}
+  .s2-layer .intro-h1{font-size:clamp(58px,8.91vw,171px)}
+  .s2-layer .intro-h1 .il--dest,
+  .s2-layer .intro-h1 .il--cam{white-space:nowrap}
+  .s2-layer .intro-copy{font-size:clamp(20px,1.8vw,29px);max-width:744px}
+  .s2-layer .intro-link{font-size:19.2px}
+}
 
 /* ===================================================================== */
 /* 03 — A SOLUÇÃO (documento = coração)                                   */
