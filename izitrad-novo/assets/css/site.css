@@ -107,7 +107,7 @@ img,svg{display:block}
 /* =============================== FOOTER ============================== */
 .site-footer{background:#0b0b0f;color:#fff;text-align:center;padding:80px 6vw 60px}
 .site-footer .foot-brand{font-family:'Outfit';font-weight:900;font-size:34px;letter-spacing:-.03em}
-.site-footer .foot-brand img{display:block;height:38px;width:auto;margin:0 auto 5px}
+.site-footer .foot-brand img{display:block;height:37px;width:auto;margin:0 auto 5px}
 .site-footer p{margin:14px auto 0;max-width:520px;color:rgba(255,255,255,.62);font-weight:300}
 .site-footer small{display:block;margin-top:32px;color:rgba(255,255,255,.32);font-size:12px;letter-spacing:.04em}
 
