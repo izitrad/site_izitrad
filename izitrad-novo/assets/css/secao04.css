@@ -149,6 +149,12 @@
    ~30px da linha); de ~1900px pra cima dá >= 800 e vale o tamanho cheio. Fica rente à base e à
    esquerda da caixa (base das letras no mesmo lugar de antes). */
 .izi-logo-svg{display:block;width:min(100%,calc(31.55vw + 217px));height:auto;overflow:visible}
+/* celular: como era antes do triângulo (caixa inteira, centralizada) — o ajuste de largura acima
+   e o fitLogoMargins() (secao04.js) são só pro desktop */
+@media(max-width:700px){
+  .izi-logo-mark{align-items:center;justify-content:center}
+  .izi-logo-svg{width:100%}
+}
 
 /* ===== PRELÚDIO 04 — animação SIMPLES (isolada) ===== */
 .izi-pre04{

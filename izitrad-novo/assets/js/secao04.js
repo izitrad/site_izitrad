@@ -267,28 +267,39 @@ function setupInlineLogos(){
 }
 
 /* Logo grande ("iziTrad" + triângulo, #number): a folga entre a borda ESQUERDA da tela e o
-   começo do "i" fica IGUAL à folga entre a ponta do triângulo e a linha divisória à direita.
-   Só desloca a logo (margin-left do SVG dentro da caixa, que continua com a mesma largura e
-   altura — as contas de rolagem não mudam). Mede tudo na tela (tinta das letras, ponta do
-   triângulo, trecho reto da linha: x = esquerda + 95.5/96 da largura do .divider-svg), então
-   vale em qualquer largura. Sem divisória visível (celular), tira o deslocamento. */
+   começo do "i" fica IGUAL à folga entre a ponta do triângulo e a linha divisória à direita,
+   e nunca menor que LOGO_MIN_FOLGA (se não couber no tamanho do CSS, a logo ENCOLHE até as duas
+   folgas valerem o mínimo). Só mexe na largura e no margin-left do SVG dentro da caixa, que
+   continua com a mesma largura e altura — as contas de rolagem não mudam. Mede tudo na tela
+   (tinta das letras, ponta do triângulo, trecho reto da linha: x = esquerda + 95.5/96 da
+   largura do .divider-svg), então vale em qualquer largura. Celular (<= 700px, sem a divisória
+   no mesmo arranjo): sem ajuste. */
+const LOGO_MIN_FOLGA = 24;
 function fitLogoMargins(){
   const svg = document.querySelector(".izi-logo-svg");
-  const box = document.getElementById("number");
   const div = document.querySelector(".guiding-principles .divider-svg");
-  if(!svg || !box) return;
+  if(!svg) return;
   svg.style.marginLeft = "";
-  const dr = div ? div.getBoundingClientRect() : null;
+  svg.style.width = "";
   const first = svg.querySelector(":scope > g > g");
   const tri = svg.querySelector(".izi-big-tri");
-  if(!dr || !dr.width || !first || !tri) return;
-  const sr = svg.getBoundingClientRect();
-  const inkLeft = first.getBoundingClientRect().left - sr.left;   // tinta do "i" a partir da esquerda do SVG
-  const triRight = tri.getBoundingClientRect().right - sr.left;   // ponta do triângulo
+  const dr = div ? div.getBoundingClientRect() : null;
+  if(window.innerWidth <= 700 || !dr || !dr.width || !first || !tri) return;
   const lineX = dr.left + dr.width * 95.5 / 96;                   // trecho reto da linha, na tela
-  const margin = (lineX - (triRight - inkLeft)) / 2;              // folga igual dos dois lados
-  const svgLeft = margin - inkLeft;                               // onde o SVG deve começar (borda da tela = 0)
-  svg.style.marginLeft = (svgLeft - sr.left) + "px";
+  function medir(){
+    const sr = svg.getBoundingClientRect();
+    return { sr: sr, inkLeft: first.getBoundingClientRect().left - sr.left, triRight: tri.getBoundingClientRect().right - sr.left };
+  }
+  let m = medir();
+  const vis = m.triRight - m.inkLeft;                             // largura visível: tinta do "i" até a ponta
+  const cabe = lineX - 2 * LOGO_MIN_FOLGA;                        // o que sobra descontando as 2 folgas mínimas
+  if(vis > cabe && cabe > 0){
+    svg.style.width = (m.sr.width * cabe / vis) + "px";
+    m = medir();
+  }
+  const margin = (lineX - (m.triRight - m.inkLeft)) / 2;          // folga igual dos dois lados
+  const svgLeft = margin - m.inkLeft;                             // onde o SVG deve começar (borda da tela = 0)
+  svg.style.marginLeft = (svgLeft - m.sr.left) + "px";
 }
 
 setupTitleDots();
