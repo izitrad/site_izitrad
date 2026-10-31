@@ -180,21 +180,6 @@ function initHeroS2Story(root){
   const stage   = root.querySelector('.hero-layer');
   const s2Layer = root.querySelector('.s2-layer');
   const logo    = root.querySelector('.logo');
-  // COMPARAÇÃO (temporário): ?logo=antiga troca a logo nova pela ANTIGA (letras + triângulo do hero
-  // e o "izi" do cabeçalho), guardada no <template id="logo-antiga"> do index.html. Tem que rodar
-  // ANTES das consultas abaixo (logoImg/wipePath). A da seção 04 é trocada em secao04-fundo-1a1.js.
-  if(document.documentElement.dataset.logo === 'antiga'){
-    const tpl = document.getElementById('logo-antiga');
-    if(tpl){
-      const antigaSvg = tpl.content.querySelector('svg.logo__img');
-      const atualSvg = root.querySelector('svg.logo__img');
-      if(antigaSvg && atualSvg) atualSvg.innerHTML = antigaSvg.innerHTML;
-      const antigaTri = tpl.content.querySelector('[data-tri]');
-      const triPath = root.querySelector('.wipe path');
-      if(antigaTri && triPath) triPath.setAttribute('d', antigaTri.getAttribute('d'));
-    }
-    document.querySelectorAll('.brand-img').forEach(function(i){ i.src = 'assets/logo-izi.png'; });
-  }
   const logoImg = root.querySelector('.logo__img');
   const logoWordWrap = root.querySelector('.hero-logo-word'); // reveal inicial (ver mais abaixo)
   const triWrap = root.querySelector('.hero-logo-triangle');  // reveal inicial (mesma tween que logoWordWrap)

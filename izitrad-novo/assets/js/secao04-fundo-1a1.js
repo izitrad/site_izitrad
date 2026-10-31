@@ -29,7 +29,7 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     const w0 = document.querySelector(".izi-sec04-unified");
     if(w0) w0.classList.remove("izi-sec04-dark");
     const l0 = document.querySelector(".izi-q-logo-img");
-    if(l0) l0.src = "assets/logo-izi." + (document.documentElement.dataset.logo === "antiga" ? "png" : "svg");
+    if(l0) l0.src = "assets/logo-izi.svg";
     return;
   }
   const gsap = window.gsap;
@@ -40,7 +40,7 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   wrap.classList.add("izi-sec04-dark");
   // logo "izi" da pergunta: versão com os "i" brancos (mesmas dimensões)
   const qLogo = document.querySelector(".izi-q-logo-img");
-  if(qLogo) qLogo.src = "assets/logo-izi-branca." + (document.documentElement.dataset.logo === "antiga" ? "png" : "svg");
+  if(qLogo) qLogo.src = "assets/logo-izi-branca.svg";
 
   const PREV = {
     useNoise:true,globalSpeed:.5,globalNoiseScale:.4,rotateUV:-.1,
