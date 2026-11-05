@@ -102,7 +102,7 @@
 
 /* ---- núcleo/glow central (V29H) — atrás do documento ---- */
 .orbit-glow{
-  position:absolute;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;
+  position:absolute;border-radius:50%;transform:translate(calc(-50% + var(--gx,0px)),-50%) scale(var(--gs,1));pointer-events:none;
   background:radial-gradient(circle at 50% 48%,
     rgba(255,255,255,.08) 0%,rgba(255,0,153,.10) 28%,rgba(255,0,153,.16) 49%,
     rgba(255,0,153,.08) 64%,rgba(255,255,255,.08) 76%,rgba(255,0,153,.16) 82%,
@@ -231,23 +231,11 @@
 .s3o-w{display:inline-block;will-change:opacity,filter}
 
 /* =====================================================================
-   VARIANTES DE COMPARAÇÃO da entrada dos anéis (temporário) — só valem com
-   ?aneis=... (ver VARIANT em solucao-orbital.js). Sem o parâmetro, nada
-   abaixo é usado. 'abraco' e 'expande' não precisam de CSS.
+   ENTRADA DOS ANÉIS (escolhida: antes "d6") — desenho por máscara cônica
    ===================================================================== */
 
-/* ?aneis=onda (opção 3, só no núcleo): onda atrás do documento, achatada/
-   inclinada como os anéis (transform em sync()). .orbit-wave-i é o que o GSAP
-   escala. Só degradê (sem filter/box-shadow/máscara). */
-.orbit-wave{position:absolute;pointer-events:none;transform-origin:50% 50%;opacity:0}
-.orbit-wave-i{position:absolute;inset:0;border-radius:50%;will-change:transform;
-  background:radial-gradient(circle closest-side,
-    transparent 0 58%,rgba(255,0,153,.08) 70%,rgba(255,0,153,.26) 84%,
-    rgba(255,0,153,.55) 93%,rgba(255,214,238,.85) 97.5%,transparent 100%)}
-.s3o-back .orbit-wave{z-index:1}
-
-/* ?aneis=desenho (opção 4 — CARA em desempenho: a máscara muda a cada quadro e
-   obriga a redesenhar cada anel). Cada metade mantém a máscara de meia-elipse
+/* Desenho dos anéis (CARO em desempenho: a máscara muda a cada quadro e obriga a
+   redesenhar cada anel). Cada metade mantém a máscara de meia-elipse
    que já tinha e ganha uma 2ª máscara CÔNICA por interseção; a var --draw
    (0..1, animada pelo GSAP) controla o quanto do arco já foi revelado.
    "from 180deg" = começa embaixo (frente) e segue no sentido horário. */
@@ -270,32 +258,4 @@
     conic-gradient(from 180deg,#000 calc(var(--draw,1)*360deg),transparent calc(var(--draw,1)*360deg + 10deg));
   -webkit-mask-composite:source-in;
           mask-composite:intersect;
-}
-
-/* ?aneis=d3/d5 — desenho pros DOIS LADOS: o traço nasce embaixo e abre no sentido
-   horário (conic A) E anti-horário (conic B) até se encontrarem no topo.
-   Camadas: [linear da metade, A, B] → A∪B (add), depois ∩ com a metade (intersect). */
-.s3o-rings-draw2 .saturn-back-layer .saturn-ring-v23{
-  -webkit-mask-image:
-    linear-gradient(to bottom,#000 0%,#000 48.7%,rgba(0,0,0,.96) 49.5%,rgba(0,0,0,.38) 50.7%,transparent 52%,transparent 100%),
-    conic-gradient(from 180deg,#000 calc(var(--draw,1)*180deg),transparent calc(var(--draw,1)*180deg + 10deg)),
-    conic-gradient(from 180deg,transparent calc(360deg - var(--draw,1)*180deg - 10deg),#000 calc(360deg - var(--draw,1)*180deg));
-          mask-image:
-    linear-gradient(to bottom,#000 0%,#000 48.7%,rgba(0,0,0,.96) 49.5%,rgba(0,0,0,.38) 50.7%,transparent 52%,transparent 100%),
-    conic-gradient(from 180deg,#000 calc(var(--draw,1)*180deg),transparent calc(var(--draw,1)*180deg + 10deg)),
-    conic-gradient(from 180deg,transparent calc(360deg - var(--draw,1)*180deg - 10deg),#000 calc(360deg - var(--draw,1)*180deg));
-  -webkit-mask-composite:source-in,source-over;
-          mask-composite:intersect,add;
-}
-.s3o-rings-draw2 .saturn-front-layer-v23 .saturn-ring-v23{
-  -webkit-mask-image:
-    linear-gradient(to bottom,transparent 0%,transparent 48%,rgba(0,0,0,.38) 49.3%,rgba(0,0,0,.96) 50.5%,#000 51.3%,#000 100%),
-    conic-gradient(from 180deg,#000 calc(var(--draw,1)*180deg),transparent calc(var(--draw,1)*180deg + 10deg)),
-    conic-gradient(from 180deg,transparent calc(360deg - var(--draw,1)*180deg - 10deg),#000 calc(360deg - var(--draw,1)*180deg));
-          mask-image:
-    linear-gradient(to bottom,transparent 0%,transparent 48%,rgba(0,0,0,.38) 49.3%,rgba(0,0,0,.96) 50.5%,#000 51.3%,#000 100%),
-    conic-gradient(from 180deg,#000 calc(var(--draw,1)*180deg),transparent calc(var(--draw,1)*180deg + 10deg)),
-    conic-gradient(from 180deg,transparent calc(360deg - var(--draw,1)*180deg - 10deg),#000 calc(360deg - var(--draw,1)*180deg));
-  -webkit-mask-composite:source-in,source-over;
-          mask-composite:intersect,add;
 }

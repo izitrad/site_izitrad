@@ -237,16 +237,7 @@ function boot(){
     const G=SO.getGeometry(); const cx=G.cx, cy=G.cy, base=G.base; const rot=-8*Math.PI/180;
     buttons.forEach((b,i)=>{
       const a=angle+i*(Math.PI*2/buttons.length); const p=PLANES[serviceToPlane[i]];
-      // VERSÃO 6 (?aneis=triangulos): os triângulos entram MAIORES e AFASTADOS
-      // (raio da órbita × rxm, tamanho × szm) e "assentam" no original conforme
-      // o scroll: SO.state.settle.v vai de 0 (expandido) a 1 (original) na
-      // timeline (solucao-orbital.js); SO.state.settleK guarda o quanto
-      // (exp = acréscimo no raio, size = acréscimo no tamanho). Sem esses
-      // objetos (todas as outras variantes) k=0 e nada muda.
-      const SG=SO.state&&SO.state.settle, SK=SO.state&&SO.state.settleK;
-      const sk=(SG&&SK)?(1-SG.v):0;
-      const rxm=1+(SK?SK.exp:0)*sk, szm=1+(SK?SK.size:0)*sk;
-      const rx=(base*p.scale)/2*rxm, ry=rx*p.sy;
+      const rx=(base*p.scale)/2, ry=rx*p.sy;
       const ex=Math.cos(a)*rx, ey=Math.sin(a)*ry;
       const x=cx+ex*Math.cos(rot)-ey*Math.sin(rot), y=cy+ex*Math.sin(rot)+ey*Math.cos(rot);
       const depth=(Math.sin(a)+1)/2, de=depth*depth*(3-2*depth);
@@ -255,21 +246,9 @@ function boot(){
       // solucao-orbital.js: o triângulo e o rótulo aparecem junto com o seu
       // anel). Abaixo de .02 fica visibility:hidden pra não ser clicável
       // enquanto invisível. Sem o fator (ex.: timeline não rodou), vale 1.
-      const rr=SO.state&&SO.state.rr; let rv=rr?rr['p'+serviceToPlane[i]]:1;
-      // ?aneis=d4/d5: o serviço só aparece depois que o traço do desenho do anel
-      // passou pela posição dele. O traço (conic "from 180deg") nasce embaixo
-      // (a=π/2) e segue no sentido horário; u = fração da volta desse ponto
-      // (0..1). Em "dois lados" o traço abre pros dois lados e se encontra no
-      // topo → distância até o ponto de partida = min(u,1-u)*2.
-      const DR=SO.state&&SO.state.dr;
-      if(DR){
-        const f=DR['p'+serviceToPlane[i]];
-        const u=(((a-Math.PI/2)%(Math.PI*2))+Math.PI*2)%(Math.PI*2)/(Math.PI*2);
-        const need=SO.state.drTwo?Math.min(u,1-u)*2:u;
-        rv=f>=1?1:Math.max(0,Math.min(1,(f-need)/.05));
-      }
+      const rr=SO.state&&SO.state.rr; const rv=rr?rr['p'+serviceToPlane[i]]:1;
       const hid=rv<.02?'hidden':'';
-      const sc=(minS+de*(1.08-minS))*szm, op=(.58+de*.42)*rv;
+      const sc=(minS+de*(1.08-minS)), op=(.58+de*.42)*rv;
       // PERF: posiciona por TRANSFORM (não left/top) → sem reflow por frame.
       // O centro fica em (x,y) via translate(px) + translate(-50%,-50%) (metade
       // do próprio tamanho), depois scale. Visualmente idêntico ao anterior.
