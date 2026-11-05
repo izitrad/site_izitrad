@@ -201,6 +201,7 @@ function boot(){
     }
     energyRAF=requestAnimationFrame(frame);
   }
+  SO.state.fireEnergy=fireEnergy;   // o fechamento da entrada dos anéis (solucao-orbital.js) dispara o traço de energia
 
   function openPopover(i){
     fireEnergy(i);

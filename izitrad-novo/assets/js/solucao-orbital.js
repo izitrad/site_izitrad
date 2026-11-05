@@ -38,6 +38,11 @@
   const NUCLEO = new URLSearchParams(location.search).get('nucleo') !== 'antigo';
   const NUCLEO_LEAD = NUCLEO ? 1.0 : 0;
   const NUCLEO_GX = '15vw';   // o quanto o núcleo nasce à direita do lugar final
+  // PULSO do núcleo (só na versão nova) — ESCOLHIDO em 2026-11-05: o pulso acontece quando a folha
+  // e o núcleo se FUNDEM (fim do deslize) e, no FIM (quando o 4º anel termina), só o traço de
+  // energia corre pelo anel. TEMPORÁRIO, só pra comparar: ?pulso=fim = o pulso no fim (junto do
+  // traço de energia), sem pulso no encontro.
+  const PULSO_FIM = new URLSearchParams(location.search).get('pulso') === 'fim';
   const DOC_SHIFT_X = 0.135;   // fração de innerWidth: centro → posição final (direita)
   const OPEN_DUR    = 1.3;     // duração (unidades da timeline) da abertura
   const FINAL_SCALE = 0.55;    // escala em que a transição assenta o documento
@@ -337,6 +342,24 @@
       }else{
         // como antes: o brilho central acende (fade) junto do 1º anel
         tl.fromTo(glow, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:ANEL_DUR }, revAt);
+      }
+      if(NUCLEO){
+        // PULSO do núcleo (brilho + um pouco maior, preso à rolagem e reversível): sobe até o pico
+        // exatamente quando a folha e o núcleo se fundem (fim do deslize, = revAt) e decai junto do
+        // começo dos anéis. No FIM, quando o 4º anel termina de se desenhar (FIM_AT), só o traço de
+        // energia corre pelo anel do serviço selecionado (fireEnergy, tempo real, só ao rolar pra
+        // FRENTE); depois sobra uma pausa até o fim da timeline (25.3). Com ?pulso=fim o pulso
+        // acontece no FIM (junto do traço de energia) e não no encontro.
+        const FIM_UP = 0.3, FIM_DOWN = PULSO_FIM ? 0.5 : 0.6, FIM_ESC = PULSO_FIM ? 1.1 : 1.15;
+        const FIM_AT = revAt + 3*ANEL_STEP + ANEL_DUR;
+        const PULSO_AT = PULSO_FIM ? FIM_AT : revAt - FIM_UP;
+        const BRILHO = 'brightness(1.62) saturate(1.28)', NORMAL = 'brightness(1) saturate(1)';
+        tl.fromTo(glow, { filter:NORMAL, '--gs':1 }, { filter:BRILHO, '--gs':FIM_ESC, ease:'power2.out', duration:FIM_UP, immediateRender:false }, PULSO_AT);
+        tl.fromTo(glow, { filter:BRILHO, '--gs':FIM_ESC }, { filter:NORMAL, '--gs':1, ease:'power2.inOut', duration:FIM_DOWN, immediateRender:false }, PULSO_AT + FIM_UP);
+        tl.call(function(){
+          const sct = tl.scrollTrigger;
+          if(sct && sct.direction > 0 && state.fireEnergy) state.fireEnergy(0);
+        }, null, FIM_AT);
       }
       sync();
       addEventListener('resize', sync, {passive:true});
