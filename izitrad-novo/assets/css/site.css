@@ -28,8 +28,10 @@ img,svg{display:block}
 .site-header .header-inner{position:relative;display:flex;align-items:center;justify-content:space-between;height:65px;padding:0 clamp(32px,-141.78px + 15.111vw,100px)}
 .site-header .brand-logo{display:inline-flex;align-items:center;flex-shrink:0;transform:translateX(110px)}
 .site-header .brand-img{height:35px;width:auto;display:block}
-.site-header .main-nav{--nav-gap:clamp(22px,-8.67px + 2.667vw,34px);display:flex;gap:var(--nav-gap);margin:0 auto}
-.site-header .main-nav a{position:relative;color:#3E3E48;font-size:clamp(.8rem,.4933rem + .4267vw,.92rem);font-weight:400;letter-spacing:.04em;text-transform:uppercase;padding:8px 2px;text-decoration:none;transition:color .25s;white-space:nowrap}
+.site-header .main-nav{--nav-gap:clamp(14px,-16.67px + 2.667vw,26px);   /* 8 itens (era 7): espaço e fonte um pouco menores pra não encostar na logo (que é deslocada 110px) */
+  /* a logo é deslocada 110px à direita (transform) e em telas de 1280 a 1650px os 8 itens encostavam nela: o menu desliza até 40px pra direita nessas larguras (0 a partir de 1650px) */
+  display:flex;gap:var(--nav-gap);margin:0 auto;position:relative;left:clamp(0px,calc((1650px - 100vw) * .18),40px)}
+.site-header .main-nav a{position:relative;color:#3E3E48;font-size:clamp(.74rem,.4333rem + .4267vw,.86rem);font-weight:400;letter-spacing:.04em;text-transform:uppercase;padding:8px 2px;text-decoration:none;transition:color .25s;white-space:nowrap}
 .site-header .main-nav a:not(:first-child)::before{content:'';position:absolute;left:calc(var(--nav-gap)/-2);top:50%;transform:translateY(-50%);width:1px;height:12px;background:rgba(62,62,72,.22)}
 .site-header .main-nav a::after{content:'';position:absolute;left:0;bottom:3px;width:100%;height:1px;background:linear-gradient(90deg,transparent 0,#FF0099 7%,#FF0099 93%,transparent 100%);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.16,1,.3,1)}
 .site-header .main-nav a:hover::after,.site-header .main-nav a:focus-visible::after{transform:scaleX(1)}
