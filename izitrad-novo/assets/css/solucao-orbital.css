@@ -216,8 +216,10 @@
 .s3o-detail-top{display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,.65);font-size:12px;letter-spacing:.08em}
 .s3o-detail .s3o-index{font-weight:700}
 .s3o-detail-nav{display:flex;gap:8px}
+/* <button> não herda a fonte do pai (cai em Arial): setas/fechar e o CTA usam a mesma DM Sans do resto do site */
+.s3o-detail button{font-family:inherit}
 .s3o-detail-nav button{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-size:17px;line-height:1;display:grid;place-items:center}
-.s3o-detail h2{font-family:'Outfit';font-size:30px;line-height:1.02;margin:40px 0 18px;letter-spacing:-.03em}
+.s3o-detail h2{font-family:'Outfit',sans-serif;font-weight:400;font-size:30px;line-height:1.02;margin:40px 0 18px;letter-spacing:.015em;text-transform:uppercase}
 .s3o-detail p{font-size:15px;line-height:1.55;color:rgba(255,255,255,.72);margin:0 0 26px}
 .s3o-detail ul{list-style:none;padding:20px 0 0;margin:0;border-top:1px solid rgba(255,255,255,.14)}
 .s3o-detail li{font-size:13px;margin:13px 0;color:rgba(255,255,255,.8)}
