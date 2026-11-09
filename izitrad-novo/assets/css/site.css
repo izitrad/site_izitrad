@@ -248,7 +248,7 @@ img,svg{display:block}
 .s2-layer .intro-eyebrow{position:absolute;top:5%;left:50%;transform:translateX(-50%);font-size:14px;letter-spacing:.18em;font-weight:700;color:var(--rosa)}
 .s2-layer .intro-h1{font-family:var(--reveal-font),'Outfit',sans-serif;font-weight:900;font-size:clamp(58px,8.6vw,150px);line-height:.88;letter-spacing:-.02em;margin:25px 0;text-transform:uppercase}
 .s2-layer .intro-h1 .il{display:block;opacity:0;will-change:transform,opacity}
-.s2-layer .intro-h1 .il--dest{color:#00FF66}   /* verde do site (era rosa) */
+.s2-layer .intro-h1 .il--dest{color:#FF0099}   /* chega ROSA e vira verde (#00FF66) com a rolagem — ver destCor em site.js */
 /* "SEU / DOCUMENTO" em duas linhas (só desktop): width:min-content = largura da maior
    palavra (DOCUMENTO), então a linha quebra no espaço depois de "SEU". Os carretéis de
    letras ficam num .rl-wrap com white-space:nowrap; aqui ele volta a poder quebrar no

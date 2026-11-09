@@ -586,6 +586,25 @@ function initHeroS2Story(root){
     .fromTo(introCopy,{autoAlpha:0,y:40},IN2,PHASE2_START+0.90)
     .fromTo(introLink,{autoAlpha:0,y:40},IN2,PHASE2_START+1.05)
     .to({},{duration:0.7},PHASE2_START+1.4);
+  // "SEU DESTINO" chega ROSA (#FF0099, cor inicial no CSS) e, conforme a rolagem continua (de
+  // PHASE2_START+1.0 a +1.8), uma VARREDURA da esquerda pra direita deixa as letras VERDES (#00FF66): as
+  // letras já viradas ficam verdes, as que ainda não chegaram ficam rosa, e a "frente" (~2 letras) passa
+  // por BRANCO (rosa → branco → verde) — rosa e verde misturados direto dão um cinza opaco, e o branco no
+  // meio mantém a cor viva. Presa à rolagem (scrub) e reversível; cabe antes do fim da pausa
+  // (PHASE2_START+2.1), então a duração da timeline e os gatilhos não mudam.
+  const destLetras = ilDestReels.map(r => r.char);
+  const destVarre = {p:0};
+  const DEST_FRENTE = 2;   // largura da frente, em letras
+  const mixRGB = (a,b,t) => 'rgb(' + a.map((v,k)=>Math.round(v + (b[k]-v)*t)).join(',') + ')';
+  function pintaDestino(){
+    const x = destVarre.p * (destLetras.length - 1 + DEST_FRENTE);
+    destLetras.forEach((c,i)=>{
+      const f = Math.min(1, Math.max(0, (x - i) / DEST_FRENTE));
+      c.style.color = f <= 0 ? '#FF0099' : f >= 1 ? '#00FF66'
+        : f < .5 ? mixRGB([255,0,153],[255,255,255], f/.5) : mixRGB([255,255,255],[0,255,102], (f-.5)/.5);
+    });
+  }
+  tl.fromTo(destVarre,{p:0},{p:1,ease:'none',duration:0.8,onUpdate:pintaDestino},PHASE2_START+1.0);
   addRollingTween(tl, ilDocReels,  PHASE2_START+0.10);
   addRollingTween(tl, ilDestReels, PHASE2_START+0.35);
   addRollingTween(tl, ilCamReels,  PHASE2_START+0.60);
