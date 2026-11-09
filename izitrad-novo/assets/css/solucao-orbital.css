@@ -225,7 +225,7 @@
 .s3o-detail-logo{display:block;height:36px;width:auto;user-select:none}
 /* <button> não herda a fonte do pai (cai em Arial): setas/fechar e o CTA usam a mesma DM Sans do resto do site */
 .s3o-detail button{font-family:inherit}
-.s3o-detail-nav button{width:34px;height:34px;border-radius:50%;border:1px solid rgba(14,14,18,.16);background:rgba(14,14,18,.05);color:#0e0e12;cursor:pointer;font-size:17px;line-height:1;display:grid;place-items:center;transition:background .2s ease,border-color .2s ease,box-shadow .2s ease}
+.s3o-detail-nav button{width:34px;height:34px;border-radius:50%;border:1px solid #fff;background:#fff;color:#0e0e12;cursor:pointer;font-size:17px;line-height:1;display:grid;place-items:center;transition:background .2s ease,border-color .2s ease,box-shadow .2s ease}
 /* "×" acende de VERDE (o verde do site) com o mouse em cima ou foco do teclado */
 .s3o-detail-nav button:hover,.s3o-detail-nav button:focus-visible{background:#00FF66;border-color:#00FF66;box-shadow:0 0 14px rgba(0,255,102,.6);outline:none}
 .s3o-detail h2{font-family:'Outfit',sans-serif;font-weight:300;font-size:44px;line-height:1.02;margin:40px 0 20px;letter-spacing:.015em;text-transform:uppercase}
