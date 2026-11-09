@@ -1513,14 +1513,14 @@ function initSolucao(root){
   const INTRO_DELAY_AFTER_LABEL = 0.6;
   if(window.SolucaoOrbital) window.SolucaoOrbital.init(root, tl, {openAt: ORBITAL_OPEN_AT, introAt: LABEL_HIDE_AT+INTRO_DELAY_AFTER_LABEL});
 
-  // MENU "A Solução": em vez de parar no começo da seção (onde a 03 ainda está entrando por cima da
-  // 02), leva ao ponto em que a 03 já apareceu toda — título à esquerda, folha no centro — e o núcleo
-  // ainda não começou (ORBITAL_OPEN_AT - 0.08, antes de o núcleo nascer). Só no menu (o link "Explorar o
-  // caminho" da 02 continua com o salto normal) e só no desktop (sticky); no celular vale a âncora nativa.
+  // MENU "A Solução": leva ao FINAL da animação da 03 (ORBITAL_OPEN_AT + 7.8 = 24.3 da timeline, logo
+  // depois de o último anel fechar em 23.9), onde o núcleo, os 4 anéis e os triângulos já estão prontos
+  // pra clicar — e o texto da esquerda continua na tela. O link "Explorar o caminho" da 02 não é tocado
+  // (continua indo pro começo da 03), e só no desktop (sticky); no celular vale a âncora nativa.
   const irParaSolucao = ()=>{
     const st = tl.scrollTrigger, palco = q('.sol-stage')[0];
     if(!st || !palco || getComputedStyle(palco).position !== 'sticky') return false;
-    const y = st.start + ((ORBITAL_OPEN_AT - 0.08) / tl.duration()) * (st.end - st.start);
+    const y = st.start + ((ORBITAL_OPEN_AT + 7.8) / tl.duration()) * (st.end - st.start);
     window.scrollTo({top:y, behavior:'auto'});
     return true;
   };
