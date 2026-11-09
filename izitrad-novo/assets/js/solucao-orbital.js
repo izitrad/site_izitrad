@@ -105,7 +105,7 @@
     pop.innerHTML =
       '<div class="s3o-popover__backdrop"></div>'+
       '<section class="s3o-detail">'+
-        '<div class="s3o-detail-top">'+
+        '<div class="s3o-detail-top"><img class="s3o-detail-logo" src="assets/img/logo-principal.svg?v=1" alt="iziTrad" draggable="false">'+
           '<div class="s3o-detail-nav">'+
             '<button data-nav="close" aria-label="Fechar">×</button>'+
           '</div></div>'+
