@@ -203,6 +203,7 @@
 .s3o-popover__backdrop{position:absolute;inset:0;background:rgba(45,0,25,.30);backdrop-filter:blur(4px);opacity:0;transition:opacity .28s ease}
 .s3o-detail{
   position:absolute;width:min(390px,calc(100vw - 32px));margin:0;opacity:0;
+  max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
   transform:translateY(18px) scale(.96);transform-origin:50% 0%;
   transition:opacity .28s ease,transform .34s cubic-bezier(.2,.8,.2,1);
   /* VIDRO: miolo mais transparente e BORDAS mais claras (como a espessura do vidro), reflexo forte

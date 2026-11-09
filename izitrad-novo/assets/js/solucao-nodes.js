@@ -157,15 +157,19 @@ function boot(){
   }
   function positionPopover(button){
     const panel=pop.querySelector('.s3o-detail'); const br=button.getBoundingClientRect();
-    const panelW=Math.min(390,innerWidth-32), approxH=430, gap=22;
+    const panelW=Math.min(390,innerWidth-32), gap=22;
+    // altura REAL da janela (o texto/botão cresceram e uma estimativa fixa de 430px cortava a base);
+    // offsetHeight não é afetado pelo scale(.96) da animação de abertura
+    const panelH=panel.offsetHeight||560;
     let left=br.right+gap, top=br.top+br.height*.25;
     if(left+panelW>innerWidth-16) left=br.left-panelW-gap;
     if(left<16) left=Math.max(16,(innerWidth-panelW)/2);
-    if(top+approxH>innerHeight-16) top=innerHeight-approxH-16;
+    if(top+panelH>innerHeight-16) top=innerHeight-panelH-16;
     if(top<16) top=16;
     panel.style.left=left+'px'; panel.style.top=top+'px';
     panel.style.transformOrigin=(left>br.left?'0% 18%':'100% 18%');
   }
+  SO.state.positionPopover=positionPopover;   // exposto só pra teste/diagnóstico (o painel é posicionado ao abrir)
   function closePopover(){ pop.classList.remove('open'); pop.setAttribute('aria-hidden','true'); if(!snapping) paused=false; }
   function shortestSignedAngle(delta){ const TAU=Math.PI*2; let d=((delta+Math.PI)%TAU+TAU)%TAU-Math.PI; if(Math.abs(Math.abs(d)-Math.PI)<0.0001) d=-Math.PI; return d; }
 
@@ -236,7 +240,13 @@ function boot(){
   // Com a janela de serviço ABERTA a rolagem da página não funciona (roda, toque e teclas). Os
   // listeners ficam só no overlay (.s3o-popover, que cobre a tela quando aberto) pra não deixar a
   // rolagem do resto do site mais lenta; a barra de rolagem arrastada com o mouse não dá pra bloquear.
-  const noScroll=e=>{ if(pop.classList.contains('open')) e.preventDefault(); };
+  const noScroll=e=>{
+    if(!pop.classList.contains('open')) return;
+    // telas muito baixas: a janela rola por dentro (max-height no CSS) — deixa rolar nela
+    const det=e.target && e.target.closest && e.target.closest('.s3o-detail');
+    if(det && det.scrollHeight>det.clientHeight) return;
+    e.preventDefault();
+  };
   pop.addEventListener('wheel',noScroll,{passive:false});
   pop.addEventListener('touchmove',noScroll,{passive:false});
   document.addEventListener('keydown',e=>{
