@@ -276,6 +276,8 @@ img,svg{display:block}
 /* ===================================================================== */
 .sec-solucao{height:1747vh;background:#fbfbfa}
 .sec-solucao .sol-stage{position:sticky;top:0;height:100vh;overflow:hidden;background:radial-gradient(circle at 55% 52%,#fff 0,#faf9f8 50%,#f0efed 100%)}
+/* overlay preto (criado em initSolucao) que cobre o fundo claro do .sol-stage até o título da continuação da 02 começar */
+.sol-bgdark{position:absolute;inset:0;z-index:3;background:#111;pointer-events:none}   /* acima do fundo claro (.s3-bg z1 e .s3-mask-front z2) e abaixo do rótulo/título (z4); some em t=0…0.35 */
 .section-id,.s3-id{font-size:14px;letter-spacing:.18em;font-weight:700;text-align:center}
 .copy h2,.s3-headline,.s3-close h2{font-family:'Outfit';font-weight:900;line-height:.88;letter-spacing:-.045em}
 .copy em,.s3-headline span,.s3-close h2 span{color:var(--pink);font-style:normal}

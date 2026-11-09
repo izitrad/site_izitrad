@@ -27,22 +27,15 @@
   // Entrada dos anéis (ESCOLHIDA em 2026-11-05, antes "d6"): os 4 anéis se desenham um
   // por vez (de dentro pra fora), cada um por máscara cônica (var --draw 0..1, CSS
   // .s3o-rings-draw), com uma pausa entre eles — ver ANEL_DUR/ANEL_STEP em init().
-  // NÚCLEO (o círculo rosa atrás da folha) — ESCOLHIDA em 2026-11-05 (antes "opção 5"): o núcleo
-  // aparece PRIMEIRO, mais à direita do lugar final (NUCLEO_GX), cresce e acende ali (NUCLEO_LEAD
-  // = 1.0 de rolagem) e depois desliza pra esquerda ao mesmo tempo em que a folha desliza pra
-  // direita — os dois se encontram na posição final (OPEN_DUR); só então os anéis se desenham.
-  // Pra isso o deslize e os anéis ficam NUCLEO_LEAD mais tarde na timeline (usa a rolagem que
-  // sobra no fim; a duração, 25.3, não muda).
-  // TEMPORÁRIO, só pra comparar: ?nucleo=antigo = SEM a animação nova do núcleo (a folha desliza
-  // primeiro e o núcleo só faz fade junto do 1º anel). EXCLUIR depois de decidir (lembrete).
-  const NUCLEO = new URLSearchParams(location.search).get('nucleo') !== 'antigo';
-  const NUCLEO_LEAD = NUCLEO ? 1.0 : 0;
+  // NÚCLEO (o círculo rosa atrás da folha): aparece PRIMEIRO, mais à direita do lugar final
+  // (NUCLEO_GX), cresce e acende ali (NUCLEO_LEAD = 1.0 de rolagem) e depois desliza pra esquerda ao
+  // mesmo tempo em que a folha desliza pra direita — os dois se encontram na posição final
+  // (OPEN_DUR); só então os anéis se desenham. Pra isso o deslize e os anéis ficam NUCLEO_LEAD mais
+  // tarde na timeline (usa a rolagem que sobra no fim; a duração, 25.3, não muda).
+  // PULSO do núcleo: acontece quando a folha e o núcleo se FUNDEM (fim do deslize) e, no FIM (quando
+  // o 4º anel termina), só o traço de energia corre pelo anel.
+  const NUCLEO_LEAD = 1.0;
   const NUCLEO_GX = '15vw';   // o quanto o núcleo nasce à direita do lugar final
-  // PULSO do núcleo (só na versão nova) — ESCOLHIDO em 2026-11-05: o pulso acontece quando a folha
-  // e o núcleo se FUNDEM (fim do deslize) e, no FIM (quando o 4º anel termina), só o traço de
-  // energia corre pelo anel. TEMPORÁRIO, só pra comparar: ?pulso=fim = o pulso no fim (junto do
-  // traço de energia), sem pulso no encontro.
-  const PULSO_FIM = new URLSearchParams(location.search).get('pulso') === 'fim';
   const DOC_SHIFT_X = 0.135;   // fração de innerWidth: centro → posição final (direita)
   const OPEN_DUR    = 1.3;     // duração (unidades da timeline) da abertura
   const FINAL_SCALE = 0.55;    // escala em que a transição assenta o documento
@@ -302,15 +295,11 @@
       // triângulo/rótulo do serviço que viaja nele (state.rr, lido em solucao-nodes.js).
       // Os containers (.s3o-back/.s3o-front) ligam NA HORA em revAt (quem aparece aos
       // poucos são os filhos).
-      if(NUCLEO){
-        // núcleo primeiro: o container de trás liga em openAt (só o glow/onda aparecem — os
-        // anéis têm visibility própria e os nós/rótulos de trás ficam escondidos até revAt)
-        gsap.set([layers.nodesBack, layers.labelsBack], { autoAlpha:0 });
-        tl.set(backC, { autoAlpha:1 }, openAt);
-        tl.set([layers.nodesBack, layers.labelsBack], { autoAlpha:1 }, revAt);
-      }else{
-        tl.set(backC,  { autoAlpha:1 }, revAt);
-      }
+      // núcleo primeiro: o container de trás liga em openAt (só o glow aparece — os anéis têm
+      // visibility própria e os nós/rótulos de trás ficam escondidos até revAt)
+      gsap.set([layers.nodesBack, layers.labelsBack], { autoAlpha:0 });
+      tl.set(backC, { autoAlpha:1 }, openAt);
+      tl.set([layers.nodesBack, layers.labelsBack], { autoAlpha:1 }, revAt);
       tl.set(frontC, { autoAlpha:1 }, revAt);
       Object.assign(state.rr, { p0:0, p1:0, p2:0, p3:0 });
       // Entrada dos anéis: um por vez, de dentro pra fora (planos 0 → 3), com pausa entre
@@ -329,36 +318,28 @@
         // traço de energia do serviço selecionado (Juramentada = plano 2) aparece com o anel dele
         if(k === 2 && layers.energy) tl.fromTo(layers.energy, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:ANEL_DUR }, at);
       });
-      // NÚCLEO (brilho central atrás da folha) — ver NUCLEO no topo. O tamanho e a posição entram
+      // NÚCLEO (brilho central atrás da folha) — ver NUCLEO_LEAD no topo. O tamanho e a posição entram
       // pelas vars --gs e --gx (CSS: translate(calc(-50% + var(--gx))) scale(var(--gs))); o GSAP
       // nunca escreve o transform do glow (senão ele sai do centro).
-      if(NUCLEO){
-        // nasce à direita (--gx), cresce/acende ali e, junto com o deslize da folha (mesmo início
-        // e duração), desliza até o lugar final
-        tl.fromTo(glow, { autoAlpha:0, '--gs':0.25, '--gx':NUCLEO_GX }, { autoAlpha:1, '--gs':1, '--gx':NUCLEO_GX, ease:'power2.out', duration:NUCLEO_LEAD }, openAt);
-        tl.fromTo(glow, { '--gx':NUCLEO_GX }, { '--gx':'0vw', ease:'power2.inOut', duration:OPEN_DUR, immediateRender:false }, openAt + NUCLEO_LEAD);
-      }else{
-        // como antes: o brilho central acende (fade) junto do 1º anel
-        tl.fromTo(glow, { autoAlpha:0 }, { autoAlpha:1, ease:'power1.out', duration:ANEL_DUR }, revAt);
-      }
-      if(NUCLEO){
-        // PULSO do núcleo (brilho + um pouco maior, preso à rolagem e reversível): sobe até o pico
-        // exatamente quando a folha e o núcleo se fundem (fim do deslize, = revAt) e decai junto do
-        // começo dos anéis. No FIM, quando o 4º anel termina de se desenhar (FIM_AT), só o traço de
-        // energia corre pelo anel do serviço selecionado (fireEnergy, tempo real, só ao rolar pra
-        // FRENTE); depois sobra uma pausa até o fim da timeline (25.3). Com ?pulso=fim o pulso
-        // acontece no FIM (junto do traço de energia) e não no encontro.
-        const FIM_UP = 0.3, FIM_DOWN = PULSO_FIM ? 0.5 : 0.6, FIM_ESC = PULSO_FIM ? 1.1 : 1.15;
-        const FIM_AT = revAt + 3*ANEL_STEP + ANEL_DUR;
-        const PULSO_AT = PULSO_FIM ? FIM_AT : revAt - FIM_UP;
-        const BRILHO = 'brightness(1.62) saturate(1.28)', NORMAL = 'brightness(1) saturate(1)';
-        tl.fromTo(glow, { filter:NORMAL, '--gs':1 }, { filter:BRILHO, '--gs':FIM_ESC, ease:'power2.out', duration:FIM_UP, immediateRender:false }, PULSO_AT);
-        tl.fromTo(glow, { filter:BRILHO, '--gs':FIM_ESC }, { filter:NORMAL, '--gs':1, ease:'power2.inOut', duration:FIM_DOWN, immediateRender:false }, PULSO_AT + FIM_UP);
-        tl.call(function(){
-          const sct = tl.scrollTrigger;
-          if(sct && sct.direction > 0 && state.fireEnergy) state.fireEnergy(0);
-        }, null, FIM_AT);
-      }
+      // nasce à direita (--gx), cresce/acende ali e, junto com o deslize da folha (mesmo início
+      // e duração), desliza até o lugar final
+      tl.fromTo(glow, { autoAlpha:0, '--gs':0.25, '--gx':NUCLEO_GX }, { autoAlpha:1, '--gs':1, '--gx':NUCLEO_GX, ease:'power2.out', duration:NUCLEO_LEAD }, openAt);
+      tl.fromTo(glow, { '--gx':NUCLEO_GX }, { '--gx':'0vw', ease:'power2.inOut', duration:OPEN_DUR, immediateRender:false }, openAt + NUCLEO_LEAD);
+      // PULSO do núcleo (brilho + um pouco maior, preso à rolagem e reversível): sobe até o pico
+      // exatamente quando a folha e o núcleo se fundem (fim do deslize, = revAt) e decai junto do
+      // começo dos anéis. No FIM, quando o 4º anel termina de se desenhar (FIM_AT), só o traço de
+      // energia corre pelo anel do serviço selecionado (fireEnergy, tempo real, só ao rolar pra
+      // FRENTE); depois sobra uma pausa até o fim da timeline (25.3).
+      const PULSO_UP = 0.3, PULSO_DOWN = 0.6, PULSO_ESC = 1.15;
+      const FIM_AT = revAt + 3*ANEL_STEP + ANEL_DUR;
+      const PULSO_AT = revAt - PULSO_UP;
+      const BRILHO = 'brightness(1.62) saturate(1.28)', NORMAL = 'brightness(1) saturate(1)';
+      tl.fromTo(glow, { filter:NORMAL, '--gs':1 }, { filter:BRILHO, '--gs':PULSO_ESC, ease:'power2.out', duration:PULSO_UP, immediateRender:false }, PULSO_AT);
+      tl.fromTo(glow, { filter:BRILHO, '--gs':PULSO_ESC }, { filter:NORMAL, '--gs':1, ease:'power2.inOut', duration:PULSO_DOWN, immediateRender:false }, PULSO_AT + PULSO_UP);
+      tl.call(function(){
+        const sct = tl.scrollTrigger;
+        if(sct && sct.direction > 0 && state.fireEnergy) state.fireEnergy(0);
+      }, null, FIM_AT);
       sync();
       addEventListener('resize', sync, {passive:true});
       if(window.ScrollTrigger && ScrollTrigger.addEventListener) ScrollTrigger.addEventListener('refresh', sync);

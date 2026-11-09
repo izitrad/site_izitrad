@@ -1226,6 +1226,20 @@ function initSolucao(root){
   gsap.set(q('.doc-stage'),{opacity:0,y:70,scale:.92});
   tl.to(copyA,{y:0,duration:.42,ease:'power2.out'},0)
     .to(q('.doc-stage'),{opacity:1,y:0,scale:1,duration:.75,ease:'power2.out'},0.62);
+  // FUNDO da continuação da 02 (só desktop, onde o .sol-stage é sticky): a seção SOBE preta (#111, a
+  // mesma cor da tela escura "SEU DOCUMENTO…" que está por baixo) e, quando começa a animação do título
+  // ("UM DOCUMENTO / CINCO JEITOS…", em t=0 da `tl`), o preto some e aparece o fundo claro de sempre. É um
+  // overlay (.sol-bgdark) com autoAlpha 1→0 na MESMA `tl` (não cria gatilho novo e cabe em 0….35, antes
+  // de a folha entrar em .62 → duração/gatilhos não mudam); o gradiente claro do .sol-stage fica intacto.
+  const solStage = q('.sol-stage')[0];
+  if(solStage && getComputedStyle(solStage).position === 'sticky'){
+    const bgDark = document.createElement('div');
+    bgDark.className = 'sol-bgdark'; bgDark.setAttribute('aria-hidden','true');
+    solStage.insertBefore(bgDark, solStage.firstChild);
+    // COMPARAÇÃO (temporário): o clareamento padrão leva .35 da `tl`; ?branco=abrupto leva só .06 (quase um corte)
+    const brancoAbrupto = new URLSearchParams(location.search).get('branco') === 'abrupto';
+    tl.fromTo(bgDark, {autoAlpha:1}, {autoAlpha:0, ease:'none', duration: brancoAbrupto ? .06 : .35}, 0);
+  }
   if(copyWords.length){
     const COPY_WIN = 0.6, copyUnit = COPY_WIN/(0.2 + 0.04*(copyWords.length-1));
     tl.fromTo(copyWords,
