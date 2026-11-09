@@ -119,11 +119,15 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   size();
 
   // GradientBackground.animateTo — mesma transição independente de 3 s power2.inOut
-  let gradientTweens = [];
+  // overwrite:'auto' em vez de matar TODAS as transições em andamento: o original só tinha as trocas de
+  // GEOMETRIA da 04 (A/B), então matar tudo era seguro. Com as zonas extras (05/06) há também trocas de COR
+  // (STATE_PINK/SUBTLE/06/B_RESTORE). Numa rolagem rápida/salto (menu) a troca de cor era interrompida pela
+  // troca de geometria (STATE_B, 3 s) logo no começo e as cores ficavam PARADAS num meio-termo entre a cor
+  // da 06 (rosa/claro) e o preto/verde da 04 — o fundo "cinza/roxo" na seção 04. Com 'auto' só são
+  // interrompidas as propriedades que a nova transição também mexe; as outras terminam normalmente.
   function animateTo(state,duration){
-    gradientTweens.forEach(t => t.kill()); gradientTweens = [];
     if(reduce){ Object.assign(cfg,state); syncU(); render(); return; }
-    gradientTweens.push(gsap.to(cfg,{duration:duration||3,...state,ease:'power2.inOut',onUpdate:syncU}));
+    gsap.to(cfg,{duration:duration||3,...state,ease:'power2.inOut',onUpdate:syncU,overwrite:'auto'});
   }
 
   // Progresso da seção (fórmula do original, com a rolagem suavizada) e os pontos
