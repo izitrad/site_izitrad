@@ -586,27 +586,24 @@ function initHeroS2Story(root){
     .fromTo(introCopy,{autoAlpha:0,y:40},IN2,PHASE2_START+0.90)
     .fromTo(introLink,{autoAlpha:0,y:40},IN2,PHASE2_START+1.05)
     .to({},{duration:0.7},PHASE2_START+1.4);
-  // "SEU DESTINO" chega ROSA (#FF0099, cor inicial no CSS) e, conforme a rolagem continua (de
+  addRollingTween(tl, ilDocReels,  PHASE2_START+0.10);
+  addRollingTween(tl, ilDestReels, PHASE2_START+0.35);
+  // "SEU DESTINO": chega ROSA (#FF0099, cor inicial no CSS) e, DEPOIS de a palavra formada (de
   // PHASE2_START+1.0 a +1.8), uma VARREDURA da esquerda pra direita deixa as letras VERDES (#00FF66): as
-  // letras já viradas ficam verdes, as que ainda não chegaram ficam rosa, e a "frente" (~2 letras) passa
-  // por BRANCO (rosa → branco → verde) — rosa e verde misturados direto dão um cinza opaco, e o branco no
-  // meio mantém a cor viva. Presa à rolagem (scrub) e reversível; cabe antes do fim da pausa
-  // (PHASE2_START+2.1), então a duração da timeline e os gatilhos não mudam.
+  // letras já viradas ficam verdes, as que ainda não chegaram ficam rosa, e a "frente" (~2 letras) passa por
+  // BRANCO (rosa e verde misturados direto dão um cinza opaco; o branco no meio mantém a cor viva). Presa à
+  // rolagem (scrub) e reversível; cabe antes do fim da pausa (PHASE2_START+2.1), então a duração da timeline
+  // e os gatilhos não mudam. O botão "O Caminho" do menu para depois do fim da varredura (+1.85).
+  const mixRGB = (a,b,t) => 'rgb(' + a.map((v,k)=>Math.round(v + (b[k]-v)*t)).join(',') + ')';
+  const corDestino = p => p <= 0 ? '#FF0099' : p >= 1 ? '#00FF66'
+    : p < .5 ? mixRGB([255,0,153],[255,255,255], p/.5) : mixRGB([255,255,255],[0,255,102], (p-.5)/.5);
   const destLetras = ilDestReels.map(r => r.char);
   const destVarre = {p:0};
   const DEST_FRENTE = 2;   // largura da frente, em letras
-  const mixRGB = (a,b,t) => 'rgb(' + a.map((v,k)=>Math.round(v + (b[k]-v)*t)).join(',') + ')';
-  function pintaDestino(){
+  tl.fromTo(destVarre,{p:0},{p:1,ease:'none',duration:0.8,onUpdate(){
     const x = destVarre.p * (destLetras.length - 1 + DEST_FRENTE);
-    destLetras.forEach((c,i)=>{
-      const f = Math.min(1, Math.max(0, (x - i) / DEST_FRENTE));
-      c.style.color = f <= 0 ? '#FF0099' : f >= 1 ? '#00FF66'
-        : f < .5 ? mixRGB([255,0,153],[255,255,255], f/.5) : mixRGB([255,255,255],[0,255,102], (f-.5)/.5);
-    });
-  }
-  tl.fromTo(destVarre,{p:0},{p:1,ease:'none',duration:0.8,onUpdate:pintaDestino},PHASE2_START+1.0);
-  addRollingTween(tl, ilDocReels,  PHASE2_START+0.10);
-  addRollingTween(tl, ilDestReels, PHASE2_START+0.35);
+    destLetras.forEach((c,i)=>{ c.style.color = corDestino(Math.min(1, Math.max(0, (x - i) / DEST_FRENTE))); });
+  }},PHASE2_START+1.0);
   addRollingTween(tl, ilCamReels,  PHASE2_START+0.60);
   // "02 — O Caminho": padronizado pro giro SINCRONIZADO (ver
   // addSyncedRollingTween acima) igual o "03 — A Solução" — era o único
@@ -631,14 +628,16 @@ function initHeroS2Story(root){
   // overflow:hidden) e começa fora da tela (yPercent 100). O salto nativo da âncora rolava o PRÓPRIO
   // palco (scrollTop) e deixava a página parada: aparecia a camada escura VAZIA ("tela preta" — o texto
   // só entra pela timeline). Agora o clique rola a PÁGINA até o ponto da timeline em que o texto da 02
-  // já entrou todo (COMPACT_START + 0.05), e o palco nunca rola sozinho (foco por Tab, hash na URL…).
+  // já entrou todo e a cor do "SEU DESTINO" terminou de virar (PHASE2_START + 1.85), e o palco nunca rola sozinho (foco por Tab, hash na URL…).
   const palcoS2 = root.querySelector('.hero-s2-stage');
   if(palcoS2 && s2Layer){
     palcoS2.addEventListener('scroll', ()=>{ if(palcoS2.scrollTop) palcoS2.scrollTop = 0; });
     const irParaCaminho = ()=>{
       const st = tl.scrollTrigger;
       if(!st || getComputedStyle(s2Layer).position !== 'absolute') return false;   // celular: layout normal, âncora nativa
-      const y = st.start + ((COMPACT_START + 0.05) / tl.duration()) * (st.end - st.start);
+      // PHASE2_START + 1.85: depois de o texto todo entrar (COMPACT_START = +1.65) E de a varredura de cor do
+      // "SEU DESTINO" terminar (+1.8) — senão a última letra ("O") ficava parada numa cor intermediária.
+      const y = st.start + ((PHASE2_START + 1.85) / tl.duration()) * (st.end - st.start);
       window.scrollTo({top:y, behavior:'auto'});
       return true;
     };
