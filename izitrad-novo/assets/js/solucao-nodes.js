@@ -142,7 +142,7 @@ function boot(){
 
   /* ---- popover (detail) ---- */
   const dTitle=pop.querySelector('.s3o-detail-title'), dText=pop.querySelector('.s3o-detail-text');
-  const dList=pop.querySelector('.s3o-detail-list'), dIndex=pop.querySelector('.s3o-index');
+  const dList=pop.querySelector('.s3o-detail-list'), dIndex=pop.querySelector('.s3o-index');   // contador "01 / 04" removido da janela: dIndex fica null
   const dBackdrop=pop.querySelector('.s3o-popover__backdrop');
 
   let selected=0, angle=-Math.PI/2, targetAngle=angle, speed=0.00008;
@@ -151,7 +151,7 @@ function boot(){
   function updateDetail(i){
     selected=i; buttons.forEach((b,k)=>b.classList.toggle('active',k===i));
     const s=services[i];
-    dIndex.textContent=String(i+1).padStart(2,'0')+' / 04';
+    if(dIndex) dIndex.textContent=String(i+1).padStart(2,'0')+' / 04';
     dTitle.innerHTML=s.title; dText.textContent=s.text;
     dList.innerHTML=s.list.map(x=>'<li>'+x+'</li>').join('');
   }

@@ -112,14 +112,14 @@
     pop.innerHTML =
       '<div class="s3o-popover__backdrop"></div>'+
       '<section class="s3o-detail">'+
-        '<div class="s3o-detail-top"><span class="s3o-index">01 / 04</span>'+
+        '<div class="s3o-detail-top">'+
           '<div class="s3o-detail-nav">'+
             '<button data-nav="close" aria-label="Fechar">×</button>'+
           '</div></div>'+
         '<h2 class="s3o-detail-title">Serviço</h2>'+
         '<p class="s3o-detail-text"></p>'+
         '<ul class="s3o-detail-list"></ul>'+
-        '<button class="s3o-cta">Solicitar orçamento →</button>'+
+        '<button class="s3o-cta">Solicitar orçamento</button>'+
       '</section>';
     document.body.appendChild(pop);
 
