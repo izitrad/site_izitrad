@@ -180,16 +180,14 @@
   0%,100%{filter:brightness(1.12) saturate(1.10)}
   50%{filter:brightness(1.42) saturate(1.24)}
 }
-.orbit-glow.izi-filled-pulse{animation:s3oNucleoDischarge .92s cubic-bezier(.16,1,.3,1) both}
+/* CLIQUE no triângulo: o MESMO pulso do encontro da folha com o núcleo (solucao-orbital.js, PULSO_*): brilho
+   1 -> 1.62 (saturação 1 -> 1.28) e núcleo 1 -> 1.15 em .3 (sai rápido), voltando em .6 (assenta suave) —
+   .9s no total. Só filter + transform (compostos na GPU; sem box-shadow animado). */
+.orbit-glow.izi-filled-pulse{animation:s3oNucleoDischarge .9s linear both}
 @keyframes s3oNucleoDischarge{
-  0%{filter:brightness(1.12) saturate(1.08);transform:translate(-50%,-50%) scale(1)}
-  32%{filter:brightness(1.62) saturate(1.28);transform:translate(-50%,-50%) scale(1.085);
-    box-shadow:0 0 48px rgba(255,255,255,.46),0 0 112px rgba(255,0,153,.62),0 0 148px rgba(255,0,153,.78) inset}
-  52%{filter:brightness(1.78) saturate(1.22);transform:translate(-50%,-50%) scale(1.12);
-    box-shadow:0 0 52px rgba(255,220,244,.62),0 0 112px rgba(255,0,153,.62),0 0 158px rgba(255,0,153,.78) inset}
-  72%{filter:brightness(1.38) saturate(1.12);transform:translate(-50%,-50%) scale(1.055);
-    box-shadow:0 0 38px rgba(255,225,244,.34),0 0 82px rgba(255,0,153,.30),0 0 126px rgba(255,0,153,.48) inset}
-  100%{filter:brightness(1.02) saturate(1);transform:translate(-50%,-50%) scale(1)}
+  0%{filter:brightness(1) saturate(1);transform:translate(calc(-50% + var(--gx,0px)),-50%) scale(1);animation-timing-function:cubic-bezier(.5,1,.89,1)}
+  33.333%{filter:brightness(1.62) saturate(1.28);transform:translate(calc(-50% + var(--gx,0px)),-50%) scale(1.15);animation-timing-function:cubic-bezier(.455,.03,.515,.955)}
+  100%{filter:brightness(1) saturate(1);transform:translate(calc(-50% + var(--gx,0px)),-50%) scale(1)}
 }
 
 /* ---- energia percorrendo o anel ---- */
