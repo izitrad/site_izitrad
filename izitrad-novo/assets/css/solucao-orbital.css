@@ -205,14 +205,16 @@
   position:absolute;width:min(390px,calc(100vw - 32px));margin:0;opacity:0;
   transform:translateY(18px) scale(.96);transform-origin:50% 0%;
   transition:opacity .28s ease,transform .34s cubic-bezier(.2,.8,.2,1);
-  /* VIDRO: reflexo no canto superior esquerdo + degradê translúcido, desfoque forte que satura
-     o que passa por trás (o rosa da cena), borda clara e luz interna nas bordas */
-  border:1px solid rgba(255,255,255,.7);border-radius:24px;padding:28px;
+  /* VIDRO: miolo mais transparente e BORDAS mais claras (como a espessura do vidro), reflexo forte
+     no canto superior esquerdo + reflexo suave no inferior direito, desfoque de 28px que satura e
+     clareia o que passa por trás, e borda dupla (aro branco + luz interna) */
+  border:1px solid rgba(255,255,255,.85);border-radius:24px;padding:28px;
   background:
-    radial-gradient(130% 70% at 0% 0%,rgba(255,255,255,.60) 0%,rgba(255,255,255,0) 60%),
-    linear-gradient(160deg,rgba(255,255,255,.76) 0%,rgba(255,255,255,.60) 100%);
-  -webkit-backdrop-filter:blur(24px) saturate(1.7);backdrop-filter:blur(24px) saturate(1.7);
-  box-shadow:inset 0 1px 1px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 22px rgba(255,255,255,.18),0 28px 90px rgba(50,0,30,.4);color:#0e0e12;
+    radial-gradient(120% 60% at 0% 0%,rgba(255,255,255,.70) 0%,rgba(255,255,255,0) 55%),
+    radial-gradient(90% 50% at 100% 100%,rgba(255,255,255,.28) 0%,rgba(255,255,255,0) 60%),
+    linear-gradient(160deg,rgba(255,255,255,.58) 0%,rgba(255,255,255,.46) 100%);
+  -webkit-backdrop-filter:blur(28px) saturate(2) brightness(1.15);backdrop-filter:blur(28px) saturate(2) brightness(1.15);
+  box-shadow:inset 0 1.5px 1px rgba(255,255,255,1),inset 0 -1px 1px rgba(255,255,255,.5),inset 0 0 38px rgba(255,255,255,.32),0 28px 90px rgba(50,0,30,.4);color:#0e0e12;
   font-family:'DM Sans',sans-serif;
 }
 .s3o-popover.open{pointer-events:auto}
@@ -224,9 +226,9 @@
 .s3o-detail button{font-family:inherit}
 .s3o-detail-nav button{width:34px;height:34px;border-radius:50%;border:1px solid rgba(14,14,18,.16);background:rgba(14,14,18,.05);color:#0e0e12;cursor:pointer;font-size:17px;line-height:1;display:grid;place-items:center}
 .s3o-detail h2{font-family:'Outfit',sans-serif;font-weight:300;font-size:44px;line-height:1.02;margin:40px 0 20px;letter-spacing:.015em;text-transform:uppercase}
-.s3o-detail p{font-size:17px;line-height:1.55;color:rgba(14,14,18,.76);margin:0 0 26px}
+.s3o-detail p{font-size:17px;line-height:1.55;color:rgba(14,14,18,.84);margin:0 0 26px}
 .s3o-detail ul{list-style:none;padding:20px 0 0;margin:0;border-top:1px solid rgba(14,14,18,.12)}
-.s3o-detail li{font-size:15px;margin:14px 0;color:rgba(14,14,18,.86)}
+.s3o-detail li{font-size:15px;margin:14px 0;color:rgba(14,14,18,.9)}
 .s3o-detail li::before{content:"✓";display:inline-grid;place-items:center;width:21px;height:21px;border-radius:50%;background:#FF0099;color:#fff;font-size:12px;font-weight:900;margin-right:12px}
 .s3o-cta{margin-top:28px;width:100%;border:0;border-radius:999px;background:linear-gradient(135deg,#D6007F,#FF0099);color:#fff;padding:17px 18px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 10px 26px rgba(255,0,153,.35)}
 @media(prefers-reduced-motion:reduce){.saturn-back-layer,.saturn-front-layer-v23,.orbit-glow,.s3o-nodes-back,.s3o-nodes-front,.s3o-nodes-ui,.s3o-labels-back,.s3o-labels-front,.saturn-energy-layer,.s3o-popover{display:none!important}}

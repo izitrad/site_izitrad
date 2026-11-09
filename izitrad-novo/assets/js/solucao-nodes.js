@@ -233,6 +233,17 @@ function boot(){
   pop.querySelector('[data-nav="close"]').onclick=cancelAndClose;
   dBackdrop.onclick=cancelAndClose;
   document.addEventListener('keydown',e=>{if(e.key==='Escape')cancelAndClose();});
+  // Com a janela de serviço ABERTA a rolagem da página não funciona (roda, toque e teclas). Os
+  // listeners ficam só no overlay (.s3o-popover, que cobre a tela quando aberto) pra não deixar a
+  // rolagem do resto do site mais lenta; a barra de rolagem arrastada com o mouse não dá pra bloquear.
+  const noScroll=e=>{ if(pop.classList.contains('open')) e.preventDefault(); };
+  pop.addEventListener('wheel',noScroll,{passive:false});
+  pop.addEventListener('touchmove',noScroll,{passive:false});
+  document.addEventListener('keydown',e=>{
+    if(!pop.classList.contains('open')) return;
+    if(e.target && e.target.closest && e.target.closest('button')) return;   // Espaço/Enter nos botões continua funcionando
+    if([' ','Spacebar','PageDown','PageUp','Home','End','ArrowUp','ArrowDown'].indexOf(e.key)>=0) e.preventDefault();
+  });
   addEventListener('resize',()=>{triangles.forEach(t=>t.resize());if(pop.classList.contains('open'))positionPopover(buttons[selected]);},{passive:true});
 
   /* ---- posicionamento orbital (ancorado na geometria FINAL FIXA) ---- */
