@@ -205,26 +205,26 @@
   position:absolute;width:min(390px,calc(100vw - 32px));margin:0;opacity:0;
   transform:translateY(18px) scale(.96);transform-origin:50% 0%;
   transition:opacity .28s ease,transform .34s cubic-bezier(.2,.8,.2,1);
-  border:1px solid rgba(255,255,255,.20);border-radius:24px;padding:28px;
-  background:linear-gradient(180deg,rgba(104,0,58,.55),rgba(40,0,24,.5));
-  backdrop-filter:blur(14px);box-shadow:0 28px 90px rgba(50,0,30,.4);color:#fff;
+  border:1px solid rgba(255,255,255,.65);border-radius:24px;padding:28px;
+  background:linear-gradient(180deg,rgba(255,255,255,.80),rgba(255,255,255,.66));
+  backdrop-filter:blur(18px);box-shadow:0 28px 90px rgba(50,0,30,.4);color:#0e0e12;
   font-family:'DM Sans',sans-serif;
 }
 .s3o-popover.open{pointer-events:auto}
 .s3o-popover.open .s3o-popover__backdrop{opacity:1}
 .s3o-popover.open .s3o-detail{opacity:1;transform:translateY(0) scale(1)}
-.s3o-detail-top{display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,.65);font-size:12px;letter-spacing:.08em}
+.s3o-detail-top{display:flex;justify-content:space-between;align-items:center;color:rgba(14,14,18,.55);font-size:12px;letter-spacing:.08em}
 .s3o-detail .s3o-index{font-weight:700}
 .s3o-detail-nav{display:flex;gap:8px}
 /* <button> não herda a fonte do pai (cai em Arial): setas/fechar e o CTA usam a mesma DM Sans do resto do site */
 .s3o-detail button{font-family:inherit}
-.s3o-detail-nav button{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-size:17px;line-height:1;display:grid;place-items:center}
+.s3o-detail-nav button{width:34px;height:34px;border-radius:50%;border:1px solid rgba(14,14,18,.16);background:rgba(14,14,18,.05);color:#0e0e12;cursor:pointer;font-size:17px;line-height:1;display:grid;place-items:center}
 .s3o-detail h2{font-family:'Outfit',sans-serif;font-weight:400;font-size:30px;line-height:1.02;margin:40px 0 18px;letter-spacing:.015em;text-transform:uppercase}
-.s3o-detail p{font-size:15px;line-height:1.55;color:rgba(255,255,255,.72);margin:0 0 26px}
-.s3o-detail ul{list-style:none;padding:20px 0 0;margin:0;border-top:1px solid rgba(255,255,255,.14)}
-.s3o-detail li{font-size:13px;margin:13px 0;color:rgba(255,255,255,.8)}
-.s3o-detail li::before{content:"✓";display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;color:#e10082;font-size:11px;font-weight:900;margin-right:10px}
-.s3o-cta{margin-top:28px;width:100%;border:0;border-radius:999px;background:#fff;color:#d00078;padding:15px 18px;font-weight:800;cursor:pointer}
+.s3o-detail p{font-size:15px;line-height:1.55;color:rgba(14,14,18,.68);margin:0 0 26px}
+.s3o-detail ul{list-style:none;padding:20px 0 0;margin:0;border-top:1px solid rgba(14,14,18,.12)}
+.s3o-detail li{font-size:13px;margin:13px 0;color:rgba(14,14,18,.8)}
+.s3o-detail li::before{content:"✓";display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#FF0099;color:#fff;font-size:11px;font-weight:900;margin-right:10px}
+.s3o-cta{margin-top:28px;width:100%;border:0;border-radius:999px;background:linear-gradient(135deg,#D6007F,#FF0099);color:#fff;padding:15px 18px;font-weight:800;cursor:pointer;box-shadow:0 10px 26px rgba(255,0,153,.35)}
 @media(prefers-reduced-motion:reduce){.saturn-back-layer,.saturn-front-layer-v23,.orbit-glow,.s3o-nodes-back,.s3o-nodes-front,.s3o-nodes-ui,.s3o-labels-back,.s3o-labels-front,.saturn-energy-layer,.s3o-popover{display:none!important}}
 
 /* Palavras do texto da cena (título/parágrafo) — efeito de blur palavra por

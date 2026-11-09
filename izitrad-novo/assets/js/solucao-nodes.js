@@ -225,8 +225,10 @@ function boot(){
     u.addEventListener('focus',()=>{tri.hovered=true;buttons[i].classList.add('ui-hover');if(glowEl)glowEl.classList.add('nucleo-active');});
     u.addEventListener('blur',()=>{tri.hovered=false;buttons[i].classList.remove('ui-hover');if(glowEl)glowEl.classList.remove('nucleo-active');});
   });
-  pop.querySelector('[data-nav="prev"]').onclick=()=>{const i=(selected+services.length-1)%services.length;updateDetail(i);positionPopover(buttons[i]);};
-  pop.querySelector('[data-nav="next"]').onclick=()=>{const i=(selected+1)%services.length;updateDetail(i);positionPopover(buttons[i]);};
+  // setas anterior/próximo foram removidas da janela (a usuária pediu); os handlers ficam à prova de ausência
+  const navPrev=pop.querySelector('[data-nav="prev"]'), navNext=pop.querySelector('[data-nav="next"]');
+  if(navPrev) navPrev.onclick=()=>{const i=(selected+services.length-1)%services.length;updateDetail(i);positionPopover(buttons[i]);};
+  if(navNext) navNext.onclick=()=>{const i=(selected+1)%services.length;updateDetail(i);positionPopover(buttons[i]);};
   function cancelAndClose(){pendingOpenIndex=null;snapping=false;targetAngle=angle;closePopover();}
   pop.querySelector('[data-nav="close"]').onclick=cancelAndClose;
   dBackdrop.onclick=cancelAndClose;

@@ -114,8 +114,6 @@
       '<section class="s3o-detail">'+
         '<div class="s3o-detail-top"><span class="s3o-index">01 / 04</span>'+
           '<div class="s3o-detail-nav">'+
-            '<button data-nav="prev" aria-label="Anterior">←</button>'+
-            '<button data-nav="next" aria-label="Próximo">→</button>'+
             '<button data-nav="close" aria-label="Fechar">×</button>'+
           '</div></div>'+
         '<h2 class="s3o-detail-title">Serviço</h2>'+
