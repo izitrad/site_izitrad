@@ -321,6 +321,28 @@ addEventListener("resize",()=>{
   },150);
 });
 
+/* MENU "Como funciona": o salto nativo da âncora parava no TOPO da seção, onde só o rótulo "04 — COMO
+   FUNCIONA" ainda está girando (borrado) e a pergunta não apareceu — parecia uma tela verde vazia.
+   Agora leva ao ponto em que a pergunta "E como é fazer isso com a izi?" já entrou inteira (a
+   revelação palavra por palavra termina em 2.36 alturas de tela depois do topo do #iziPre04Intro e a
+   saída só começa depois de ~2.55; 2.45 fica no meio dessa janela). Só no desktop (no celular o
+   bloco é curto e vale a âncora nativa). */
+(function(){
+  function irParaPergunta(){
+    const intro = document.getElementById("iziPre04Intro");
+    if(!intro || intro.offsetHeight < 2.5 * innerHeight) return false;
+    window.scrollTo({top: intro.getBoundingClientRect().top + scrollY + 2.45 * innerHeight, behavior:"auto"});
+    return true;
+  }
+  document.querySelectorAll('.main-nav a[href="#como"]').forEach(function(a){
+    a.addEventListener("click", function(e){
+      if(irParaPergunta()){ e.preventDefault(); history.replaceState(null, "", "#como"); }
+    });
+  });
+  // página aberta já com #como na URL: o salto nativo vem depois do carregamento — refaz
+  if(location.hash === "#como"){ setTimeout(irParaPergunta, 0); setTimeout(irParaPergunta, 600); }
+})();
+
 /* SIMPLES — ajuste geométrico: 10px VISUAIS em cada borda */
 (function(){
   const TARGET_MARGIN = 10;

@@ -200,4 +200,20 @@ panelClose.addEventListener('click',closePanel);
 panelBackdrop.addEventListener('click',closePanel);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closePanel(); });
 
+/* MENU "Confiança": o rótulo "05 — CONFIANÇA" fica a 5vh do topo DA SEÇÃO (position:absolute; top:5vh). O
+   salto nativo da âncora para 78px depois (scroll-padding-top do html), então o rótulo caía em 123px, e o
+   salto anterior desta função (0.2 altura de tela) o deixava FORA da tela. Agora a página para com o topo
+   da seção encostado no topo da tela: o rótulo fica a 5vh, a MESMA altura dos rótulos 02, 03, 04 e 06.
+   Só no desktop; no celular vale a âncora nativa. */
+function irParaConfianca(){
+  const sec = document.getElementById('destino');
+  if(!sec || innerWidth <= 700) return false;
+  window.scrollTo({top: sec.getBoundingClientRect().top + scrollY, behavior:'auto'});
+  return true;
+}
+document.querySelectorAll('.main-nav a[href="#destino"]').forEach(a=>a.addEventListener('click',e=>{
+  if(irParaConfianca()){ e.preventDefault(); history.replaceState(null,'','#destino'); }
+}));
+if(location.hash === '#destino'){ setTimeout(irParaConfianca,0); setTimeout(irParaConfianca,600); }
+
 })();

@@ -256,4 +256,19 @@ document.addEventListener("visibilitychange",updateLoop);
 
 addEventListener('resize',()=>{setupParallax();layout(0);ScrollTrigger.refresh()},{passive:true});
 if(document.fonts?.ready)document.fonts.ready.then(()=>{ScrollTrigger.refresh()});
+
+/* MENU "Avaliações": o rótulo "06 — AVALIAÇÕES" fica a 5vh do topo da seção; o salto nativo da âncora para
+   78px depois (scroll-padding-top do html) e o rótulo caía em 123px. Aqui a página para com o topo da seção
+   encostado no topo da tela, e o rótulo fica a 5vh — a MESMA altura dos rótulos 02, 03, 04 e 05. Só no
+   desktop; no celular vale a âncora nativa. */
+function irParaAvaliacoes(){
+  const sec = document.getElementById('confianca');
+  if(!sec || innerWidth <= 700) return false;
+  window.scrollTo({top: sec.getBoundingClientRect().top + scrollY, behavior:'auto'});
+  return true;
+}
+document.querySelectorAll('.main-nav a[href="#confianca"]').forEach(a=>a.addEventListener('click',e=>{
+  if(irParaAvaliacoes()){ e.preventDefault(); history.replaceState(null,'','#confianca'); }
+}));
+if(location.hash === '#confianca'){ setTimeout(irParaAvaliacoes,0); setTimeout(irParaAvaliacoes,600); }
 })();

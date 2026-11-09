@@ -607,6 +607,32 @@ function initHeroS2Story(root){
   // anda proporcional ao scroll o tempo inteiro — sem largada lenta nem
   // desaceleração no fim. Esse é o estado APROVADO ("perfeito").
   addSyncedRollingTween(tl, introEyebrowReels, ENTRY_START, ENTRY_DUR, 'none');
+
+  // ÂNCORA "#caminho" (menu "O Caminho"): a .s2-layer mora DENTRO do palco sticky (.hero-s2-stage,
+  // overflow:hidden) e começa fora da tela (yPercent 100). O salto nativo da âncora rolava o PRÓPRIO
+  // palco (scrollTop) e deixava a página parada: aparecia a camada escura VAZIA ("tela preta" — o texto
+  // só entra pela timeline). Agora o clique rola a PÁGINA até o ponto da timeline em que o texto da 02
+  // já entrou todo (COMPACT_START + 0.05), e o palco nunca rola sozinho (foco por Tab, hash na URL…).
+  const palcoS2 = root.querySelector('.hero-s2-stage');
+  if(palcoS2 && s2Layer){
+    palcoS2.addEventListener('scroll', ()=>{ if(palcoS2.scrollTop) palcoS2.scrollTop = 0; });
+    const irParaCaminho = ()=>{
+      const st = tl.scrollTrigger;
+      if(!st || getComputedStyle(s2Layer).position !== 'absolute') return false;   // celular: layout normal, âncora nativa
+      const y = st.start + ((COMPACT_START + 0.05) / tl.duration()) * (st.end - st.start);
+      window.scrollTo({top:y, behavior:'auto'});
+      return true;
+    };
+    document.querySelectorAll('a[href="#caminho"]').forEach(a=>a.addEventListener('click', e=>{
+      if(irParaCaminho()){ e.preventDefault(); history.replaceState(null, '', '#caminho'); }
+    }));
+    // página aberta já com #caminho na URL: o navegador faz o salto nativo DEPOIS do carregamento (e
+    // rola o palco) — refaz duas vezes (setTimeout, não rAF: roda mesmo com a aba em segundo plano)
+    if(location.hash === '#caminho'){
+      const refaz = ()=>{ palcoS2.scrollTop = 0; irParaCaminho(); };
+      setTimeout(refaz, 0); setTimeout(refaz, 500);
+    }
+  }
 }
 
 /* --------------- ROLLING TEXT (giro de entrada dos rótulos) ----------- */
@@ -1486,6 +1512,22 @@ function initSolucao(root){
   // texto.
   const INTRO_DELAY_AFTER_LABEL = 0.6;
   if(window.SolucaoOrbital) window.SolucaoOrbital.init(root, tl, {openAt: ORBITAL_OPEN_AT, introAt: LABEL_HIDE_AT+INTRO_DELAY_AFTER_LABEL});
+
+  // MENU "A Solução": em vez de parar no começo da seção (onde a 03 ainda está entrando por cima da
+  // 02), leva ao ponto em que a 03 já apareceu toda — título à esquerda, folha no centro — e o núcleo
+  // ainda não começou (ORBITAL_OPEN_AT - 0.08, antes de o núcleo nascer). Só no menu (o link "Explorar o
+  // caminho" da 02 continua com o salto normal) e só no desktop (sticky); no celular vale a âncora nativa.
+  const irParaSolucao = ()=>{
+    const st = tl.scrollTrigger, palco = q('.sol-stage')[0];
+    if(!st || !palco || getComputedStyle(palco).position !== 'sticky') return false;
+    const y = st.start + ((ORBITAL_OPEN_AT - 0.08) / tl.duration()) * (st.end - st.start);
+    window.scrollTo({top:y, behavior:'auto'});
+    return true;
+  };
+  document.querySelectorAll('.main-nav a[href="#solucao"]').forEach(a=>a.addEventListener('click', e=>{
+    if(irParaSolucao()){ e.preventDefault(); history.replaceState(null, '', '#solucao'); }
+  }));
+  if(location.hash === '#solucao'){ setTimeout(irParaSolucao, 0); setTimeout(irParaSolucao, 500); }
 
   gsap.to(q('.progress i'),{height:'100%',ease:'none',
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});
