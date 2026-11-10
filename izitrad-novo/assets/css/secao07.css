@@ -1,0 +1,114 @@
+/* ===== SEÇÃO 07 — ORÇAMENTO (bilhete/ticket que se destaca) =====
+   Origem: proto-orcamento.html (raiz do projeto; sketch aprovado desktop + mobile).
+   O visitante monta o pedido em 4 campos de chips e o CANHOTO se destaca (rasga na
+   picote) e vira o resultado. Tudo com prefixo .s07- pra não esbarrar nas outras
+   seções. Fundo PROVISÓRIO próprio (#0e0007 + brilho rosa), opaco: cobre o canvas
+   compartilhado da 04/05/06 — a decisão do fundo final fica pra depois.
+   Destino do botão "Pedir orçamento" (WhatsApp / formulário) ainda a definir. */
+.s07{--pink:#FF0099;--ink:#0e0e12;--paper:#fffafd;--muted:#8a8fa3;--bg:#0e0007;--bg-glow:rgba(255,0,153,.22);--on-bg:#fff;--on-bg-soft:rgba(255,255,255,.62);--notch:13px;
+     background:var(--bg);color:var(--on-bg);font-family:'DM Sans',system-ui,sans-serif}
+.s07 *{box-sizing:border-box}
+/* Rótulo do topo "07 — ORÇAMENTO": mesmo padrão dos outros capítulos (centralizado,
+   DM Sans 14px/700, top:5vh, entra subindo + giro de letras — ver secao07.js) */
+.s07-kicker{position:absolute;top:5vh;left:50%;transform:translate(-50%,70px);opacity:0;z-index:2;
+  color:var(--pink);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;text-align:center}
+/* ===== SEÇÃO ===== */
+  .s07{position:relative;min-height:112vh;padding:16vh 5vw 14vh;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+  .s07::before{content:"";position:absolute;left:50%;top:48%;width:min(1100px,110vw);aspect-ratio:1;transform:translate(-50%,-50%);
+    background:radial-gradient(circle closest-side,var(--bg-glow),transparent 70%);pointer-events:none}
+    .s07-h2{position:relative;font-family:'Outfit',sans-serif;font-weight:900;text-transform:uppercase;text-align:center;
+      font-size:clamp(40px,6.2vw,104px);line-height:.92;letter-spacing:-.02em;margin:22px 0 18px}
+  .s07-h2 em{font-style:normal;color:var(--pink)}
+  .s07-lead{position:relative;max-width:560px;text-align:center;color:var(--on-bg-soft);font-size:clamp(16px,1.25vw,19px);line-height:1.5;margin-bottom:6vh}
+
+  /* ===== TICKET ===== */
+  .s07-stage{position:relative;width:min(960px,100%);display:grid;place-items:center}
+  .s07-ticket{position:relative;display:flex;width:100%;min-height:430px;
+          filter:drop-shadow(0 30px 50px rgba(0,0,0,.42)) drop-shadow(0 0 40px rgba(255,0,153,.14));
+          transform:rotate(-2deg)}
+  .s07-part{position:relative;background:linear-gradient(160deg,#fff,var(--paper));color:var(--ink)}
+
+  /* CORPO — recorte semicircular no lado do picote (topo e base) */
+  .s07-body{flex:1 1 auto;padding:34px 38px 30px;border-radius:26px 0 0 26px;
+        -webkit-mask:radial-gradient(circle var(--notch) at 100% 0,#0000 97%,#000) top/100% 51% no-repeat,
+                     radial-gradient(circle var(--notch) at 100% 100%,#0000 97%,#000) bottom/100% 51% no-repeat;
+                mask:radial-gradient(circle var(--notch) at 100% 0,#0000 97%,#000) top/100% 51% no-repeat,
+                     radial-gradient(circle var(--notch) at 100% 100%,#0000 97%,#000) bottom/100% 51% no-repeat}
+  .s07-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px}
+  /* logo oficial (logo-principal.svg: letras pretas + triângulo rosa), 36px de altura como na janela de serviço */
+  .s07-brand{line-height:0}
+  .s07-brand img{display:block;height:36px;width:auto}
+  .s07-tag{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--pink);text-align:right}
+  .s07-tag small{display:block;color:var(--muted);font-weight:500;letter-spacing:.12em;margin-top:3px}
+
+  .s07-field{margin-bottom:16px}
+  .s07-field:last-of-type{margin-bottom:0}
+  .s07-lbl{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .s07-lbl i{width:7px;height:7px;border-radius:50%;background:#e4e2ea;transition:.35s}
+  .s07-field.done .s07-lbl i{background:var(--pink);box-shadow:0 0 0 4px rgba(255,0,153,.16)}
+  .s07-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .s07-chip{font:500 14px/1 'DM Sans',sans-serif;padding:10px 14px;border-radius:999px;border:1.5px solid #e6e3ec;background:#fff;color:#2a2a34;cursor:pointer;
+        transition:transform .2s,border-color .2s,background .2s,color .2s,box-shadow .2s}
+  .s07-chip:hover{border-color:rgba(255,0,153,.5);transform:translateY(-1px)}
+  .s07-chip:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
+  .s07-chip[aria-checked="true"]{background:var(--pink);border-color:var(--pink);color:#fff;font-weight:700;box-shadow:0 8px 20px rgba(255,0,153,.32)}
+
+  /* CANHOTO — picote tracejado + recorte semicircular do lado esquerdo */
+  .s07-stub{flex:0 0 clamp(230px,28%,270px);padding:34px 26px 30px;border-radius:0 26px 26px 0;transform-origin:0% 100%;
+        display:flex;flex-direction:column;
+        -webkit-mask:radial-gradient(circle var(--notch) at 0 0,#0000 97%,#000) top/100% 51% no-repeat,
+                     radial-gradient(circle var(--notch) at 0 100%,#0000 97%,#000) bottom/100% 51% no-repeat;
+                mask:radial-gradient(circle var(--notch) at 0 0,#0000 97%,#000) top/100% 51% no-repeat,
+                     radial-gradient(circle var(--notch) at 0 100%,#0000 97%,#000) bottom/100% 51% no-repeat}
+  .s07-stub::before{content:"";position:absolute;left:0;top:calc(var(--notch) + 6px);bottom:calc(var(--notch) + 6px);
+                border-left:2px dashed rgba(255,0,153,.45);transition:opacity .3s}
+  .s07-stub .s07-no{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;display:flex;justify-content:space-between}
+  .s07-sum{list-style:none;display:grid;gap:12px}
+  .s07-sum li{border-bottom:1px solid rgba(14,14,18,.08);padding-bottom:9px}
+  .s07-sum span{display:block;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .s07-sum b{display:block;font:800 17px/1.15 'Outfit',sans-serif;color:#c9c6d2;transition:color .25s}
+  .s07-sum li.on b{color:var(--ink)}
+  .s07-prog{display:flex;gap:6px;margin-top:auto;padding-top:18px}
+  .s07-prog u{flex:1;height:5px;border-radius:3px;background:#ebe8f0;text-decoration:none;transition:background .3s}
+  .s07-prog u.on{background:var(--pink)}
+  .s07-eta{margin-top:12px;font-size:12px;line-height:1.35;color:var(--muted);min-height:34px}
+
+  /* estado PRONTO — o canhoto fica rosa (a animação de rasgar é do JS) */
+  .s07-ticket.ready .s07-stub{background:linear-gradient(150deg,#ff2aa8,var(--pink) 55%,#d4007f);color:#fff}
+  .s07-ticket.ready .s07-stub .s07-no,.s07-ticket.ready .s07-stub .s07-sum span,.s07-ticket.ready .s07-eta{color:rgba(255,255,255,.78)}
+  .s07-ticket.ready .s07-stub .s07-sum li{border-color:rgba(255,255,255,.28)}
+  .s07-ticket.ready .s07-sum b,.s07-ticket.ready .s07-sum li.on b{color:#fff}
+  .s07-ticket.ready .s07-prog u{background:rgba(255,255,255,.35)}
+  .s07-ticket.ready .s07-prog u.on{background:#fff}
+  .s07-ticket.ready .s07-stub::before{opacity:0}
+
+  /* CTA + prévia da mensagem (o destino do botão ainda é a definir) */
+  .s07-cta-wrap{position:relative;margin-top:34px;text-align:center;min-height:120px}
+  .s07-cta{display:inline-block;background:var(--pink);color:#fff;font:800 17px/1 'DM Sans',sans-serif;padding:18px 34px;border-radius:999px;text-decoration:none;
+       box-shadow:0 14px 36px rgba(255,0,153,.45);opacity:0;pointer-events:none}
+  .s07-cta.on{pointer-events:auto}
+  .s07-again{display:block;margin:16px auto 0;background:none;border:0;color:var(--on-bg-soft);font:500 14px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer;opacity:0;pointer-events:none}
+  .s07-again.on{pointer-events:auto}
+  .s07-msg{margin:14px auto 0;max-width:620px;font-size:13px;color:var(--on-bg-soft);line-height:1.5;opacity:0}
+  .s07-msg code{font-family:inherit;color:var(--on-bg)}
+  .s07-hint{position:relative;margin-top:22px;font-size:13px;letter-spacing:.04em;color:var(--on-bg-soft);text-align:center}
+
+  /* ===== CELULAR: ticket em pé, canhoto embaixo (picote horizontal) ===== */
+  @media(max-width:760px){
+    .s07{padding:13vh 16px 12vh}
+    .s07-ticket{flex-direction:column;transform:rotate(-1deg)}
+    .s07-body{padding:26px 22px 28px;border-radius:24px 24px 0 0;
+          -webkit-mask:radial-gradient(circle var(--notch) at 0 100%,#0000 97%,#000) left/51% 100% no-repeat,
+                       radial-gradient(circle var(--notch) at 100% 100%,#0000 97%,#000) right/51% 100% no-repeat;
+                  mask:radial-gradient(circle var(--notch) at 0 100%,#0000 97%,#000) left/51% 100% no-repeat,
+                       radial-gradient(circle var(--notch) at 100% 100%,#0000 97%,#000) right/51% 100% no-repeat}
+    .s07-stub{flex:none;padding:28px 22px 22px;border-radius:0 0 24px 24px;transform-origin:0% 0%;
+          -webkit-mask:radial-gradient(circle var(--notch) at 0 0,#0000 97%,#000) left/51% 100% no-repeat,
+                       radial-gradient(circle var(--notch) at 100% 0,#0000 97%,#000) right/51% 100% no-repeat;
+                  mask:radial-gradient(circle var(--notch) at 0 0,#0000 97%,#000) left/51% 100% no-repeat,
+                       radial-gradient(circle var(--notch) at 100% 0,#0000 97%,#000) right/51% 100% no-repeat}
+    .s07-stub::before{left:calc(var(--notch) + 6px);right:calc(var(--notch) + 6px);top:0;bottom:auto;border-left:0;border-top:2px dashed rgba(255,0,153,.45)}
+    .s07-sum{grid-template-columns:1fr 1fr;gap:10px 16px}
+  }
+  @media(prefers-reduced-motion:reduce){.s07 *{transition:none!important}}

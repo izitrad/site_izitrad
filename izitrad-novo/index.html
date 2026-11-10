@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="assets/css/secao04.css?v=123">
 <link rel="stylesheet" href="assets/css/secao05.css?v=58">
 <link rel="stylesheet" href="assets/css/secao06.css?v=7">
+<link rel="stylesheet" href="assets/css/secao07.css?v=2">
 </head>
 <body class="pre-anim">
 
@@ -508,8 +509,77 @@
       </svg>
     </div>
   </div>
-  <section id="orcamento" class="sec sec-ph" data-sec="ph">
-    <div class="ph"><span class="ph-num">07</span><h2>ORÇAMENTO</h2><p>seção em desenvolvimento</p></div>
+  <!-- SEÇÃO 07 — ORÇAMENTO (transporte do proto-orcamento.html): bilhete com picote;
+       o visitante monta o pedido e o canhoto se DESTACA. Fundo provisório próprio
+       (ver secao07.css). Destino do botão "Pedir orçamento" ainda a definir. -->
+  <section id="orcamento" class="sec s07" data-sec="orcamento" aria-labelledby="s07-titulo">
+    <div class="s07-kicker">07 — ORÇAMENTO</div>
+    <h2 class="s07-h2" id="s07-titulo">Monte seu <em>bilhete</em></h2>
+    <p class="s07-lead">Escolha o que você precisa e o seu canhoto sai pronto, com o pedido já montado.</p>
+
+    <div class="s07-stage">
+      <div class="s07-ticket">
+        <div class="s07-part s07-body">
+          <div class="s07-head">
+            <div class="s07-brand"><img src="assets/img/logo-principal.svg?v=1" alt="iziTrad" draggable="false"></div>
+            <div class="s07-tag">Bilhete de orçamento<small>Nº 0001</small></div>
+          </div>
+
+          <div class="s07-field" data-key="doc">
+            <div class="s07-lbl"><i></i>Documento</div>
+            <div class="s07-chips" role="radiogroup" aria-label="Documento">
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Diploma</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Certidão</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Histórico escolar</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Contrato</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Outro</button>
+            </div>
+          </div>
+          <div class="s07-field" data-key="idioma">
+            <div class="s07-lbl"><i></i>Idioma de destino</div>
+            <div class="s07-chips" role="radiogroup" aria-label="Idioma de destino">
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Inglês</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Italiano</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Espanhol</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Outro</button>
+            </div>
+          </div>
+          <div class="s07-field" data-key="servico">
+            <div class="s07-lbl"><i></i>Serviço</div>
+            <div class="s07-chips" role="radiogroup" aria-label="Serviço">
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Tradução juramentada</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Apostilamento de Haia</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Os dois</button>
+            </div>
+          </div>
+          <div class="s07-field" data-key="prazo">
+            <div class="s07-lbl"><i></i>Prazo</div>
+            <div class="s07-chips" role="radiogroup" aria-label="Prazo">
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Normal</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Urgente</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="s07-part s07-stub">
+          <div class="s07-no"><span>Canhoto</span><span>Nº 0001</span></div>
+          <ul class="s07-sum">
+            <li data-k="doc"><span>Documento</span><b>—</b></li>
+            <li data-k="idioma"><span>Idioma</span><b>—</b></li>
+            <li data-k="servico"><span>Serviço</span><b>—</b></li>
+            <li data-k="prazo"><span>Prazo</span><b>—</b></li>
+          </ul>
+          <div class="s07-prog" aria-hidden="true"><u></u><u></u><u></u><u></u></div>
+          <p class="s07-eta">Preencha os 4 campos para destacar o canhoto.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="s07-cta-wrap">
+      <a class="s07-cta" href="#orcamento">Pedir orçamento →</a>
+      <p class="s07-msg"></p>
+      <button class="s07-again" type="button">Refazer o bilhete</button>
+    </div>
   </section>
 
 </main>
@@ -532,6 +602,7 @@
 <script type="module" src="assets/js/secao04-fundo-1a1.js?v=40"></script>
 <script src="assets/js/secao05.js?v=15"></script>
 <script src="assets/js/secao06.js?v=2"></script>
+<script src="assets/js/secao07.js?v=1"></script>
 <script type="module" src="assets/js/solucao-nodes.js?v=17"></script>
 </body>
 </html>
