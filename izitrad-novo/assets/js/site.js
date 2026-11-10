@@ -64,6 +64,15 @@ function initWaves(canvas){
   const mouse={x:-10,y:0,lx:0,ly:0,sx:0,sy:0,v:0,vs:0,a:0,set:false};
   const lineColor='rgba(255,0,153,.55)';
   let lines=[], bounding=null, rafId=null;
+  // PERF (celular/tablet, <900px — o desktop segue EXATAMENTE o caminho antigo):
+  //  1) covered: com o triângulo rosa já cobrindo a tela (ver applyGrowth → setCovered) as ondas
+  //     ficam invisíveis; não calcula nem desenha nada até o scroll voltar;
+  //  2) 30 quadros/s (o movimento é lento; 60 não se nota e custa o dobro);
+  //  3) sem a física do "empurrão do mouse" (no toque quase não faz nada);
+  //  4) cada ponto é calculado UMA vez por quadro (antes 2x) e sem criar objetos (menos coleta de lixo).
+  // O desenho de cada quadro é idêntico ao antigo (a física do cursor é sempre 0 nesse caso).
+  const lite=()=>innerWidth<900;
+  let covered=false, lastDraw=-1e9, xs=null, ys=null;
 
   function moved(point, withCursorForce){
     const c={ x:point.x+point.wave.x+(withCursorForce?point.cursor.x:0), y:point.y+point.wave.y+(withCursorForce?point.cursor.y:0) };
@@ -90,6 +99,16 @@ function initWaves(canvas){
     }
   }
   function movePoints(time){
+    if(lite()){
+      lines.forEach(points=>points.forEach(p=>{
+        const nX=(p.x+time*CFG.WAVE_TIME_X_FACTOR)*CFG.WAVE_NOISE_X_FACTOR;
+        const nY=(p.y+time*CFG.WAVE_TIME_Y_FACTOR)*CFG.WAVE_NOISE_Y_FACTOR;
+        const move=noise.perlin2(nX,nY)*CFG.WAVE_NOISE_MAGNITUDE;
+        p.wave.x=Math.cos(move)*CFG.WAVE_AMPLITUDE_X;
+        p.wave.y=Math.sin(move)*CFG.WAVE_AMPLITUDE_Y;
+      }));
+      return;
+    }
     lines.forEach(points=>points.forEach(p=>{
       const nX=(p.x+time*CFG.WAVE_TIME_X_FACTOR)*CFG.WAVE_NOISE_X_FACTOR;
       const nY=(p.y+time*CFG.WAVE_TIME_Y_FACTOR)*CFG.WAVE_NOISE_Y_FACTOR;
@@ -121,6 +140,25 @@ function initWaves(canvas){
     ctx.beginPath();
     ctx.strokeStyle=lineColor;
     ctx.lineWidth=.5;
+    if(lite()){
+      // mesma curva do caminho antigo (mesmos pontos, mesmo arredondamento a 0,1px), mas cada ponto
+      // é calculado uma vez e guardado em arrays reaproveitados (sem alocar um objeto por ponto)
+      lines.forEach(points=>{
+        const n=points.length;
+        if(!xs||xs.length<n){ xs=new Float64Array(n); ys=new Float64Array(n); }
+        for(let i=0;i<n;i++){
+          const p=points[i];
+          xs[i]=Math.round((p.x+p.wave.x)*10)/10;
+          ys[i]=Math.round((p.y+p.wave.y)*10)/10;
+        }
+        ctx.moveTo(xs[0], ys[0]);
+        for(let i=0;i<n-1;i++){
+          ctx.quadraticCurveTo(xs[i], ys[i], (xs[i]+xs[i+1])/2, (ys[i]+ys[i+1])/2);
+        }
+      });
+      ctx.stroke();
+      return;
+    }
     lines.forEach(points=>{
       const p1=moved(points[0], false);
       ctx.moveTo(p1.x, p1.y);
@@ -133,7 +171,10 @@ function initWaves(canvas){
     ctx.stroke();
   }
   function tick(time){
-    if(wavesVisible){
+    // celular/tablet: pausa se estiver coberto pelo rosa e limita a ~30 quadros/s
+    const skip = lite() && (covered || time-lastDraw<30);
+    if(wavesVisible && !skip){
+      lastDraw=time;
       mouse.sx+=(mouse.x-mouse.sx)*CFG.MOUSE_SMOOTHING_FACTOR;
       mouse.sy+=(mouse.y-mouse.sy)*CFG.MOUSE_SMOOTHING_FACTOR;
       const dx=mouse.sx-mouse.lx, dy=mouse.sy-mouse.ly, d=Math.hypot(dx,dy);
@@ -163,6 +204,7 @@ function initWaves(canvas){
   addEventListener('mousemove', onMouseMove);
   container.addEventListener('touchmove', onTouchMove, {passive:true});
   rafId=requestAnimationFrame(tick);
+  return { setCovered(v){ covered=!!v; } };
 }
 
 /* -------------------- 01+02 · HERO → O CAMINHO (palco único) ---------- */
@@ -176,7 +218,7 @@ function initWaves(canvas){
 function initHeroS2Story(root){
   let tl; // declarada aqui (atribuída mais abaixo) pra buildGrow poder re-sincronizá-la — ver buildGrow
   const wavesCanvas = root.querySelector('.hero-waves canvas');
-  if(wavesCanvas) initWaves(wavesCanvas);
+  const wavesCtl = wavesCanvas ? initWaves(wavesCanvas) : null;   // controle (setCovered): ver PERF em initWaves
   const stage   = root.querySelector('.hero-layer');
   const s2Layer = root.querySelector('.s2-layer');
   const logo    = root.querySelector('.logo');
@@ -351,6 +393,8 @@ function initHeroS2Story(root){
   function applyGrowth(){
     const tw=proxy.w;
     const t=(tw-triW0)/(triTargetWidth-triW0);
+    // triângulo rosa já cobre a tela (COVER_MARGIN deixa folga) → as ondas ficam invisíveis: pausa o canvas (celular)
+    if(wavesCtl) wavesCtl.setCovered(t>=0.95);
     const curAX=anchorX0+(centerX-anchorX0)*t;
     const curAY=anchorY0+(centerY-anchorY0)*t;
     const driftX=curAX-anchorX0, driftY=curAY-anchorY0;
