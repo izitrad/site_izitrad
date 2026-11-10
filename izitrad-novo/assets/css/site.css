@@ -694,6 +694,31 @@ img,svg{display:block}
   .halo{width:66vw;top:34%}
 }
 
+/* ---- CELULAR (<=700px): ajustes de layout feitos DEPOIS do desktop; só valem em tela estreita ---- */
+@media(max-width:700px){
+  /* Hero: o "Olá, somos a" desce 80px no desktop (logo de 750px). No celular a logo tem ~278px,
+     então esses 80px jogavam o texto POR CIMA da logo — aqui ele fica logo acima das letras. */
+  .hero-layer .logo__greet{transform:translate(calc(-35% - 15px),30px)}
+  /* Cabeçalho: a logo "izi" tem translateX(110px) no desktop (pra liberar o menu de 8 itens); no
+     celular isso a empurrava pro MEIO da tela. Aqui ela volta ao canto esquerdo. */
+  .site-header .header-inner{padding-left:20px}
+  .site-header .brand-logo{transform:none}
+  /* Botão do menu (triângulo): 66x75px estourava a faixa branca (65px de altura). Reduzido a 65% (~43x49px),
+     encostado no mesmo canto direito, pra caber DENTRO da faixa. Só no estado normal; o estado "compacto"
+     (faixa some, só o triângulo flutuando) segue com o tamanho original. */
+  .site-header:not([data-compact]) .menu-toggle{transform:scale(.65);transform-origin:100% 50%}
+
+  /* Hero, fase rosa ("APOSTILAMENTO DE HAIA / SEM SAIR / DE CASA"): no celular os títulos ficam EMPILHADOS e
+     CENTRALIZADOS (regras de <=900px acima); aqui o parágrafo + botão vão pra baixo deles, também
+     centralizados e em largura quase total (no desktop eram uma coluna estreita à esquerda do bloco). */
+  /* os contornos "SEM"/"CASA" (.sem-line, position:absolute) precisam da PRÓPRIA palavra como referência;
+     com .ht estático eles escapavam pro canto da tela (apareciam como um "CASA" vazado no topo) */
+  .hero-layer .ht{position:relative}
+  .hero-layer .reveal-copy{left:7.5%;top:calc(50% + 132px);width:85%;text-align:center;display:flex;flex-direction:column;align-items:center}
+  .hero-layer .reveal-copy p{font-size:16px;line-height:1.5}
+  .hero-layer .reveal-copy .btn{margin-top:1.4rem;font-size:15px;padding:.8rem 1.5rem}
+}
+
 /* ==================== PREFERÊNCIA: MENOS MOVIMENTO ==================== */
 @media(prefers-reduced-motion:reduce){
   .hero-s2-story{height:auto}
