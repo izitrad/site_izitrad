@@ -203,7 +203,12 @@ function initHeroS2Story(root){
   // abaixo) — não troca a animação de entrada, soma a ela. O rótulo
   // "02 — O CAMINHO" (intro-eyebrow) nunca teve entrada nenhuma (só
   // aparece junto com a camada) — aqui ele ganha a mesma, sozinho.
-  const ilDocReels=buildRollingLabel(ilDoc, {words:true}), ilDestReels=buildRollingLabel(ilDest), ilCamReels=buildRollingLabel(ilCam);
+  // Título da tela escura 02: no DESKTOP (>=900px) só "SEU DOCUMENTO" é dividido em palavras (quebra em 2 linhas);
+  // "SEU DESTINO" e "O CAMINHO CERTO" ficam em linha única. No CELULAR/TABLET (<900px) as 3 frases também viram
+  // palavras (.rl-word), pra CSS quebrar em SEU / DOCUMENTO / SEU / DESTINO / O CAMINHO / CERTO (ver site.css).
+  // As letras/carretéis são os MESMOS (só ganham um wrapper por palavra) → mesmos tweens, duração e gatilhos.
+  const s2Palavras = innerWidth < 900;
+  const ilDocReels=buildRollingLabel(ilDoc, {words:true}), ilDestReels=buildRollingLabel(ilDest, {words:s2Palavras}), ilCamReels=buildRollingLabel(ilCam, {words:s2Palavras});
   const introEyebrowReels=buildRollingLabel(introEyebrow);
 
   // calibra cada trecho HTML pro tamanho/posição exato medido no SVG original

@@ -728,6 +728,22 @@ img,svg{display:block}
 
 /* mesma entrada do menu compacto (menuToggleIn), mas terminando em 65% (o tamanho reduzido do celular) — usada só em <=700px */
 @keyframes menuToggleInSm{from{opacity:0;transform:scale(.53)}to{opacity:1;transform:scale(.65)}}
+/* ---- TELA ESCURA 02 ("SEU DOCUMENTO / SEU DESTINO / O CAMINHO CERTO") — CELULAR E TABLET (<900px) ----
+   Diagramação pedida pela usuária, em 6 linhas: SEU / DOCUMENTO / SEU / DESTINO / O CAMINHO / CERTO.
+   O JS (s2Palavras em site.js) divide as 3 frases em palavras (.rl-word); aqui width:min-content quebra
+   "SEU DOCUMENTO" e "SEU DESTINO" por palavra, e "O CAMINHO CERTO" vira um flex que mantém "O CAMINHO" junto
+   e manda "CERTO" pra linha de baixo. Fonte: a linha mais larga ("O CAMINHO", ~6em) tem que caber nos 82vw úteis
+   (padding 9vw de cada lado) → 12.5vw ("DOCUMENTO", a mais larga, mede ~6.6em); o limite por altura (8.5vh) protege celular deitado. */
+@media(max-width:899.98px){
+  .s2-layer .intro-h1{font-size:min(12.5vw,8.5vh)}
+  .s2-layer .intro-h1 .il--doc,
+  .s2-layer .intro-h1 .il--dest{width:min-content}
+  .s2-layer .intro-h1 .il--doc .rl-wrap,
+  .s2-layer .intro-h1 .il--dest .rl-wrap{white-space:normal}
+  .s2-layer .intro-h1 .il--cam .rl-wrap{display:flex;flex-wrap:wrap;white-space:normal;column-gap:.25em}
+  .s2-layer .intro-h1 .il--cam .rl-word:last-child{flex-basis:100%}
+}
+
 /* ---- CELULAR (<=700px): ajustes de layout feitos DEPOIS do desktop; só valem em tela estreita ---- */
 @media(max-width:700px){
   /* Hero: o "Olá, somos a" desce 80px no desktop (logo de 750px). No celular a logo tem ~278px,
