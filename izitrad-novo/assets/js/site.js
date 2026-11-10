@@ -604,6 +604,13 @@ function initHeroS2Story(root){
     const x = destVarre.p * (destLetras.length - 1 + DEST_FRENTE);
     destLetras.forEach((c,i)=>{ c.style.color = corDestino(Math.min(1, Math.max(0, (x - i) / DEST_FRENTE))); });
   }},PHASE2_START+1.0);
+  // texto + triângulo do link "Explorar o caminho": começam BRANCOS (igual ao texto, --seta no CSS) e vira ROSA junto
+  // com a varredura do "SEU DESTINO" (mesma janela: PHASE2_START+1.0 a +1.8). Preso à rolagem e reversível.
+  const setaCor = {p:0};
+  tl.fromTo(setaCor,{p:0},{p:1,ease:'none',duration:0.8,onUpdate(){
+    introLink.style.color = mixRGB([255,255,255],[255,0,153], setaCor.p);              // texto: branco -> ROSA
+    introLink.style.setProperty('--seta', mixRGB([255,255,255],[0,255,102], setaCor.p)); // triângulo: branco -> VERDE
+  }},PHASE2_START+1.0);
   addRollingTween(tl, ilCamReels,  PHASE2_START+0.60);
   // "02 — O Caminho": padronizado pro giro SINCRONIZADO (ver
   // addSyncedRollingTween acima) igual o "03 — A Solução" — era o único
