@@ -726,6 +726,8 @@ img,svg{display:block}
   .hero-layer .reveal-copy .btn{margin-top:calc(4*var(--u));font-size:calc(4.4*var(--u));padding:calc(3.6*var(--u)) calc(6.5*var(--u))}
 }
 
+/* mesma entrada do menu compacto (menuToggleIn), mas terminando em 65% (o tamanho reduzido do celular) — usada só em <=700px */
+@keyframes menuToggleInSm{from{opacity:0;transform:scale(.53)}to{opacity:1;transform:scale(.65)}}
 /* ---- CELULAR (<=700px): ajustes de layout feitos DEPOIS do desktop; só valem em tela estreita ---- */
 @media(max-width:700px){
   /* Hero: o "Olá, somos a" desce 80px no desktop (logo de 750px). No celular a logo tem ~278px,
@@ -736,9 +738,12 @@ img,svg{display:block}
   .site-header .header-inner{padding-left:20px}
   .site-header .brand-logo{transform:none}
   /* Botão do menu (triângulo): 66x75px estourava a faixa branca (65px de altura). Reduzido a 65% (~43x49px),
-     encostado no mesmo canto direito, pra caber DENTRO da faixa. Só no estado normal; o estado "compacto"
-     (faixa some, só o triângulo flutuando) segue com o tamanho original. */
+     encostado no mesmo canto direito, pra caber DENTRO da faixa. O estado "compacto"
+     (faixa some, só o triângulo flutuando) usa o MESMO tamanho (regra logo abaixo). */
   .site-header:not([data-compact]) .menu-toggle{transform:scale(.65);transform-origin:100% 50%}
+  /* estado compacto (seção 02 em diante): mesmo tamanho reduzido. A animação de entrada termina em scale(1) com fill
+     'both' (anularia um transform fixo), por isso aqui troco pela versão que termina em .65 */
+  .site-header[data-compact] .menu-toggle{animation-name:menuToggleInSm;transform-origin:100% 50%;margin-right:32px}   /* 32px = mesma margem direita do estado normal (antes 34px → ficava 2px mais à esquerda) */
 }
 }
 
