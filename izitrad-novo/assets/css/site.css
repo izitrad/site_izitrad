@@ -751,7 +751,7 @@ img,svg{display:block}
   .hero-layer .logo__greet{transform:translate(calc(-35% - 15px),30px)}
   /* Cabeçalho: a logo "izi" tem translateX(110px) no desktop (pra liberar o menu de 8 itens); no
      celular isso a empurrava pro MEIO da tela. Aqui ela volta ao canto esquerdo. */
-  .site-header .header-inner{padding-left:20px}
+  .site-header .header-inner{padding-left:20px;padding-right:12px}   /* direita 12px: o triângulo do menu (ponta à direita) fica mais perto da borda */
   .site-header .brand-logo{transform:none}
   /* Botão do menu (triângulo): 66x75px estourava a faixa branca (65px de altura). Reduzido a 65% (~43x49px),
      encostado no mesmo canto direito, pra caber DENTRO da faixa. O estado "compacto"
@@ -759,7 +759,7 @@ img,svg{display:block}
   .site-header:not([data-compact]) .menu-toggle{transform:scale(.65);transform-origin:100% 50%}
   /* estado compacto (seção 02 em diante): mesmo tamanho reduzido. A animação de entrada termina em scale(1) com fill
      'both' (anularia um transform fixo), por isso aqui troco pela versão que termina em .65 */
-  .site-header[data-compact] .menu-toggle{animation-name:menuToggleInSm;transform-origin:100% 50%;margin-right:32px}   /* 32px = mesma margem direita do estado normal (antes 34px → ficava 2px mais à esquerda) */
+  .site-header[data-compact] .menu-toggle{animation-name:menuToggleInSm;transform-origin:100% 50%;margin-right:12px}   /* 12px = mesma margem direita do estado normal (header-inner, acima) */
 }
 }
 
