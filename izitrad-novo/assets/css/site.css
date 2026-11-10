@@ -694,6 +694,38 @@ img,svg{display:block}
   .halo{width:66vw;top:34%}
 }
 
+/* ---- HERO, fase rosa ("APOSTILA/MENTO · DE HAIA · SEM · SAIR · DE CASA" + parágrafo + botão) — CELULAR E TABLET (<=900px) ----
+   Diagramação pedida pela usuária (referência em imagem): bloco ALINHADO À ESQUERDA, palavras empilhadas e
+   grandes — APOSTILA e MENTO (preto) quase na largura toda (94u), DE HAIA menor, SEM e SAIR (branco) bem grandes,
+   DE CASA — e depois parágrafo + botão CENTRALIZADOS. Abaixo de 900px o JS (calibrateHTML) já devolve tudo
+   ao CSS, então aqui só CSS. Tudo medido numa unidade --u (1% da largura do bloco): --u = min(1vw, .46vh)
+   → no celular em pé é a largura que manda; em tela mais "quadrada"/baixa, a altura limita, e o bloco
+   (largura 94u, margem lateral de 3u) fica CENTRALIZADO na tela. Tamanhos de fonte = (largura-alvo da palavra) / (largura natural
+   da palavra em Outfit 900, medida a 1em): APOSTILA 4,992 · MENTO 3,666 · DE HAIA 3,945 · SEM 2,032 · SAIR 2,211
+   · DE CASA 4,137. Proporções MEDIDAS na imagem de referência da usuária (250x518px → 1u = 2,5px): largura APOSTILA/MENTO/SAIR ≈ 93u, DE HAIA 68u, SEM 67u, DE CASA 84u; altura SAIR 30u > SEM 25u. Altura total: títulos ≈ 128u + respiro 13u + parágrafo/botão ≈ 36u = 178u, centrada na tela (≈9% de folga em cima e embaixo). */
+@media(max-width:900px){
+  .hero-layer{--u:min(1vw,.46vh)}
+  .hero-layer .reveal-html .hr-frame{inset:auto;left:0;right:0;top:calc(50% - 89*var(--u));bottom:auto;width:auto;height:auto;
+    flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:calc(2.8*var(--u));
+    padding:0 0 0 calc(50% - 47*var(--u));text-align:left}
+  .hero-layer .ht{position:relative}
+  .hero-layer .ht__in{display:block;line-height:1}   /* block: sem a folga de descendente que o inline-block deixava embaixo de cada linha */
+  /* APOSTILA e MENTO em linhas separadas (as duas metades são animadas separadamente pelo JS) */
+  .hero-layer .ht-a,.hero-layer .ht-m{display:block;text-box-trim:trim-both;text-box-edge:cap alphabetic}
+  .hero-layer .ht-a{font-size:calc(18.8*var(--u))}
+  .hero-layer .ht-m{font-size:calc(25.6*var(--u));margin-top:calc(4.4*var(--u))}
+  .hero-layer .ht[data-k="apost"] .ht__in{font-size:calc(18.8*var(--u))}
+  .hero-layer .ht[data-k="haia"] .ht__in{font-size:calc(17.5*var(--u))}
+  .hero-layer .ht[data-k="sem"] .ht__in{font-size:calc(33.5*var(--u))}
+  .hero-layer .ht[data-k="sair"] .ht__in{font-size:calc(42.5*var(--u))}
+  .hero-layer .ht[data-k="decasa"] .ht__in{font-size:calc(20.5*var(--u))}
+  /* parágrafo + botão: logo abaixo do bloco de títulos, centralizados, na mesma largura (90u) */
+  .hero-layer .reveal-copy{left:calc(50% - 47*var(--u));top:calc(50% + 52.5*var(--u));width:calc(94*var(--u));
+    text-align:center;display:flex;flex-direction:column;align-items:center}
+  .hero-layer .reveal-copy p{font-size:calc(4.3*var(--u));line-height:1.5}
+  .hero-layer .reveal-copy .btn{margin-top:calc(4*var(--u));font-size:calc(4.4*var(--u));padding:calc(3.6*var(--u)) calc(6.5*var(--u))}
+}
+
 /* ---- CELULAR (<=700px): ajustes de layout feitos DEPOIS do desktop; só valem em tela estreita ---- */
 @media(max-width:700px){
   /* Hero: o "Olá, somos a" desce 80px no desktop (logo de 750px). No celular a logo tem ~278px,
@@ -707,16 +739,7 @@ img,svg{display:block}
      encostado no mesmo canto direito, pra caber DENTRO da faixa. Só no estado normal; o estado "compacto"
      (faixa some, só o triângulo flutuando) segue com o tamanho original. */
   .site-header:not([data-compact]) .menu-toggle{transform:scale(.65);transform-origin:100% 50%}
-
-  /* Hero, fase rosa ("APOSTILAMENTO DE HAIA / SEM SAIR / DE CASA"): no celular os títulos ficam EMPILHADOS e
-     CENTRALIZADOS (regras de <=900px acima); aqui o parágrafo + botão vão pra baixo deles, também
-     centralizados e em largura quase total (no desktop eram uma coluna estreita à esquerda do bloco). */
-  /* os contornos "SEM"/"CASA" (.sem-line, position:absolute) precisam da PRÓPRIA palavra como referência;
-     com .ht estático eles escapavam pro canto da tela (apareciam como um "CASA" vazado no topo) */
-  .hero-layer .ht{position:relative}
-  .hero-layer .reveal-copy{left:7.5%;top:calc(50% + 132px);width:85%;text-align:center;display:flex;flex-direction:column;align-items:center}
-  .hero-layer .reveal-copy p{font-size:16px;line-height:1.5}
-  .hero-layer .reveal-copy .btn{margin-top:1.4rem;font-size:15px;padding:.8rem 1.5rem}
+}
 }
 
 /* ==================== PREFERÊNCIA: MENOS MOVIMENTO ==================== */
