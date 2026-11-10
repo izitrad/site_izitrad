@@ -1,2 +1,6 @@
 # Configuração local do Claude Code (não deve ir para o repositório)
 .claude/
+
+# Notas internas de trabalho (nao publicar)
+_CHECKPOINT*
+_checkpoint*
