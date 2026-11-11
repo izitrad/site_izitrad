@@ -796,3 +796,32 @@ html.off-vidro .site-header,html.off-vidro .site-header *{backdrop-filter:none!i
 html.off-rosa .hero-layer .wipe,html.off-rosa .hero-layer .hero-logo-triangle{display:none!important}
 html.off-logo .hero-layer .logo{display:none!important}
 html.off-fade .hero-layer .hero-fade-bottom{display:none!important}
+html.off-abaixo main > section:not(.hero-s2-story){display:none!important}
+
+/* ---- PROPOSTA v2 — SEÇÃO DOS CAMINHOS ("UM DOCUMENTO / CINCO JEITOS DE CHEGAR LÁ") NO CELULAR (<=760px) ----
+   Só liga com ?caminhos=v2 (classe caminhos-v2 no <html>, ver site.js); sem o parâmetro nada muda. Ideia: 
+   - título + subtítulos no topo (menores, sem nada por cima);
+   - a FOLHA vira um "centro" pequeno na coluna da esquerda, embaixo;
+   - os 5 CAMINHOS (cartões) empilhados na coluna da direita, um por linha, cada um com a bolinha numerada;
+   As linhas (bolinha → linha → cartão) são calculadas pelo JS a partir das posições reais, então se ajustam sozinhas. */
+@media(max-width:760px){
+  html.caminhos-v2 .copy.copy-a{top:9%;left:7%;width:86%}
+  html.caminhos-v2 .copy-a h2{font-size:28px;line-height:1}
+  html.caminhos-v2 .copy-a h2 span{font-size:36px}
+  html.caminhos-v2 .copy-a__subtitle{font-size:14px;line-height:1.35}
+  /* a FOLHA: o conteúdo dela é desenhado pra uns 330px de largura (fontes em vw); aqui ela ocupa 27vw e o miolo é REDUZIDO
+     junto (zoom .30: o miolo é montado como se tivesse 27vw/.30 ≈ 337px de largura e é exibido em 27vw) em vez de ser cortado */
+  html.caminhos-v2 .doc-stage{width:27vw;left:22%;top:70%}
+  html.caminhos-v2 .doc-mouse{zoom:.3}
+  /* os 5 CAMINHOS: cartão compacto na coluna da direita; a bolinha numerada vira pequena e fica à esquerda do cartão */
+  html.caminhos-v2 .chip{width:56vw}
+  html.caminhos-v2 .chip-box{padding:7px 9px 7px 24px}
+  html.caminhos-v2 .chip-box b{font-size:12px;line-height:1.1}
+  html.caminhos-v2 .chip-box .chip-desc{font-size:10px;margin-top:3px}
+  html.caminhos-v2 .chip small,html.caminhos-v2 .c2 small,html.caminhos-v2 .c4 small{width:30px;height:30px;font-size:11px;top:50%;left:-12px;right:auto;margin-top:-15px}
+  html.caminhos-v2 .c1{left:70%;top:46%}
+  html.caminhos-v2 .c2{left:70%;top:55%}
+  html.caminhos-v2 .c3{left:70%;top:64%}
+  html.caminhos-v2 .c4{left:70%;top:73%}
+  html.caminhos-v2 .c5{left:70%;top:82%}
+}

@@ -14,7 +14,8 @@
    loop de render) vira função/objeto simples, sem hooks. */
 /* DIAGNÓSTICO DE DESEMPENHO (só age se a URL tiver ?off=...): desliga UM efeito por vez pra descobrir o que trava no
    celular. Ex.: ?off=vidro  ou  ?off=ondas,rosa. Chaves: ondas (canvas das ondas), vidro (desfoque do cabeçalho),
-   rosa (triângulo rosa que cresce), logo (a logo), fade (degradê de baixo do hero), tudo (todos juntos). Cada chave vira
+   rosa (triângulo rosa que cresce), logo (a logo), fade (degradê de baixo do hero), abaixo (TODAS as seções depois do hero),
+   tudo (ondas+vidro+rosa+logo+fade). Também: ?fps=N troca o limite de quadros do GSAP (60 = nativo). Cada chave vira
    uma classe off-<chave> no <html>; as regras ficam no fim de site.css. Sem o parâmetro, nada muda. */
 (function(){
   const m=/[?&]off=([^&#]*)/.exec(location.search); if(!m) return;
@@ -22,6 +23,11 @@
   if(ks.includes('tudo')) ks=['ondas','vidro','rosa','logo','fade'];
   ks.forEach(k=>document.documentElement.classList.add('off-'+k));
 })();
+
+/* PROPOSTA v2 da seção dos caminhos no CELULAR (só com ?caminhos=v2): liga a classe caminhos-v2 no <html>; as regras estão no
+   fim de site.css (só <=760px). Sem o parâmetro nada muda. Pra descartar a proposta: apagar este bloco + o bloco "PROPOSTA v2"
+   do site.css. */
+(function(){ if(/[?&]caminhos=v2(&|#|$)/.test(location.search)) document.documentElement.classList.add('caminhos-v2'); })();
 
 function initWaves(canvas){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1989,7 +1995,10 @@ function initChipTilt(root){
     // CELULAR/TABLET (<900px): o GSAP (que move TODAS as animações presas à rolagem) atualiza a 30 quadros/s em vez
     // de 60: metade do trabalho de estilo/pintura por segundo, num ritmo estável (mais fluido que um 60 que falha).
     // A rolagem em si continua nativa (suave); só a animação que acompanha é atualizada a cada ~33ms. Desktop: nada muda.
-    if(innerWidth<900) gsap.ticker.fps(30);
+    // diagnóstico: ?fps=60 (ritmo nativo da tela), ?fps=45, ?fps=24... troca o limite pra comparar a "sensação" no celular
+    const fpsParam=parseInt((/[?&]fps=(\d+)/.exec(location.search)||[])[1],10);
+    if(fpsParam>0) gsap.ticker.fps(fpsParam>=60 ? 0 : fpsParam);       // 0 = sem limite (nativo)
+    else if(innerWidth<900) gsap.ticker.fps(30);
     if(window.CustomEase){
       gsap.registerPlugin(CustomEase);
       CustomEase.create('focusTextEase','0.16,1,0.3,1'); // ver FOCUS TEXT acima
