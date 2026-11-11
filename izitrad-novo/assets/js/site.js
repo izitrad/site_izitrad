@@ -1916,6 +1916,10 @@ function initChipTilt(root){
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(window.gsap && window.ScrollTrigger && !reduce){
     gsap.registerPlugin(ScrollTrigger);
+    // CELULAR/TABLET (<900px): o GSAP (que move TODAS as animações presas à rolagem) atualiza a 30 quadros/s em vez
+    // de 60: metade do trabalho de estilo/pintura por segundo, num ritmo estável (mais fluido que um 60 que falha).
+    // A rolagem em si continua nativa (suave); só a animação que acompanha é atualizada a cada ~33ms. Desktop: nada muda.
+    if(innerWidth<900) gsap.ticker.fps(30);
     if(window.CustomEase){
       gsap.registerPlugin(CustomEase);
       CustomEase.create('focusTextEase','0.16,1,0.3,1'); // ver FOCUS TEXT acima
