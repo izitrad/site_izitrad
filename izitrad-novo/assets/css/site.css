@@ -790,3 +790,9 @@ img,svg{display:block}
   .svc{flex-direction:row}
   .svc-node,.svc-line,.svc-num,.svc-title,.svc-desc{opacity:1!important;transform:none!important}
 }
+
+/* ---- DIAGNÓSTICO DE DESEMPENHO (só com ?off=chave na URL; ver site.js) — desliga um efeito por vez ---- */
+html.off-vidro .site-header,html.off-vidro .site-header *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.off-rosa .hero-layer .wipe,html.off-rosa .hero-layer .hero-logo-triangle{display:none!important}
+html.off-logo .hero-layer .logo{display:none!important}
+html.off-fade .hero-layer .hero-fade-bottom{display:none!important}

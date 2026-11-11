@@ -12,8 +12,20 @@
    que ondulam e reagem ao mouse/touch) pra JS puro — este site não usa
    build step nem React, então cada peça (classe Noise, física dos pontos,
    loop de render) vira função/objeto simples, sem hooks. */
+/* DIAGNÓSTICO DE DESEMPENHO (só age se a URL tiver ?off=...): desliga UM efeito por vez pra descobrir o que trava no
+   celular. Ex.: ?off=vidro  ou  ?off=ondas,rosa. Chaves: ondas (canvas das ondas), vidro (desfoque do cabeçalho),
+   rosa (triângulo rosa que cresce), logo (a logo), fade (degradê de baixo do hero), tudo (todos juntos). Cada chave vira
+   uma classe off-<chave> no <html>; as regras ficam no fim de site.css. Sem o parâmetro, nada muda. */
+(function(){
+  const m=/[?&]off=([^&#]*)/.exec(location.search); if(!m) return;
+  let ks=decodeURIComponent(m[1]).split(',').map(s=>s.trim()).filter(Boolean);
+  if(ks.includes('tudo')) ks=['ondas','vidro','rosa','logo','fade'];
+  ks.forEach(k=>document.documentElement.classList.add('off-'+k));
+})();
+
 function initWaves(canvas){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if(document.documentElement.classList.contains('off-ondas')) return;   // diagnóstico (?off=ondas)
 
   class Noise{
     constructor(seed){
