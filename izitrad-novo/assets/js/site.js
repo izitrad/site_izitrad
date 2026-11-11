@@ -360,6 +360,11 @@ function initHeroS2Story(root){
   // ---- crescimento do triângulo via WIDTH real (nítido), técnica validada ---
   const PHASE1_MULT=8, COVER_MARGIN=1.12;
   let anchorX0,anchorY0,triW0,triAspect,triTargetWidth,triHandoff,centerX,centerY;
+  // CELULAR/TABLET (<900px): tFreeze = progresso (t, 0..1) a partir do qual o triângulo rosa JÁ COBRE a tela inteira (com
+  // margem). Dali em diante o resto do crescimento é invisível, então a geometria do .wipe é congelada e as escritas de
+  // estilo (que re-pintavam um SVG de até ~2000px a cada quadro) são puladas. 2 = nunca congela (desktop: comportamento
+  // antigo, idêntico). lastTg = último t aplicado ao .wipe (pula quando não mudou).
+  let tFreeze=2, lastTg=-1;
   const proxy={w:0};
 
   function applyGrowth(){
@@ -378,6 +383,19 @@ function initHeroS2Story(root){
     if(header){
       header.style.opacity=(1-fadeT).toFixed(3);
       header.style.pointerEvents=fadeT>=0.999?'none':'';
+    }
+    if(tFreeze<2){
+      const tg=t<tFreeze?t:tFreeze;
+      if(tg===lastTg) return;                       // .wipe já está no tamanho final (cobrindo a tela): nada a escrever
+      lastTg=tg;
+      const twg=triW0+(triTargetWidth-triW0)*tg, thg=twg*triAspect;
+      const gAX=anchorX0+(centerX-anchorX0)*tg, gAY=anchorY0+(centerY-anchorY0)*tg;
+      wipe.style.transform='none';
+      wipe.style.left=(gAX-twg/2)+'px';
+      wipe.style.top=(gAY-thg/2)+'px';
+      wipe.style.width=twg+'px';
+      wipe.style.height=thg+'px';
+      return;
     }
     const th=tw*triAspect;
     wipe.style.transform='none';
@@ -421,6 +439,32 @@ function initHeroS2Story(root){
     centerX=window.innerWidth/2-s.left; centerY=window.innerHeight/2-s.top;
     triTargetWidth=(window.innerWidth+2*window.innerHeight/triAspect)*COVER_MARGIN;
     triHandoff=triW0*PHASE1_MULT;
+    // acha (por bisseção) o menor t em que o triângulo cobre os 4 cantos da tela — e congela um pouco depois (x1,15 + .02).
+    // A forma é o triângulo do logo (path do .wipe, viewBox = caixa do path: 145,14 x 163,54). Os vértices do triângulo SEM
+    // arredondar ficam um pouco FORA dessa caixa; em frações de largura/altura da caixa: A (topo-esq) = (0; -0,0592),
+    // B (base-esq) = (0; 1,0592), C (ponta) = (1,0910; 0,4999). O arredondamento dos vértices só "corta" as pontas, longe dos
+    // cantos da tela quando o triângulo é grande — por isso 2px de folga + o fator 1,15 bastam (conferido com isPointInFill).
+    tFreeze=2; lastTg=-1;
+    if(innerWidth<900){
+      const sw=s.width, sh=s.height;
+      const AY=-0.0592, BY=1.0592, CX=1.0910, CY=0.4999;
+      const cobre=(tt)=>{
+        const w_=triW0+(triTargetWidth-triW0)*tt, h_=w_*triAspect;
+        const ax=anchorX0+(centerX-anchorX0)*tt, ay0=anchorY0+(centerY-anchorY0)*tt;
+        const L=ax-w_/2, T=ay0-h_/2;
+        const yA=T+AY*h_, yB=T+BY*h_, xC=L+CX*w_, yC=T+CY*h_;
+        return [[0,0],[sw,0],[0,sh],[sw,sh]].every(([x,y])=>{
+          if(x<L+2 || x>xC-2) return false;
+          const f=(x-L)/(xC-L);
+          return y>=yA+(yC-yA)*f+2 && y<=yB+(yC-yB)*f-2;
+        });
+      };
+      if(cobre(1)){
+        let lo=0, hi=1;
+        for(let i=0;i<24;i++){ const mid=(lo+hi)/2; if(cobre(mid)) hi=mid; else lo=mid; }
+        tFreeze=Math.min(1, hi*1.15+0.02);
+      }
+    }
     proxy.w=triW0; applyGrowth();
     // buildGrow também roda como onRefresh (resize, fonts.ready...) — a
     // qualquer momento do scroll, não só no carregamento. O reset acima
