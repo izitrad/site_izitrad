@@ -14,6 +14,8 @@
    loop de render) vira função/objeto simples, sem hooks. */
 function initWaves(canvas){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // interruptor de diagnóstico: ?ondas=0 desliga as ondas (pra comparar o desempenho com e sem elas)
+  if(new URLSearchParams(location.search).get('ondas')==='0') return;
 
   class Noise{
     constructor(seed){
@@ -69,10 +71,13 @@ function initWaves(canvas){
   //     ficam invisíveis; não calcula nem desenha nada até o scroll voltar;
   //  2) 30 quadros/s (o movimento é lento; 60 não se nota e custa o dobro);
   //  3) sem a física do "empurrão do mouse" (no toque quase não faz nada);
-  //  4) cada ponto é calculado UMA vez por quadro (antes 2x) e sem criar objetos (menos coleta de lixo).
-  // O desenho de cada quadro é idêntico ao antigo (a física do cursor é sempre 0 nesse caso).
+  //  4) cada ponto é calculado UMA vez por quadro (antes 2x) e sem criar objetos (menos coleta de lixo);
+  //  5) MENOS LINHAS/PONTOS: espaçamento 14px x 44px (era 10 x 32) → ~45% menos pontos (medido: 2,2ms → 1,0ms por quadro);
+  //  6) congelada enquanto a página está sendo ROLADA (e 140ms depois): o scroll já ocupa a thread principal
+  //     (timelines scrub, layout do triângulo...) e as ondas paradas por um instante quase não se notam.
   const lite=()=>innerWidth<900;
-  let covered=false, lastDraw=-1e9, xs=null, ys=null;
+  const gapX=()=>lite()?14:CFG.GRID_X_GAP, gapY=()=>lite()?44:CFG.GRID_Y_GAP;
+  let covered=false, scrolling=false, scrollT=0, lastDraw=-1e9, xs=null, ys=null;
 
   function moved(point, withCursorForce){
     const c={ x:point.x+point.wave.x+(withCursorForce?point.cursor.x:0), y:point.y+point.wave.y+(withCursorForce?point.cursor.y:0) };
@@ -88,12 +93,13 @@ function initWaves(canvas){
     const {width,height}=bounding;
     lines=[];
     const oWidth=width+CFG.GRID_WIDTH_OFFSET, oHeight=height+CFG.GRID_HEIGHT_OFFSET;
-    const totalLines=Math.ceil(oWidth/CFG.GRID_X_GAP), totalPoints=Math.ceil(oHeight/CFG.GRID_Y_GAP);
-    const xStart=(width-CFG.GRID_X_GAP*totalLines)/2, yStart=(height-CFG.GRID_Y_GAP*totalPoints)/2;
+    const gX=gapX(), gY=gapY();
+    const totalLines=Math.ceil(oWidth/gX), totalPoints=Math.ceil(oHeight/gY);
+    const xStart=(width-gX*totalLines)/2, yStart=(height-gY*totalPoints)/2;
     for(let i=0;i<=totalLines;i++){
       const points=[];
       for(let j=0;j<=totalPoints;j++){
-        points.push({x:xStart+CFG.GRID_X_GAP*i, y:yStart+CFG.GRID_Y_GAP*j, wave:{x:0,y:0}, cursor:{x:0,y:0,vx:0,vy:0}});
+        points.push({x:xStart+gX*i, y:yStart+gY*j, wave:{x:0,y:0}, cursor:{x:0,y:0,vx:0,vy:0}});
       }
       lines.push(points);
     }
@@ -172,7 +178,7 @@ function initWaves(canvas){
   }
   function tick(time){
     // celular/tablet: pausa se estiver coberto pelo rosa e limita a ~30 quadros/s
-    const skip = lite() && (covered || time-lastDraw<30);
+    const skip = lite() && (covered || scrolling || time-lastDraw<30);
     if(wavesVisible && !skip){
       lastDraw=time;
       mouse.sx+=(mouse.x-mouse.sx)*CFG.MOUSE_SMOOTHING_FACTOR;
@@ -193,6 +199,8 @@ function initWaves(canvas){
     mouse.x=x-bounding.left; mouse.y=y-bounding.top;
     if(!mouse.set){ mouse.sx=mouse.x; mouse.sy=mouse.y; mouse.lx=mouse.x; mouse.ly=mouse.y; mouse.set=true; }
   }
+  // celular/tablet: marca "rolando" (ver PERF 6 acima); passivo, só mexe numa variável
+  addEventListener('scroll', ()=>{ if(!lite()) return; scrolling=true; clearTimeout(scrollT); scrollT=setTimeout(()=>{ scrolling=false; },140); }, {passive:true});
   const onResize=()=>{ setSize(); setLines(); };
   const onMouseMove=e=>updateMousePosition(e.pageX, e.pageY);
   // sem preventDefault: no touch, o scroll da página (que é o motor do
