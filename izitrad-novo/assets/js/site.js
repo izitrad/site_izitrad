@@ -86,6 +86,16 @@ function initWaves(canvas){
   function setSize(){
     bounding=container.getBoundingClientRect();
     canvas.width=bounding.width; canvas.height=bounding.height;
+    // TESTE (só com ?linhas=nitidas): celular/tablet (<900px) desenha na resolução real da tela (até 2x) — o canvas
+    // padrão é em pixels CSS e o navegador estica 2-3x, deixando as linhas finas serrilhadas. Sem o parâmetro (e no
+    // desktop) fica exatamente como era. Se aprovado, trocar a condição por só innerWidth<900.
+    if(innerWidth<900 && /[?&]linhas=nitidas(&|#|$)/.test(location.search)){
+      const dpr=Math.min(window.devicePixelRatio||1, 2);
+      if(dpr>1){
+        canvas.width=Math.round(bounding.width*dpr); canvas.height=Math.round(bounding.height*dpr);
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+      }
+    }
   }
   function setLines(){
     if(!bounding) return;
