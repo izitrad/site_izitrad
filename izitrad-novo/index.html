@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400;9..40,500;9..40,700;9..40,800&family=Outfit:wght@200;300;400;600;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=197">
+<link rel="stylesheet" href="assets/css/site.css?v=199">
 <link rel="stylesheet" href="assets/css/solucao-orbital.css?v=40">
 <!-- Seção 04: fonte do "SIMPLES" (Steelfish Eb) hospedada local em assets/fonts/, ver @font-face em secao04.css -->
 <link rel="stylesheet" href="assets/css/secao04.css?v=123">
@@ -127,6 +127,11 @@
         <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
           <filter id="semOutline" x="-5%" y="-10%" width="110%" height="120%" color-interpolation-filters="sRGB">
             <feMorphology in="SourceAlpha" operator="erode" radius="2" result="miolo"/>
+            <feComposite in="SourceGraphic" in2="miolo" operator="out"/>
+          </filter>
+          <!-- mesmo contorno, mas com traço de 1px (o de cima tem 2px): usado só em celular/tablet (<=900px, ver site.css) -->
+          <filter id="semOutlineFino" x="-5%" y="-10%" width="110%" height="120%" color-interpolation-filters="sRGB">
+            <feMorphology in="SourceAlpha" operator="erode" radius="1" result="miolo"/>
             <feComposite in="SourceGraphic" in2="miolo" operator="out"/>
           </filter>
         </svg>

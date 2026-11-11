@@ -709,6 +709,8 @@ img,svg{display:block}
     flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:calc(2.8*var(--u));
     padding:0 0 0 calc(50% - 47*var(--u));text-align:left}
   .hero-layer .ht{position:relative}
+  /* contorno do "SEM" e do "CASA": traço de 1px (o filtro padrão #semOutline tem 2px; no celular as letras são grandes e o anel ficava grosso) */
+  .hero-layer .sem-line{filter:url(#semOutlineFino)}
   .hero-layer .ht__in{display:block;line-height:1}   /* block: sem a folga de descendente que o inline-block deixava embaixo de cada linha */
   /* APOSTILA e MENTO em linhas separadas (as duas metades são animadas separadamente pelo JS) */
   .hero-layer .ht-a,.hero-layer .ht-m{display:block;text-box-trim:trim-both;text-box-edge:cap alphabetic}
@@ -840,7 +842,7 @@ html.off-abaixo main > section:not(.hero-s2-story){display:none!important}
   html.caminhos-v3 .copy-a h2 > .s2-w:first-child{display:block}      /* "UM" sozinho na 1ª linha */
   html.caminhos-v3 .copy-a__subtitle{font-size:14px;line-height:1.35}
   /* card + bola: a bola (60px) à esquerda, metade sobre a borda do card; o card só do tamanho do conteúdo */
-  html.caminhos-v3 .chip{left:4%;width:92%;max-width:none;transform:none}   /* margem direita = esquerda (4%): o card chega perto da borda, como as bolas */
+  html.caminhos-v3 .chip{left:4%;width:calc(100% - 4% - 3vw - 11.5px);max-width:none;transform:none}   /* o card termina 10px ANTES da linha rosa de progresso (que fica a right:3vw e tem 1,5px) */
   html.caminhos-v3 .c1{top:42.5%}
   html.caminhos-v3 .c2{top:51.4%}
   html.caminhos-v3 .c3{top:60.2%}
