@@ -27,7 +27,7 @@
 /* PROPOSTA v2 da seção dos caminhos no CELULAR (só com ?caminhos=v2): liga a classe caminhos-v2 no <html>; as regras estão no
    fim de site.css (só <=760px). Sem o parâmetro nada muda. Pra descartar a proposta: apagar este bloco + o bloco "PROPOSTA v2"
    do site.css. */
-(function(){ if(/[?&]caminhos=v2(&|#|$)/.test(location.search)) document.documentElement.classList.add('caminhos-v2'); })();
+(function(){ const m=/[?&]caminhos=(v2|v3)(&|#|$)/.exec(location.search); if(m) document.documentElement.classList.add('caminhos-'+m[1]); })();   // v2 = proposta do Claude; v3 = versão da usuária (em construção)
 
 function initWaves(canvas){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1257,11 +1257,14 @@ function initSolucao(root){
      Antes do slot da transição, radius=0 (a frente cobre o escuro). */
   const maskFront = root.querySelector('.s3-mask-front');
   const maskProxy = {p:0};
+  const caminhosV3 = document.documentElement.classList.contains('caminhos-v3');   // versão da usuária (só com ?caminhos=v3)
   function applyMaskV5(){
     const p = maskProxy.p;
     const mobile = innerWidth <= 600;
     const scale  = innerWidth / (mobile ? 375 : 1440);
-    const radiusStart = scale * (mobile ? 100 : 360);
+    // ?caminhos=v3 (celular): sem a folha na frente, o furo inicial de 100px aparecia como um CÍRCULO PRETO atrás dos cards;
+    // aqui a abertura nasce do ZERO (invisível) e só cresce quando a transição começa
+    const radiusStart = (mobile && caminhosV3) ? 0 : scale * (mobile ? 100 : 360);
     const radiusEnd   = scale * (mobile ? 450 : 1440);
     const posStart    = scale * (mobile ? 500 : 1000);
     const posEnd      = scale * (mobile ? 730 : 2000);
