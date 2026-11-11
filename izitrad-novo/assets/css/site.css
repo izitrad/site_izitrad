@@ -848,9 +848,10 @@ html.off-abaixo main > section:not(.hero-s2-story){display:none!important}
   html.caminhos-v3 .c5{top:78%}
   html.caminhos-v3 .chip small,html.caminhos-v3 .c2 small,html.caminhos-v3 .c4 small{left:0;right:auto;top:50%;margin-top:-30px;width:60px;height:60px;font-size:16px}
   html.caminhos-v3 .chip-box{margin-left:34px;width:calc(100% - 34px);padding:10px 16px 10px 44px}   /* os 5 cards ocupam a largura toda (iguais), da bola até a margem direita */
-  /* PESO: o brilho das bolas deriva em animação INFINITA (s2SphereShine) — 5 bolas repintando o tempo todo. Medido: só isso
-     custava ~2ms/quadro (7,5 → 5,5ms de mediana no trecho dos cards). Parado, o brilho fica no lugar (a deriva era de 3px). */
-  html.caminhos-v3 .chip small::before{animation:none}
+  /* A "mancha" clara do brilho das bolas (::before) sai de vez — pedido da usuária. Também era o que pesava: animação
+     INFINITA (s2SphereShine) em 5 bolas = ~2ms/quadro (medido 7,5 → 5,5ms de mediana no trecho dos cards). A bola continua
+     com o brilho do próprio degradê (radial-gradient no canto superior esquerdo do background). */
+  html.caminhos-v3 .chip small::before{display:none}
   html.caminhos-v3 .chip-box b{font-size:15px;line-height:1.15}
   html.caminhos-v3 .chip-box .chip-desc{font-size:12px;margin-top:4px}
 }

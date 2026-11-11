@@ -16,7 +16,11 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
 const SO = window.SolucaoOrbital;
-if(SO && SO.state && SO.state.ready){
+// diagnóstico (?off=triangulos): NÃO cria os 4 triângulos 3D da seção 03 (nem os 4 contextos WebGL, nem o loop) — pra medir
+// quanto eles custam. Sem o parâmetro nada muda.
+if(document.documentElement.classList.contains('off-triangulos')){
+  // (nada: seção 03 sem os triângulos)
+} else if(SO && SO.state && SO.state.ready){
   boot();
 } else {
   // se o motor clássico ainda não montou (ex.: gsap/reduced-motion), não faz nada.
