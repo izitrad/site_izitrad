@@ -3,6 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* CELULAR/TABLET (aparelho de toque): ao rolar, a barra de endereço do navegador encolhe/aparece e dispara "resize" com
+   só a ALTURA mudando. O site recalcula tudo a cada resize (vários ScrollTrigger.refresh() em módulos diferentes,
+   ~150-230ms cada, ~1s de travada por evento — medido), e isso acontecia justo no começo da rolagem. Este ouvinte
+   é registrado ANTES de todos os outros (fica no <head>) e descarta resizes em que a LARGURA não mudou — o mesmo
+   que o ignoreMobileResize do ScrollTrigger faz, mas que não protegia as chamadas manuais de refresh. Girar o
+   aparelho (largura muda) passa normalmente. Mouse/desktop: não faz nada. */
+(function(){
+  if(!matchMedia('(hover: none) and (pointer: coarse)').matches) return;
+  var w=innerWidth;
+  addEventListener('resize',function(e){
+    if(innerWidth===w){ e.stopImmediatePropagation(); return; }
+    w=innerWidth;
+  },true);
+})();
+</script>
 <title>IZITRAD — landing (scaffold)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
