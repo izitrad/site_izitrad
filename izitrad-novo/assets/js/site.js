@@ -204,7 +204,9 @@ function initHeroS2Story(root){
   const decasa= root.querySelector('.ht[data-k="decasa"]');
   const copyP = root.querySelector('.reveal-copy p');
   const copyBtn = root.querySelector('.reveal-copy .btn');
-  const focusChars = buildFocusChars(copyP); // ver FOCUS TEXT acima
+  const focusPorPalavra = innerWidth < 900;                           // celular/tablet: revela por PALAVRA (ver buildFocusChars)
+  const focusNChars = copyP.textContent.replace(/\s+/g,'').length;    // nº de letras (antes de dividir), pra manter o tempo total
+  const focusChars = buildFocusChars(copyP, focusPorPalavra); // ver FOCUS TEXT acima
   const hint  = root.querySelector('.hint');
   const header= document.querySelector('[data-header]');
   const ilDoc=root.querySelector('.il--doc'), ilDest=root.querySelector('.il--dest'), ilCam=root.querySelector('.il--cam');
@@ -560,14 +562,17 @@ function initHeroS2Story(root){
   // ~3.82→4.12, ainda antes da fase seguinte (4.23) → duração/gatilhos iguais.
   const FOCUS_START=3.43, FOCUS_STAGGER=0.0032, FOCUS_CHAR_DUR=0.14;
   const focusEase = window.CustomEase ? 'focusTextEase' : 'power3.out';
+  // por palavra: o espaçamento entre palavras é escolhido pra a revelação durar o MESMO tempo total que por letra
+  // (letras: FOCUS_STAGGER*(N-1)) → botão e fim da animação ficam no mesmo ponto; duração da timeline igual
+  const focusStagger = (focusPorPalavra && focusChars.length>1) ? FOCUS_STAGGER*(focusNChars-1)/(focusChars.length-1) : FOCUS_STAGGER;
   tl.fromTo(focusChars,
     {opacity:0,scale:.88,filter:'blur(6px)'},
-    {opacity:1,scale:1,filter:'blur(0px)',stagger:FOCUS_STAGGER,duration:FOCUS_CHAR_DUR,ease:focusEase},
+    {opacity:1,scale:1,filter:'blur(0px)',stagger:focusStagger,duration:FOCUS_CHAR_DUR,ease:focusEase},
     FOCUS_START);
   // botão só entra depois que ~85% do texto já revelou ("somente depois
   // que a maior parte do texto já estiver legível") — duration própria
   // (mais curta que IN) pra caber antes do hold em 3.63.
-  const focusSpread = FOCUS_STAGGER*(focusChars.length-1)+FOCUS_CHAR_DUR;
+  const focusSpread = focusStagger*(focusChars.length-1)+FOCUS_CHAR_DUR;
   tl.fromTo(copyBtn,{autoAlpha:0,y:40},{autoAlpha:1,x:0,y:0,ease:'power2.out',duration:0.3},FOCUS_START+focusSpread*0.85);
   tl.to({},{duration:0.6},3.63);
 
@@ -794,13 +799,22 @@ function addSyncedRollingTween(tl, reels, at, duration, ease){
    Devolve a lista de chars, na ordem do texto, pra a timeline scrubada já
    existente animar (ver initHeroS2Story) — sem ScrollTrigger próprio,
    mesmo motor do resto do site (nada de tween/scrub isolado). */
-function buildFocusChars(el){
+function buildFocusChars(el, porPalavra){
   const words = el.textContent.trim().split(/\s+/);
   el.textContent = '';
   const chars = [];
   words.forEach((word, wi)=>{
     const wordEl = document.createElement('span');
-    wordEl.className = 'fc-word';
+    // porPalavra (celular/tablet): a PALAVRA inteira é o elemento animado (.fc-word.fc-char) — ~19 elementos em vez de
+    // ~120, que cada um custava estilo/pintura a cada quadro (medido: era o maior peso da entrada do "SEM SAIR DE CASA")
+    wordEl.className = porPalavra ? 'fc-word fc-char' : 'fc-word';
+    if(porPalavra){
+      wordEl.textContent = word;
+      chars.push(wordEl);
+      el.appendChild(wordEl);
+      if(wi < words.length-1) el.appendChild(document.createTextNode(' '));
+      return;
+    }
     Array.from(word).forEach(ch=>{
       const charEl = document.createElement('span');
       charEl.className = 'fc-char';
