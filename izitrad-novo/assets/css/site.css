@@ -800,60 +800,44 @@ html.off-logo .hero-layer .logo{display:none!important}
 html.off-fade .hero-layer .hero-fade-bottom{display:none!important}
 html.off-abaixo main > section:not(.hero-s2-story){display:none!important}
 
-/* ---- PROPOSTA v2 — SEÇÃO DOS CAMINHOS ("UM DOCUMENTO / CINCO JEITOS DE CHEGAR LÁ") NO CELULAR (<=760px) ----
-   Só liga com ?caminhos=v2 (classe caminhos-v2 no <html>, ver site.js); sem o parâmetro nada muda. Ideia: 
-   - título + subtítulos no topo (menores, sem nada por cima);
-   - a FOLHA vira um "centro" pequeno na coluna da esquerda, embaixo;
-   - os 5 CAMINHOS (cartões) empilhados na coluna da direita, um por linha, cada um com a bolinha numerada;
-   As linhas (bolinha → linha → cartão) são calculadas pelo JS a partir das posições reais, então se ajustam sozinhas. */
+/* ---- SEÇÃO DOS CAMINHOS ("UM DOCUMENTO / CINCO JEITOS DE CHEGAR LÁ") NO CELULAR (<=760px) — VERSÃO DA USUÁRIA, PADRÃO ----
+   (era a "v3", testada com ?caminhos=v3; virou o padrão em 2026-11-11 — sem versões.)
+   Ideia (explicada pela usuária): SEM a folha; título em 4 linhas (UM / DOCUMENTO / CINCO JEITOS / DE CHEGAR LÁ);
+   os 5 caminhos entram UM POR UM, de cima pra baixo: bola rosa numerada GRANDE à esquerda + card à direita, cards juntos
+   (passo ~72px), largura igual, terminando 10px antes da linha rosa de progresso. "html:root" no começo das regras = mesma
+   especificidade que o antigo "html.caminhos-v3" (as regras antigas de <=760 mais acima não podem ganhar). Também: o círculo
+   preto da transição 02→03 nasce de raio 0 (ver applyMaskV5 em site.js). */
 @media(max-width:760px){
-  html.caminhos-v2 .copy.copy-a{top:9%;left:7%;width:86%}
-  html.caminhos-v2 .copy-a h2{font-size:28px;line-height:1}
-  html.caminhos-v2 .copy-a h2 span{font-size:36px}
-  html.caminhos-v2 .copy-a__subtitle{font-size:14px;line-height:1.35}
-  /* a FOLHA: o conteúdo dela é desenhado pra uns 330px de largura (fontes em vw); aqui ela ocupa 27vw e o miolo é REDUZIDO
-     junto (zoom .30: o miolo é montado como se tivesse 27vw/.30 ≈ 337px de largura e é exibido em 27vw) em vez de ser cortado */
-  html.caminhos-v2 .doc-stage{width:27vw;left:22%;top:70%}
-  html.caminhos-v2 .doc-mouse{zoom:.3}
-  /* os 5 CAMINHOS: cartão compacto na coluna da direita; a bolinha numerada vira pequena e fica à esquerda do cartão */
-  html.caminhos-v2 .chip{width:56vw}
-  html.caminhos-v2 .chip-box{padding:7px 9px 7px 24px}
-  html.caminhos-v2 .chip-box b{font-size:12px;line-height:1.1}
-  html.caminhos-v2 .chip-box .chip-desc{font-size:10px;margin-top:3px}
-  html.caminhos-v2 .chip small,html.caminhos-v2 .c2 small,html.caminhos-v2 .c4 small{width:30px;height:30px;font-size:11px;top:50%;left:-12px;right:auto;margin-top:-15px}
-  html.caminhos-v2 .c1{left:70%;top:46%}
-  html.caminhos-v2 .c2{left:70%;top:55%}
-  html.caminhos-v2 .c3{left:70%;top:64%}
-  html.caminhos-v2 .c4{left:70%;top:73%}
-  html.caminhos-v2 .c5{left:70%;top:82%}
+  html:root .doc-stage,html:root .selo-layer,html:root .caminhos-svg{display:none!important}
+  /* título: fonte ~10,7vw (DOCUMENTO e DE CHEGAR LÁ ocupam ~68–76% da largura, como no desenho) */
+  html:root .copy.copy-a{top:11%;left:6%;width:88%}
+  html:root .copy-a h2{font-size:10.7vw;line-height:.95;letter-spacing:-.01em}   /* entrelinha bem junta */
+  html:root .copy-a h2 span{font-size:inherit}
+  html:root .copy-a h2 > .s2-w:first-child{display:block}      /* "UM" sozinho na 1ª linha */
+  html:root .copy-a__subtitle{font-size:14px;line-height:1.35}
+  /* card + bola: a bola (60px) à esquerda, metade sobre a borda do card; o card só do tamanho do conteúdo */
+  html:root .chip{left:4%;width:calc(100% - 4% - 3vw - 11.5px);max-width:none;transform:none}   /* o card termina 10px ANTES da linha rosa de progresso (que fica a right:3vw e tem 1,5px) */
+  html:root .c1{top:42.5%}
+  html:root .c2{top:51.4%}
+  html:root .c3{top:60.2%}
+  html:root .c4{top:69.1%}
+  html:root .c5{top:78%}
+  html:root .chip small,html:root .c2 small,html:root .c4 small{left:0;right:auto;top:50%;margin-top:-30px;width:60px;height:60px;font-size:16px}
+  html:root .chip-box{margin-left:34px;width:calc(100% - 34px);padding:10px 16px 10px 44px}   /* os 5 cards ocupam a largura toda (iguais), da bola até a margem direita */
+  /* O brilho (mancha clara que deriva) das bolas FICA LIGADO — decisão da usuária em 2026-11-11, já que o que pesava de verdade
+     eram os triângulos 3D da seção 03 (agora fora do site no celular). Custo medido do brilho: ~2ms/quadro (7,5 → 5,5ms de
+     mediana nos cards, num computador). Se voltar a pesar: `animation:none` mantém a mancha parada, e `display:none` tira. */
+  html:root .chip-box b{font-size:15px;line-height:1.15}
+  html:root .chip-box .chip-desc{font-size:12px;margin-top:4px}
 }
 
-/* ---- VERSÃO v3 (da usuária) — SEÇÃO DOS CAMINHOS NO CELULAR (<=760px) — EM CONSTRUÇÃO, só com ?caminhos=v3 ----
-   Ideia (explicada pela usuária): SEM a folha; título em 4 linhas (UM / DOCUMENTO / CINCO JEITOS / DE CHEGAR LÁ);
-   os 5 caminhos entram UM POR UM, de cima pra baixo: bola rosa numerada GRANDE à esquerda + card à direita.
-   Os 5 cards empilhados à esquerda, bem juntos (passo de ~72px, cards de ~60px) e com largura parecida (min-width 254px); cada caminho já tem a sua fatia de rolagem na timeline (SLOT 2,4: bola → número → card).
-   O círculo preto (transição da 03) ainda não foi tratado. */
+/* ---- SEÇÃO 03 NO CELULAR: TÍTULO EM LINHAS (<=760px) — PADRÃO (era a "v3", virou padrão em 2026-11-11) ----
+   Pedido: "A ORDEM / VOCÊ JÁ / ESCOLHEU" (negrito, verde) + linha em branco + "AGORA, QUAL / É A SUA?" (fino, branco).
+   O HTML já tem uma linha por .s3o-line; o problema era a coluna de 38% da largura (142px no celular), que quebrava cada
+   linha de novo. Aqui a coluna vai a 88% e as fontes passam a ser proporcionais à tela: negrito 15vw (ESCOLHEU = 5,03em
+   → ~75% da largura), fino 11,3vw (AGORA, QUAL = 6,21em → ~70%) — mesma proporção 0,755 do desktop (40/53). */
 @media(max-width:760px){
-  html.caminhos-v3 .doc-stage,html.caminhos-v3 .selo-layer,html.caminhos-v3 .caminhos-svg{display:none!important}
-  /* título: fonte ~10,7vw (DOCUMENTO e DE CHEGAR LÁ ocupam ~68–76% da largura, como no desenho) */
-  html.caminhos-v3 .copy.copy-a{top:11%;left:6%;width:88%}
-  html.caminhos-v3 .copy-a h2{font-size:10.7vw;line-height:.95;letter-spacing:-.01em}   /* entrelinha bem junta */
-  html.caminhos-v3 .copy-a h2 span{font-size:inherit}
-  html.caminhos-v3 .copy-a h2 > .s2-w:first-child{display:block}      /* "UM" sozinho na 1ª linha */
-  html.caminhos-v3 .copy-a__subtitle{font-size:14px;line-height:1.35}
-  /* card + bola: a bola (60px) à esquerda, metade sobre a borda do card; o card só do tamanho do conteúdo */
-  html.caminhos-v3 .chip{left:4%;width:calc(100% - 4% - 3vw - 11.5px);max-width:none;transform:none}   /* o card termina 10px ANTES da linha rosa de progresso (que fica a right:3vw e tem 1,5px) */
-  html.caminhos-v3 .c1{top:42.5%}
-  html.caminhos-v3 .c2{top:51.4%}
-  html.caminhos-v3 .c3{top:60.2%}
-  html.caminhos-v3 .c4{top:69.1%}
-  html.caminhos-v3 .c5{top:78%}
-  html.caminhos-v3 .chip small,html.caminhos-v3 .c2 small,html.caminhos-v3 .c4 small{left:0;right:auto;top:50%;margin-top:-30px;width:60px;height:60px;font-size:16px}
-  html.caminhos-v3 .chip-box{margin-left:34px;width:calc(100% - 34px);padding:10px 16px 10px 44px}   /* os 5 cards ocupam a largura toda (iguais), da bola até a margem direita */
-  /* A "mancha" clara do brilho das bolas (::before) sai de vez — pedido da usuária. Também era o que pesava: animação
-     INFINITA (s2SphereShine) em 5 bolas = ~2ms/quadro (medido 7,5 → 5,5ms de mediana no trecho dos cards). A bola continua
-     com o brilho do próprio degradê (radial-gradient no canto superior esquerdo do background). */
-  html.caminhos-v3 .chip small::before{display:none}
-  html.caminhos-v3 .chip-box b{font-size:15px;line-height:1.15}
-  html.caminhos-v3 .chip-box .chip-desc{font-size:12px;margin-top:4px}
+  html:root .s3o-intro{left:6%;top:14%;width:88%}
+  html:root .s3o-title{font-size:15vw;margin-bottom:18px}
+  html:root .s3o-title-b{font-size:11.3vw;margin-top:.45em}   /* a "linha em branco" entre os dois grupos */
 }

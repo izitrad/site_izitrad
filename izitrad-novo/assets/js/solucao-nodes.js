@@ -16,10 +16,14 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
 const SO = window.SolucaoOrbital;
-// diagnóstico (?off=triangulos): NÃO cria os 4 triângulos 3D da seção 03 (nem os 4 contextos WebGL, nem o loop) — pra medir
-// quanto eles custam. Sem o parâmetro nada muda.
-if(document.documentElement.classList.contains('off-triangulos')){
-  // (nada: seção 03 sem os triângulos)
+// TRIÂNGULOS 3D FORA DO SITE NO CELULAR/TABLET (decisão da usuária em 2026-11-11, "por enquanto"): medido em 375px, sem eles a
+// seção 03 passa de 13,3 → 8,6ms de mediana por quadro (p95 27,9 → 12,8ms; pior quadro 40,8 → 20ms) e o site tem 4 contextos
+// WebGL a menos. Abaixo de 900px eles NÃO são criados (nem o loop). Interruptores: ?triangulos=on força ligados no celular
+// (pra comparar/decidir); ?off=triangulos desliga em qualquer tela. No desktop (>=900px) continuam como sempre.
+const triForcar = /[?&]triangulos=on(&|#|$)/.test(location.search);
+const triDesligados = document.documentElement.classList.contains('off-triangulos') || (innerWidth < 900 && !triForcar);
+if(triDesligados){
+  // (nada: seção 03 sem os triângulos 3D)
 } else if(SO && SO.state && SO.state.ready){
   boot();
 } else {
