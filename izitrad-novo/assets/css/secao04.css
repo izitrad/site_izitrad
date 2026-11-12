@@ -1139,16 +1139,12 @@
 .izi-pre04-question .iziq-br{display:none}
 @media(max-width:760px){
   html:root .izi-pre04-question{font-size:24vw !important}
-  html:root .izi-pre04-question .iziq-br{display:inline !important} /* <br> normal: quebra a linha sem partir o texto em blocos */
+  html:root .izi-pre04-question .iziq-br{display:block !important;height:0}
   html:root .izi-pre04-question .izi-q-line1,
   html:root .izi-pre04-question .izi-q-line2{display:inline !important;width:auto !important;height:auto !important;white-space:normal !important}
-  html:root .izi-pre04-question .izi-q-prefix{display:inline !important} /* inline comum (antes display:contents: o Safari desenhava mal o desfoque da palavra "com") */
+  html:root .izi-pre04-question .izi-q-prefix{display:contents !important}
   html:root .izi-pre04-question .izi-question-word{display:inline-block !important;vertical-align:baseline !important}
   html:root .izi-pre04-question .izi-q-mark{display:inline-block !important;margin:0 0 0 -.1em !important;vertical-align:baseline}
-  /* A logo "izi" (crop + <img> position:absolute) precisa ser ela mesma o ponto de referência da imagem. A regra antiga V16
-     põe position:static !important nela; só funcionava por causa do filter:blur() inline (filter vira ponto de referência).
-     Sem o desfoque no celular, a imagem se prendia ao canto da pergunta (logo desenhada em cima do "E"). */
-  html:root .izi-pre04-question .izi-q-logo-crop{position:relative !important}
 }
 
 /* Celular (<=700px): faixa "O JEITO izi" menor (~60% do original): texto 25->15px, logo 26->15,6px, altura 52->34px.
@@ -1159,11 +1155,4 @@
   .izi-band-trail,.izi-band-trail-r,.izi-band-echo{height:34px}
   .izi-pre04-simple-band-text{font-size:15px}
   .izi-pre04-simple-band-text .izi-band-logo{--logo-h:15.6px;margin-left:-6px}
-}
-
-/* TESTE ?desfoque=2 (celular, ver secao04.js): "desfoque" por sombra de texto. --p vai de 0 (texto transparente + sombra borrada) a 1
-   (texto branco nítido, sem sombra). Sem filter => sem camada de GPU extra no Safari. */
-.iziq-ts{
-  color:rgba(255,255,255,var(--p,1));
-  text-shadow:0 0 calc((1 - var(--p,1)) * 6px) rgba(255,255,255,calc(1 - var(--p,1)));
 }

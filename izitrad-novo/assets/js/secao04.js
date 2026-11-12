@@ -590,9 +590,7 @@ addEventListener("resize",()=>{
     function addBreaks(words){
       words.forEach(function(w){
         if(Q04_QUEBRAS.indexOf(w.textContent.trim().toLowerCase()) < 0) return;
-        // <br> de verdade (NÃO um <span> display:block): um bloco dentro do texto corrido parte o <span> em linha e o navegador
-        // desenhava a logo "izi" (position:relative + overflow:hidden) fora do lugar / uma "faixinha" rosa no iPhone.
-        var br = document.createElement('br');
+        var br = document.createElement('span');
         br.className = 'iziq-br'; br.setAttribute('aria-hidden','true');
         w.insertAdjacentElement('afterend', br);
       });
@@ -626,32 +624,11 @@ addEventListener("resize",()=>{
     // palavras, não o bloco inteiro.
     gsap.set('#iziPre04Question', {opacity:1, y:0});
     var qScaleBase = 1440;
-    // CELULAR/TABLET (<900px): SEM desfoque (filter:blur) nas palavras da pergunta, só aparece/some (autoAlpha). O Safari do
-    // iPhone desenhava a camada desfocada com uma emenda — uma "faixinha" rosa fraca (o rosa é o "z" da logo "izi") que surgia
-    // quando a palavra "com" aparecia (confirmado pela usuária: ?off=blur04 fez a faixa sumir). Desktop: igual a antes.
-    // TESTE ?desfoque=1 (só celular): desfoque nas palavras brancas, EXCETO "com"; a logo "izi" (z rosa) e o "com" só com opacidade.
-    // TESTE ?desfoque=2 (só celular): o "desfoque" vira SOMBRA DE TEXTO animada (variável CSS --p: 0 = borrado, 1 = nítido), sem
-    // filter (que no Safari cria uma camada de GPU com emenda). Só as palavras brancas; a logo "izi" só com opacidade.
-    var mobileQ = innerWidth < 900;
-    var modoQ = mobileQ ? ((/[?&]desfoque=(\d)/.exec(location.search)||[])[1] || '0') : 'desktop';
-    var desfoqueTextoQ = modoQ === '1';
-    var sombraQ = modoQ === '2';
-    var semBlurQ = mobileQ && !desfoqueTextoQ && !sombraQ;
-    var logoQ = questionWordEl;
-    if(sombraQ) questionWords.forEach(function(w){ if(w !== logoQ) w.classList.add('iziq-ts'); });
-    function blurQ(px){
-      if(semBlurQ) return {};
-      if(sombraQ) return {'--p': px ? 0 : 1};
-      var v = 'blur('+(px||0)+'px)';
-      // sem desfoque na logo "izi" e na palavra "com" (a faixinha do iPhone aparecia justo quando "com" surgia)
-      if(desfoqueTextoQ) return {filter:function(i,t){ return (t === logoQ || (t.textContent||'').trim().toLowerCase() === 'com') ? 'none' : v; }};
-      return {filter:v};
-    }
-    gsap.set(questionWords, Object.assign({autoAlpha:0}, blurQ(innerWidth/qScaleBase*10)));
-    gsap.to(questionWords, Object.assign({
-      autoAlpha:1, stagger:.04, duration:.2, ease:'none',
+    gsap.set(questionWords, {autoAlpha:0, filter:'blur('+(innerWidth/qScaleBase*10)+'px)'});
+    gsap.to(questionWords, {
+      autoAlpha:1, filter:'blur(0px)', stagger:.04, duration:.2, ease:'none',
       scrollTrigger:{trigger:"#iziPre04Intro", start:"top -56%", end:"top -236%", scrub:true}
-    }, blurQ(0)));
+    });
 
     // Saída: MESMO mecanismo da entrada (blur+autoAlpha por palavra,
     // stagger .04, ease none), só invertido — de nítido/visível pra
@@ -678,9 +655,9 @@ addEventListener("resize",()=>{
     // existir). Resultado sem isso: entrada quebrada, palavras 2-9 já
     // nasciam visíveis/nítidas, só a 1ª de fato revelava.
     gsap.fromTo(questionWords,
-      Object.assign({autoAlpha:1}, blurQ(0)),
-      Object.assign({autoAlpha:0, stagger:.04, duration:.2, ease:'none', immediateRender:false,
-      scrollTrigger:{trigger:"#iziPre04Intro", start:"55% top", end:"bottom top", scrub:true}}, blurQ(innerWidth/qScaleBase*10))
+      {autoAlpha:1, filter:'blur(0px)'},
+      {autoAlpha:0, filter:'blur('+(innerWidth/qScaleBase*10)+'px)', stagger:.04, duration:.2, ease:'none', immediateRender:false,
+      scrollTrigger:{trigger:"#iziPre04Intro", start:"55% top", end:"bottom top", scrub:true}}
     );
   })();
 
