@@ -1169,3 +1169,7 @@
   html:root .guiding-principles .heading{font-size:14vw !important;line-height:1 !important;padding-bottom:12.5vw !important}
   html:root .guiding-principles .paragraph{font-size:5.8vw !important;line-height:1.4 !important;white-space:normal !important}
 }
+
+/* TESTE ?risco=2 (celular, ver secao04.js): palavras do título do bloco "E por trás do simples?" em camadas estáveis (menos emenda de camada no Safari). */
+html.risco-2 .guiding-principles .heading{isolation:isolate}
+html.risco-2 .guiding-principles .heading-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}

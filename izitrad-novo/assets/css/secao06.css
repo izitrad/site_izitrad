@@ -86,6 +86,8 @@
   /* sobe a área dos depoimentos 150px: o vão entre o parágrafo da introdução e o 1º depoimento era ~320px (a área tem a altura da tela e centraliza
      os depoimentos nela). A margem negativa só desloca a área inteira — a animação dos depoimentos é relativa a ela e não muda. */
   .s06-stage{perspective:320vw;cursor:auto;margin-top:-150px}
+  /* COMPARAÇÃO: ?off=recuo06 desfaz o recuo de 150px acima (volta ao espaço de ANTES entre a introdução e o 1º depoimento). Sem o parâmetro, nada muda. */
+  html.off-recuo06 .s06-stage{margin-top:0 !important}
   .s06-stage *{cursor:auto}
   .s06-heading{font-size:12.8vw;line-height:12.8vw;padding-bottom:8vw}
   .s06-paragraph{font-size:5.3333333333vw;line-height:7.4666666667vw;width:auto}

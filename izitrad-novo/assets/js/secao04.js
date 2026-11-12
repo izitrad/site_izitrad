@@ -59,6 +59,7 @@ function cleanupDesktop(){
     heading.innerHTML = HEADING_HTML;
     headingWords = [];
   }
+  heading.style.filter = "";
 }
 
 function setupDesktop(){
@@ -89,14 +90,22 @@ function setupDesktop(){
   heading.innerHTML = HEADING_WORDS_HTML;
 
   headingWords = gsap.utils.toArray(".heading-word", heading);
-  gsap.set(headingWords,{
+
+  /* TESTE (só celular, comparação das "faixinhas" do iPhone): ?risco=1 = UM desfoque só pro bloco inteiro do título (as palavras entram
+     só por opacidade, escalonadas) em vez de um desfoque por palavra; ?risco=2 = mantém o desfoque por palavra mas força camadas estáveis
+     (translateZ/backface, ver secao04.css). Sem o parâmetro: como antes. */
+  const risco = celular ? ((/[?&]risco=([12])(&|#|$)/.exec(location.search) || [])[1] || "") : "";
+  document.documentElement.classList.toggle("risco-2", risco === "2");
+  const blurH = viewportW/scaleBase*10;
+  const blocoUnico = risco === "1";
+  gsap.set(headingWords,Object.assign({
     display:"inline-block",
-    autoAlpha:0,
-    filter:`blur(${viewportW/scaleBase*10}px)`
-  });
+    autoAlpha:0
+  }, blocoUnico ? {} : {filter:`blur(${blurH}px)`}));
 
   const headingTween = gsap.timeline({
     paused:true,
+    onUpdate:function(){ if(blocoUnico && this.progress() >= 0.999) heading.style.filter = "none"; },
     scrollTrigger:{
       scrub:true,
       start:"top bottom",
@@ -105,18 +114,18 @@ function setupDesktop(){
     }
   }).fromTo(
     headingWords,
-    {
-      autoAlpha:0,
-      filter:`blur(${viewportW/scaleBase*10}px)`
-    },
-    {
+    Object.assign({autoAlpha:0}, blocoUnico ? {} : {filter:`blur(${blurH}px)`}),
+    Object.assign({
       autoAlpha:1,
-      filter:"blur(0px)",
       stagger:.04,
       duration:.2,
       ease:"none"
-    }
+    }, blocoUnico ? {} : {filter:"blur(0px)"})
   );
+  if(blocoUnico){
+    headingTween.fromTo(heading,{filter:`blur(${blurH}px)`},
+      {filter:"blur(0px)",duration:.04*(headingWords.length-1)+.2,ease:"none",immediateRender:false},0);
+  }
 
   desktopAnimations.push(headingTween);
 
