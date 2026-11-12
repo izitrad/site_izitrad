@@ -63,7 +63,10 @@ function cleanupDesktop(){
 
 function setupDesktop(){
   cleanupDesktop();
-  if(innerWidth <= 600) return;
+  // Celular (<=600px): ANTES não rodava nenhuma animação desta parte (return aqui) — o título e os compromissos apareciam parados.
+  // Agora o celular tem a MESMA revelação do desktop (título palavra por palavra com desfoque + cada compromisso subindo e entrando
+  // em sequência); só o número/logo e a divisória (que não existem no celular) ficam de fora — ver 'if(celular) return' mais abaixo.
+  const celular = innerWidth <= 600;
 
   const viewportH = innerHeight;
   const viewportW = innerWidth;
@@ -149,6 +152,7 @@ function setupDesktop(){
     desktopAnimations.push(tween);
   });
 
+  if(celular) return;   // sem número/logo nem divisória no celular
   /* Number scrub. Mesma lógica da referência (y de 0 até alturaDosPrincípios
      − alturaDoNúmero, start "top top", end "bottom center"), com uma
      diferença consciente na CURVA: a referência usa power1.inOut, cujo ponto
