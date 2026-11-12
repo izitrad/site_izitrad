@@ -1165,8 +1165,7 @@
   html:root .guiding-principles .column:nth-child(2){display:none !important}
   html:root .guiding-principles .background{display:none !important}
   /* Título "E por trás / do simples?" grande (referência da usuária: "do simples?" ocupa ~2/3 da largura) e a frase de
-     abertura "Seis compromissos que / fazem da iziTrad" em 2 linhas (o resto da frase fica só no desktop: .p-resto). */
+     abertura "Seis compromissos que / fazem da iziTrad uma…" (frase COMPLETA, quebrando sozinha; os <br> do desktop ficam ocultos). */
   html:root .guiding-principles .heading{font-size:14vw !important;line-height:1 !important;padding-bottom:4vw !important}
-  html:root .guiding-principles .paragraph{font-size:7.5vw !important;line-height:1.4 !important;white-space:normal !important}
-  html:root .guiding-principles .paragraph .p-resto{display:none}
+  html:root .guiding-principles .paragraph{font-size:5.8vw !important;line-height:1.4 !important;white-space:normal !important}
 }
