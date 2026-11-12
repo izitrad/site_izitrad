@@ -629,7 +629,7 @@ addEventListener("resize",()=>{
     // CELULAR/TABLET (<900px): SEM desfoque (filter:blur) nas palavras da pergunta, só aparece/some (autoAlpha). O Safari do
     // iPhone desenhava a camada desfocada com uma emenda — uma "faixinha" rosa fraca (o rosa é o "z" da logo "izi") que surgia
     // quando a palavra "com" aparecia (confirmado pela usuária: ?off=blur04 fez a faixa sumir). Desktop: igual a antes.
-    // TESTE ?desfoque=1 (só celular): desfoque nas palavras BRANCAS; a logo "izi" (z rosa) só com opacidade.
+    // TESTE ?desfoque=1 (só celular): desfoque nas palavras brancas, EXCETO "com"; a logo "izi" (z rosa) e o "com" só com opacidade.
     var mobileQ = innerWidth < 900;
     var desfoqueTextoQ = mobileQ && /[?&]desfoque=1(&|#|$)/.test(location.search);
     var semBlurQ = mobileQ && !desfoqueTextoQ;
@@ -637,7 +637,8 @@ addEventListener("resize",()=>{
     function blurQ(px){
       if(semBlurQ) return {};
       var v = 'blur('+(px||0)+'px)';
-      if(desfoqueTextoQ) return {filter:function(i,t){ return t === logoQ ? 'none' : v; }};
+      // sem desfoque na logo "izi" e na palavra "com" (a faixinha do iPhone aparecia justo quando "com" surgia)
+      if(desfoqueTextoQ) return {filter:function(i,t){ return (t === logoQ || (t.textContent||'').trim().toLowerCase() === 'com') ? 'none' : v; }};
       return {filter:v};
     }
     gsap.set(questionWords, Object.assign({autoAlpha:0}, blurQ(innerWidth/qScaleBase*10)));
