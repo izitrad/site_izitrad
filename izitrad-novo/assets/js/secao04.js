@@ -583,16 +583,13 @@ addEventListener("resize",()=>{
       });
       return spans;
     }
-    // Palavras (minúsculas) depois das quais o celular quebra a linha. Padrão = 4 linhas aprovadas.
-    // TESTE de diagramação (só celular): ?pergunta=1 "E como / é fazer / isso / com a / izi?", ?pergunta=2 "... / isso / com / a izi?",
-    // ?pergunta=3 "E / como / é fazer / isso com / a izi?", ?pergunta=4 "E como / é fazer / isso com / a izi?". Com o parâmetro, a pergunta vira texto corrido (html[data-q04]).
-    var Q04_VARIANTES = { '1':['como','fazer','isso','a'], '2':['como','fazer','isso','com'], '3':['e','como','fazer','com'], '4':['como','fazer','com'] };
-    var q04 = (/[?&]pergunta=([1234])(&|#|$)/.exec(location.search)||[])[1];
-    if(q04) document.documentElement.setAttribute('data-q04', q04);
-    var q04Quebras = q04 ? Q04_VARIANTES[q04] : ['como','fazer'];
+    // Celular (<=760px, ver secao04.css) — composição APROVADA: "E como / é fazer / isso com / a izi?". As quebras de linha
+    // são <span class="iziq-br"> depois destas palavras (minúsculas); fora do celular o span fica display:none e a
+    // pergunta segue como no desktop. (As outras 3 diagramações testadas com ?pergunta=1..3 foram removidas.)
+    var Q04_QUEBRAS = ['como','fazer','com'];
     function addBreaks(words){
       words.forEach(function(w){
-        if(q04Quebras.indexOf(w.textContent.trim().toLowerCase()) < 0) return;
+        if(Q04_QUEBRAS.indexOf(w.textContent.trim().toLowerCase()) < 0) return;
         var br = document.createElement('span');
         br.className = 'iziq-br'; br.setAttribute('aria-hidden','true');
         w.insertAdjacentElement('afterend', br);
@@ -609,9 +606,7 @@ addEventListener("resize",()=>{
     if(line1){
       var line1Words = splitIntoWords(line1);
       gsap.set(line1Words, {display:'inline-block'});
-      // Celular (<=760px, ver secao04.css): quebras de linha por <span class="iziq-br"> depois de certas palavras;
-      // só têm efeito dentro da media query do celular (no desktop ficam display:none e a pergunta segue como antes).
-      // Padrão: "E como / é fazer / isso / com a izi ?". TESTE: ?pergunta=1|2|3|4 testa outras diagramações (ver Q04_VARIANTES).
+      // Quebras de linha do celular (ver Q04_QUEBRAS acima): só têm efeito dentro da media query do celular.
       addBreaks(line1Words);
       questionWords = questionWords.concat(line1Words);
     }
@@ -806,8 +801,18 @@ addEventListener("resize",()=>{
       if(!h || F1 < FINAL_STRETCH * 0.3){ W = 0; D = 0; F1 = FINAL_STRETCH; } // sem base confiável: sem desaceleração
       simplesDecel = {F:FINAL_STRETCH, F1:F1, D:D, W:W};
       gsap.set(line,{y:0});
+      // CELULAR/TABLET (<900px): enquanto o "estica" não começou (scaleY ~0) a linha achatada do SIMPLES fica ESCONDIDA.
+      // O Safari do iPhone desenhava essa linha (altura ~0) como uma "faixinha" rosa fraca atravessando a pergunta da 04;
+      // no Chrome ela não aparece. Reaparece assim que o SIMPLES começa a crescer. Desktop: nada muda.
+      const esconderFio = window.innerWidth < 900;
+      function fioAchatado(){
+        if(!esconderFio) return;
+        line.style.visibility = (gsap.getProperty(line,"scaleY") > 0.004) ? "" : "hidden";
+      }
+      fioAchatado();
       simplesStretchTween = gsap.to(line,{
         scaleY:F1,scaleX:1,ease:"none",
+        onUpdate:fioAchatado,
         scrollTrigger:{
           trigger:line,
           start:`top bottom-=${BOTTOM_MARGIN}px`,
