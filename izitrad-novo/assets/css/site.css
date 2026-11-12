@@ -762,6 +762,9 @@ img,svg{display:block}
   /* estado compacto (seção 02 em diante): mesmo tamanho reduzido. A animação de entrada termina em scale(1) com fill
      'both' (anularia um transform fixo), por isso aqui troco pela versão que termina em .65 */
   .site-header[data-compact] .menu-toggle{animation-name:menuToggleInSm;transform-origin:100% 50%;margin-right:12px}   /* 12px = mesma margem direita do estado normal (header-inner, acima) */
+  /* altura do cabeçalho no estado compacto = a da tela inicial (65px): antes eram 112px (valor do desktop) e o triângulo, centralizado,
+     descia ~23px (de 8px do topo pra ~32px) da seção 02 em diante. Agora fica na MESMA posição em todas as seções. Desktop não muda. */
+  .site-header[data-compact] .header-inner{height:65px}
 }
 }
 
