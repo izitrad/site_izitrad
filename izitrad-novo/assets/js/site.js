@@ -23,6 +23,11 @@
   if(ks.includes('tudo')) ks=['ondas','vidro','rosa','logo','fade'];
   ks.forEach(k=>document.documentElement.classList.add('off-'+k));
 })();
+/* COMPARAÇÃO seção 06 no celular: ?texto06=70 ou ?texto06=100 (ver secao06.css). Sem o parâmetro, nada muda. */
+(function(){
+  const m=/[?&]texto06=(70|100)(?:&|#|$)/.exec(location.search); if(!m) return;
+  document.documentElement.classList.add('texto06-'+m[1]);
+})();
 
 function initWaves(canvas){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
