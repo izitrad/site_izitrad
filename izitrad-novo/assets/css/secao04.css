@@ -1139,7 +1139,8 @@
   html:root .izi-pre04-question{font-size:21vw !important}
   html:root .izi-pre04-question .iziq-br{display:block !important;height:0}
 
-  /* TESTE ?pergunta=1|2|3 (ver secao04.js): a pergunta vira texto corrido e as quebras vêm só dos .iziq-br */
+  /* TESTE ?pergunta=1|2|3|4 (ver secao04.js): a pergunta vira texto corrido e as quebras vêm só dos .iziq-br */
+  html[data-q04]:root .izi-pre04-question{font-size:24vw !important} /* versões de teste: letra maior (a mais larga, "isso com", ainda cabe) */
   html[data-q04] .izi-pre04-question .izi-q-line1,
   html[data-q04] .izi-pre04-question .izi-q-line2{display:inline !important;width:auto !important;height:auto !important;white-space:normal !important}
   html[data-q04] .izi-pre04-question .izi-q-prefix{display:contents !important}

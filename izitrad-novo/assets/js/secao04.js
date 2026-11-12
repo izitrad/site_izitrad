@@ -585,9 +585,9 @@ addEventListener("resize",()=>{
     }
     // Palavras (minúsculas) depois das quais o celular quebra a linha. Padrão = 4 linhas aprovadas.
     // TESTE de diagramação (só celular): ?pergunta=1 "E como / é fazer / isso / com a / izi?", ?pergunta=2 "... / isso / com / a izi?",
-    // ?pergunta=3 "E / como / é fazer / isso com / a izi?". Com o parâmetro, a pergunta vira texto corrido (html[data-q04]).
-    var Q04_VARIANTES = { '1':['como','fazer','isso','a'], '2':['como','fazer','isso','com'], '3':['e','como','fazer','com'] };
-    var q04 = (/[?&]pergunta=([123])(&|#|$)/.exec(location.search)||[])[1];
+    // ?pergunta=3 "E / como / é fazer / isso com / a izi?", ?pergunta=4 "E como / é fazer / isso com / a izi?". Com o parâmetro, a pergunta vira texto corrido (html[data-q04]).
+    var Q04_VARIANTES = { '1':['como','fazer','isso','a'], '2':['como','fazer','isso','com'], '3':['e','como','fazer','com'], '4':['como','fazer','com'] };
+    var q04 = (/[?&]pergunta=([1234])(&|#|$)/.exec(location.search)||[])[1];
     if(q04) document.documentElement.setAttribute('data-q04', q04);
     var q04Quebras = q04 ? Q04_VARIANTES[q04] : ['como','fazer'];
     function addBreaks(words){
@@ -611,7 +611,7 @@ addEventListener("resize",()=>{
       gsap.set(line1Words, {display:'inline-block'});
       // Celular (<=760px, ver secao04.css): quebras de linha por <span class="iziq-br"> depois de certas palavras;
       // só têm efeito dentro da media query do celular (no desktop ficam display:none e a pergunta segue como antes).
-      // Padrão: "E como / é fazer / isso / com a izi ?". TESTE: ?pergunta=1|2|3 testa outras diagramações (ver Q04_VARIANTES).
+      // Padrão: "E como / é fazer / isso / com a izi ?". TESTE: ?pergunta=1|2|3|4 testa outras diagramações (ver Q04_VARIANTES).
       addBreaks(line1Words);
       questionWords = questionWords.concat(line1Words);
     }
