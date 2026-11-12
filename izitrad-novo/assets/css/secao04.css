@@ -1181,4 +1181,10 @@
 @media(max-width:760px){
   html:not(.off-estavel) .izi-pre04-question{isolation:isolate}
   html:not(.off-estavel) .izi-pre04-question .iziq-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+  /* A pergunta usa letter-spacing:-.045em, então a ponta da ÚLTIMA letra de cada palavra ("o" de "como"/"isso", "m" de "com") e do "?" passa da caixa
+     da palavra; como cada palavra agora é uma camada própria, o iPhone cortava essa ponta ("o" e "?" comidos). Folga de .1em à direita (e .08em em
+     cima/embaixo, pro acento do "é" e o topo do "?") DENTRO da camada, compensada por margem negativa igual — as letras não mudam de lugar.
+     A logo "izi" (.izi-question-word) fica de fora: tem overflow:hidden e largura fixa de propósito. */
+  html:not(.off-estavel) .izi-pre04-question span.iziq-word:not(.izi-question-word){padding:.08em .1em .08em 0;margin:-.08em -.1em -.08em 0}
+  html:not(.off-estavel):root .izi-pre04-question .izi-q-mark{padding:.08em .1em .08em 0 !important;margin-right:-.1em !important;margin-top:-.08em !important;margin-bottom:-.08em !important}
 }
