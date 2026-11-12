@@ -1184,6 +1184,11 @@
   html:root .guiding-principles .par-word,html:root .guiding-principles .par-logo{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
   html:root .guiding-principles .par-word{padding:0 .1em 0 0;margin:0 -.1em 0 0}
 }
+/* Logo "iziTrad" dentro da frase de abertura (.par-logo, secao04.js): o triângulo rosa sai da caixa da logo (~.41em pra cima e um fio à direita; a logo é
+   um SVG com overflow:visible) e, com a logo animada como uma palavra (camada própria + desfoque), o iPhone CORTAVA essa parte — o triângulo sumia.
+   Folga DENTRO da camada (padding), compensada por margem negativa igual: a logo não muda de lugar nem de tamanho. Vale no celular e no desktop. */
+html:root .guiding-principles .par-logo{box-sizing:content-box;padding:.5em .1em 0 0;margin-top:-.5em;margin-right:-.14em}
+
 @media(max-width:760px){
   html:root .izi-pre04-question{isolation:isolate}
   html:root .izi-pre04-question .iziq-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
