@@ -765,6 +765,8 @@ img,svg{display:block}
   /* altura do cabeçalho no estado compacto = a da tela inicial (65px): antes eram 112px (valor do desktop) e o triângulo, centralizado,
      descia ~23px (de 8px do topo pra ~32px) da seção 02 em diante. Agora fica na MESMA posição em todas as seções. Desktop não muda. */
   .site-header[data-compact] .header-inner{height:65px}
+  /* TESTE ?rotulos=alto (ver site.js): rótulos fixos 02/03/04 (hoje a 40px do topo, centro em 51px) sobem pra centralizar no triângulo (centro a 32,5px) */
+  html.rotulos-alto .intro-eyebrow,html.rotulos-alto .section-id,html.rotulos-alto .s3-id,html.rotulos-alto #iziPre04Kicker{top:21px !important}
 }
 }
 
