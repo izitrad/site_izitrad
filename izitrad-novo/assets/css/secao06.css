@@ -84,14 +84,10 @@
      existe (.s06-intro padding-top 13,9vw); aqui estava 0 e o título começava em cima do rótulo (54px de sobreposição). 5vh + 130px deixa ~110px livres (o rótulo entra SUBINDO de 70px abaixo da posição final e não deve passar por cima do título). */
   .s06-intro{padding:calc(5vh + 130px) 0 0}
   /* A usuária preferiu o espaço de ANTES entre a introdução e o 1º depoimento (o recuo de -150px foi removido). */
-  .s06-stage{perspective:320vw;cursor:auto}
-  /* COMPARAÇÃO (?texto06=70 | ?texto06=100): sobe os depoimentos N px dentro da área (padding-bottom = 2N na área, que centraliza o conteúdo)
-     e devolve N px de espaço embaixo da introdução — o vão título→1º depoimento fica igual e o vão até a PRÓXIMA seção aumenta N px.
-     Sem o parâmetro, nada muda. */
-  html.texto06-70 .s06-intro{padding-bottom:70px}
-  html.texto06-70 .s06-stage{padding-bottom:140px}
-  html.texto06-100 .s06-intro{padding-bottom:100px}
-  html.texto06-100 .s06-stage{padding-bottom:200px}
+  /* APROVADO (70px): os depoimentos sobem 70px dentro da área (padding-bottom 140px na área, que centraliza o conteúdo) e a introdução ganha 70px
+     embaixo — o vão parágrafo→1º depoimento fica igual ao de antes e o vão até a PRÓXIMA seção aumenta 70px. */
+  .s06-intro{padding-bottom:70px}
+  .s06-stage{perspective:320vw;cursor:auto;padding-bottom:140px}
   .s06-stage *{cursor:auto}
   .s06-heading{font-size:12.8vw;line-height:12.8vw;padding-bottom:8vw}
   .s06-paragraph{font-size:5.3333333333vw;line-height:7.4666666667vw;width:auto}

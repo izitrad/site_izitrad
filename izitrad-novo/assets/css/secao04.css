@@ -1170,6 +1170,15 @@
   html:root .guiding-principles .paragraph{font-size:5.8vw !important;line-height:1.4 !important;white-space:normal !important}
 }
 
-/* TESTE ?risco=2 (celular, ver secao04.js): palavras do título do bloco "E por trás do simples?" em camadas estáveis (menos emenda de camada no Safari). */
-html.risco-2 .guiding-principles .heading{isolation:isolate}
-html.risco-2 .guiding-principles .heading-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+/* CAMADAS ESTÁVEIS no celular (APROVADO pela usuária no título "E por trás do simples?" — era o teste ?risco=2 —, agora também na pergunta "E como é fazer
+   isso com a izi?"): cada palavra com desfoque ganha a própria camada (translateZ/backface) dentro de um bloco isolado, o que tira as "faixinhas" rosa
+   que o Safari do iPhone desenhava na emenda das camadas do desfoque. Só celular; o desktop não muda.
+   COMPARAÇÃO: ?off=estavel desliga estas regras (volta ao comportamento anterior). */
+@media(max-width:600px){
+  html:not(.off-estavel) .guiding-principles .heading{isolation:isolate}
+  html:not(.off-estavel) .guiding-principles .heading-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+}
+@media(max-width:760px){
+  html:not(.off-estavel) .izi-pre04-question{isolation:isolate}
+  html:not(.off-estavel) .izi-pre04-question .iziq-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+}
