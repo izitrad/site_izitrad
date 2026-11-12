@@ -1156,3 +1156,17 @@
   .izi-pre04-simple-band-text{font-size:15px}
   .izi-pre04-simple-band-text .izi-band-logo{--logo-h:15.6px;margin-left:-6px}
 }
+
+/* Celular (<=600px, mesmo ponto do layout mobile desta parte "E por trás do simples?"): SEM a logo gigante "iziTrad" (que aparecia
+   cortada, só "Trad") e SEM a linha divisória que descia dela — não cabem no layout do celular. A regra antiga
+   ".background{display:none}" do bloco mobile era anulada por ".guiding-principles .background{display:flex}" (mais específica);
+   aqui o esconder vale de fato. O desktop não muda. O secao04.js continua criando as animações (sem efeito visual: elementos ocultos). */
+@media(max-width:600px){
+  html:root .guiding-principles .column:nth-child(2){display:none !important}
+  html:root .guiding-principles .background{display:none !important}
+  /* Título "E por trás / do simples?" grande (referência da usuária: "do simples?" ocupa ~2/3 da largura) e a frase de
+     abertura "Seis compromissos que / fazem da iziTrad" em 2 linhas (o resto da frase fica só no desktop: .p-resto). */
+  html:root .guiding-principles .heading{font-size:14vw !important;line-height:1 !important;padding-bottom:4vw !important}
+  html:root .guiding-principles .paragraph{font-size:7.5vw !important;line-height:1.4 !important;white-space:normal !important}
+  html:root .guiding-principles .paragraph .p-resto{display:none}
+}
