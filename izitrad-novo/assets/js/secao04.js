@@ -157,9 +157,9 @@ function setupDesktop(){
 
   desktopAnimations.push(headingTween);
 
-  /* Celular: a frase de abertura ("Seis compromissos que fazem da iziTrad…") ganha a MESMA revelação do título — palavra por palavra,
-     com desfoque, escalonada — logo depois dele. No desktop ela continua parada (como sempre foi): só entra aqui se for celular. */
-  if(celular){
+  /* A frase de abertura ("Seis compromissos que fazem da iziTrad…") tem a MESMA revelação do título — palavra por palavra, com desfoque,
+     escalonada — logo depois dele. Vale no celular E no desktop (pedido da usuária; antes a frase ficava parada). */
+  {
     const par = document.querySelector(".guiding-principles .column > .paragraph");
     if(par){
       const parWords = dividirEmPalavras(par);
