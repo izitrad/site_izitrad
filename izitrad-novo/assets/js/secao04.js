@@ -630,12 +630,18 @@ addEventListener("resize",()=>{
     // iPhone desenhava a camada desfocada com uma emenda — uma "faixinha" rosa fraca (o rosa é o "z" da logo "izi") que surgia
     // quando a palavra "com" aparecia (confirmado pela usuária: ?off=blur04 fez a faixa sumir). Desktop: igual a antes.
     // TESTE ?desfoque=1 (só celular): desfoque nas palavras brancas, EXCETO "com"; a logo "izi" (z rosa) e o "com" só com opacidade.
+    // TESTE ?desfoque=2 (só celular): o "desfoque" vira SOMBRA DE TEXTO animada (variável CSS --p: 0 = borrado, 1 = nítido), sem
+    // filter (que no Safari cria uma camada de GPU com emenda). Só as palavras brancas; a logo "izi" só com opacidade.
     var mobileQ = innerWidth < 900;
-    var desfoqueTextoQ = mobileQ && /[?&]desfoque=1(&|#|$)/.test(location.search);
-    var semBlurQ = mobileQ && !desfoqueTextoQ;
+    var modoQ = mobileQ ? ((/[?&]desfoque=(\d)/.exec(location.search)||[])[1] || '0') : 'desktop';
+    var desfoqueTextoQ = modoQ === '1';
+    var sombraQ = modoQ === '2';
+    var semBlurQ = mobileQ && !desfoqueTextoQ && !sombraQ;
     var logoQ = questionWordEl;
+    if(sombraQ) questionWords.forEach(function(w){ if(w !== logoQ) w.classList.add('iziq-ts'); });
     function blurQ(px){
       if(semBlurQ) return {};
+      if(sombraQ) return {'--p': px ? 0 : 1};
       var v = 'blur('+(px||0)+'px)';
       // sem desfoque na logo "izi" e na palavra "com" (a faixinha do iPhone aparecia justo quando "com" surgia)
       if(desfoqueTextoQ) return {filter:function(i,t){ return (t === logoQ || (t.textContent||'').trim().toLowerCase() === 'com') ? 'none' : v; }};

@@ -1160,3 +1160,10 @@
   .izi-pre04-simple-band-text{font-size:15px}
   .izi-pre04-simple-band-text .izi-band-logo{--logo-h:15.6px;margin-left:-6px}
 }
+
+/* TESTE ?desfoque=2 (celular, ver secao04.js): "desfoque" por sombra de texto. --p vai de 0 (texto transparente + sombra borrada) a 1
+   (texto branco nítido, sem sombra). Sem filter => sem camada de GPU extra no Safari. */
+.iziq-ts{
+  color:rgba(255,255,255,var(--p,1));
+  text-shadow:0 0 calc((1 - var(--p,1)) * 6px) rgba(255,255,255,calc(1 - var(--p,1)));
+}
