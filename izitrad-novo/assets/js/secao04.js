@@ -60,6 +60,41 @@ function cleanupDesktop(){
     headingWords = [];
   }
   heading.style.filter = "";
+  /* frase de abertura (celular): desfaz a divisão em palavras (devolve os nós de texto originais, sem mexer na logo inline) */
+  document.querySelectorAll(".guiding-principles .column > .paragraph .par-word").forEach(w => {
+    w.replaceWith(document.createTextNode(w.textContent));
+  });
+  document.querySelectorAll(".guiding-principles .column > .paragraph .par-logo").forEach(l => {
+    l.classList.remove("par-logo");
+    gsap.set(l, {clearProps:"opacity,visibility,filter,display"});
+  });
+  const par = document.querySelector(".guiding-principles .column > .paragraph");
+  if(par) par.normalize();
+}
+
+/* Divide os textos de um parágrafo em palavras (<span class="par-word">), preservando <br>, espaços e a logo inline
+   (.izi-inline-logo vira uma "palavra" inteira). Devolve as palavras na ordem de leitura. */
+function dividirEmPalavras(el){
+  const out = [];
+  Array.from(el.childNodes).forEach(n => {
+    if(n.nodeType === 3){
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(parte => {
+        if(!parte) return;
+        if(/^\s+$/.test(parte)){ frag.appendChild(document.createTextNode(parte)); return; }
+        const s = document.createElement("span");
+        s.className = "par-word";
+        s.textContent = parte;
+        frag.appendChild(s);
+        out.push(s);
+      });
+      n.replaceWith(frag);
+    }else if(n.nodeType === 1){
+      if(n.classList.contains("izi-inline-logo")){ n.classList.add("par-logo"); out.push(n); }
+      else if(n.tagName !== "BR"){ out.push.apply(out, dividirEmPalavras(n)); }
+    }
+  });
+  return out;
 }
 
 function setupDesktop(){
@@ -121,6 +156,27 @@ function setupDesktop(){
   );
 
   desktopAnimations.push(headingTween);
+
+  /* Celular: a frase de abertura ("Seis compromissos que fazem da iziTrad…") ganha a MESMA revelação do título — palavra por palavra,
+     com desfoque, escalonada — logo depois dele. No desktop ela continua parada (como sempre foi): só entra aqui se for celular. */
+  if(celular){
+    const par = document.querySelector(".guiding-principles .column > .paragraph");
+    if(par){
+      const parWords = dividirEmPalavras(par);
+      if(parWords.length){
+        gsap.set(parWords, {display:"inline-block", autoAlpha:0, filter:`blur(${blurH}px)`});
+        const parTween = gsap.timeline({
+          paused:true,
+          scrollTrigger:{ scrub:true, start:"top 92%", end:"top 50%", trigger:par }
+        }).fromTo(
+          parWords,
+          {autoAlpha:0, filter:`blur(${blurH}px)`},
+          {autoAlpha:1, stagger:.04, duration:.2, ease:"none", filter:"blur(0px)"}
+        );
+        desktopAnimations.push(parTween);
+      }
+    }
+  }
 
   /* Exact HomeGuidingPrinciples reveal.
      Important: it animates G.children, therefore BOTH GlobalTitle and

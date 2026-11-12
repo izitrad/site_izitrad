@@ -1173,18 +1173,24 @@
 /* CAMADAS ESTÁVEIS no celular (APROVADO pela usuária no título "E por trás do simples?" — era o teste ?risco=2 —, agora também na pergunta "E como é fazer
    isso com a izi?"): cada palavra com desfoque ganha a própria camada (translateZ/backface) dentro de um bloco isolado, o que tira as "faixinhas" rosa
    que o Safari do iPhone desenhava na emenda das camadas do desfoque. Só celular; o desktop não muda.
-   COMPARAÇÃO: ?off=estavel desliga estas regras (volta ao comportamento anterior). */
+   (O interruptor de comparação ?off=estavel foi removido: a usuária aprovou.) */
 @media(max-width:600px){
-  html:not(.off-estavel) .guiding-principles .heading{isolation:isolate}
-  html:not(.off-estavel) .guiding-principles .heading-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+  html:root .guiding-principles .heading{isolation:isolate}
+  html:root .guiding-principles .heading-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+  /* Frase de abertura ("Seis compromissos que fazem da iziTrad…"): revelação palavra por palavra como o título (secao04.js, .par-word/.par-logo), com as
+     mesmas camadas estáveis. As palavras ganham folga à direita dentro da camada (compensada por margem negativa igual — as letras não
+     mudam de lugar) pra não cortar a ponta da última letra nem acentos. */
+  html:root .guiding-principles .column > .paragraph{isolation:isolate}
+  html:root .guiding-principles .par-word,html:root .guiding-principles .par-logo{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+  html:root .guiding-principles .par-word{padding:0 .1em 0 0;margin:0 -.1em 0 0}
 }
 @media(max-width:760px){
-  html:not(.off-estavel) .izi-pre04-question{isolation:isolate}
-  html:not(.off-estavel) .izi-pre04-question .iziq-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+  html:root .izi-pre04-question{isolation:isolate}
+  html:root .izi-pre04-question .iziq-word{-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
   /* A pergunta usa letter-spacing:-.045em, então a ponta da ÚLTIMA letra de cada palavra ("o" de "como"/"isso", "m" de "com") e do "?" passa da caixa
      da palavra; como cada palavra agora é uma camada própria, o iPhone cortava essa ponta ("o" e "?" comidos). Folga de .1em à direita (e .08em em
      cima/embaixo, pro acento do "é" e o topo do "?") DENTRO da camada, compensada por margem negativa igual — as letras não mudam de lugar.
      A logo "izi" (.izi-question-word) fica de fora: tem overflow:hidden e largura fixa de propósito. */
-  html:not(.off-estavel) .izi-pre04-question span.iziq-word:not(.izi-question-word){padding:.08em .1em .08em 0;margin:-.08em -.1em -.08em 0}
-  html:not(.off-estavel):root .izi-pre04-question .izi-q-mark{padding:.08em .1em .08em 0 !important;margin-right:-.1em !important;margin-top:-.08em !important;margin-bottom:-.08em !important}
+  html:root .izi-pre04-question span.iziq-word:not(.izi-question-word){padding:.08em .1em .08em 0;margin:-.08em -.1em -.08em 0}
+  html:root:root .izi-pre04-question .izi-q-mark{padding:.08em .1em .08em 0 !important;margin-right:-.1em !important;margin-top:-.08em !important;margin-bottom:-.08em !important}
 }
