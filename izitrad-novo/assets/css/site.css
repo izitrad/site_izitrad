@@ -799,6 +799,12 @@ html.off-rosa .hero-layer .wipe,html.off-rosa .hero-layer .hero-logo-triangle{di
 html.off-logo .hero-layer .logo{display:none!important}
 html.off-fade .hero-layer .hero-fade-bottom{display:none!important}
 html.off-abaixo main > section:not(.hero-s2-story){display:none!important}
+/* Diagnóstico da "faixinha" da seção 04 no iPhone (esconde SEM mexer no layout): ?off=simples (palavra SIMPLES + faixa "o jeito izi"),
+   ?off=glow (brilho verde de fundo), ?off=kicker (rótulo "04 — COMO FUNCIONA"), ?off=texto (a pergunta). Combina: ?off=simples,glow */
+html.off-simples .izi-pre04-simple-zone,html.off-simples .izi-pre04-simple-band,html.off-simples .izi-band-trail,html.off-simples .izi-band-trail-r{visibility:hidden!important}
+html.off-glow .izi-sec04-glow{visibility:hidden!important}
+html.off-kicker .izi-pre04-kicker{visibility:hidden!important}
+html.off-texto .izi-pre04-question{visibility:hidden!important}
 
 /* ---- SEÇÃO DOS CAMINHOS ("UM DOCUMENTO / CINCO JEITOS DE CHEGAR LÁ") NO CELULAR (<=760px) — VERSÃO DA USUÁRIA, PADRÃO ----
    (era a "v3", testada com ?caminhos=v3; virou o padrão em 2026-11-11 — sem versões.)
