@@ -1144,7 +1144,7 @@
   html[data-q04] .izi-pre04-question .izi-q-line1,
   html[data-q04] .izi-pre04-question .izi-q-line2{display:inline !important;width:auto !important;height:auto !important;white-space:normal !important}
   html[data-q04] .izi-pre04-question .izi-q-prefix{display:contents !important}
-  html[data-q04] .izi-pre04-question .izi-question-word{display:inline-block !important;vertical-align:middle !important;margin:0 0 0 .08em !important}
+  html[data-q04] .izi-pre04-question .izi-question-word{display:inline-block !important;vertical-align:baseline !important} /* base da logo apoiada na linha do texto (como no layout original) */
   html[data-q04] .izi-pre04-question .izi-q-mark{display:inline-block !important;margin:0 0 0 -.1em !important;vertical-align:baseline}
-  html[data-q04="1"] .izi-pre04-question .izi-question-word{margin-left:-.08em !important} /* izi sozinho na linha: alinha na margem */
+  html[data-q04="1"] .izi-pre04-question .izi-question-word{margin-left:0 !important} /* izi sozinho na linha: alinha na margem do texto */
 }
