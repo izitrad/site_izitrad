@@ -83,7 +83,9 @@
   /* folga no topo pra o título NÃO ficar embaixo do rótulo "06 — AVALIAÇÕES" (position:absolute; top:5vh; ~19px de altura) — no desktop essa folga
      existe (.s06-intro padding-top 13,9vw); aqui estava 0 e o título começava em cima do rótulo (54px de sobreposição). 5vh + 130px deixa ~110px livres (o rótulo entra SUBINDO de 70px abaixo da posição final e não deve passar por cima do título). */
   .s06-intro{padding:calc(5vh + 130px) 0 0}
-  .s06-stage{perspective:320vw;cursor:auto}
+  /* sobe a área dos depoimentos 150px: o vão entre o parágrafo da introdução e o 1º depoimento era ~320px (a área tem a altura da tela e centraliza
+     os depoimentos nela). A margem negativa só desloca a área inteira — a animação dos depoimentos é relativa a ela e não muda. */
+  .s06-stage{perspective:320vw;cursor:auto;margin-top:-150px}
   .s06-stage *{cursor:auto}
   .s06-heading{font-size:12.8vw;line-height:12.8vw;padding-bottom:8vw}
   .s06-paragraph{font-size:5.3333333333vw;line-height:7.4666666667vw;width:auto}
