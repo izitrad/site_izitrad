@@ -766,6 +766,17 @@ img,svg{display:block}
      EXATAMENTE a linha central dos rótulos fixos das seções ("02 — O CAMINHO"... a 40px do topo, 22,4px de altura). Antes eram 112px do desktop
      (centro a 56px, ~5px abaixo dos rótulos). Tela inicial (cabeçalho normal, 65px) e desktop não mudam. */
   .site-header[data-compact] .header-inner{height:102.4px}
+  /* ALINHAMENTO triângulo × rótulos (celular): os rótulos ficam a 5vh do topo e têm 22,4px de altura => centro em 5vh + 11,2px, que muda com a altura da tela
+     (no iPhone a tela é mais baixa que a do emulador, e o triângulo, fixo em 51,2px, ficava ~7-10px abaixo dos rótulos). Agora o cabeçalho compacto
+     tem altura = 2 x esse centro, então o triângulo (centralizado nele) acompanha os rótulos em qualquer tela. A caixa do menu mantém a MESMA
+     distância do triângulo (margin-top compensa a mudança de altura). */
+  .site-header[data-compact] .header-inner{height:calc(10vh + 22.4px)}
+  .site-header[data-compact] .main-nav{margin-top:calc(12px - 5vh) !important}
+  /* Os rótulos 06 e 07 não tinham a célula de 1,6em dos outros (02-05) — ficavam com 18px de altura em vez de 22,4px e ~2px mais altos. Só no celular
+     (no desktop a diferença de 2px não é tocada). */
+  .s06-kicker .rl-char,.s07-kicker .rl-char{line-height:1.6}
+  .s06-kicker .rl-track,.s07-kicker .rl-track{transform:translate3d(0,calc(-1.6em*var(--k,0)),0)}
+  .s06-kicker .rl-cell,.s07-kicker .rl-cell{height:1.6em}
 }
 }
 
