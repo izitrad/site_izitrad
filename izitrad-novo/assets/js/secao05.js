@@ -204,10 +204,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closePanel(); });
    salto nativo da âncora para 78px depois (scroll-padding-top do html), então o rótulo caía em 123px, e o
    salto anterior desta função (0.2 altura de tela) o deixava FORA da tela. Agora a página para com o topo
    da seção encostado no topo da tela: o rótulo fica a 5vh, a MESMA altura dos rótulos 02, 03, 04 e 06.
-   Só no desktop; no celular vale a âncora nativa. */
+   Vale também no celular (antes lá valia a âncora nativa: o rótulo caía ~78px abaixo do triângulo do menu). */
 function irParaConfianca(){
   const sec = document.getElementById('destino');
-  if(!sec || innerWidth <= 700) return false;
+  if(!sec) return false;
   window.scrollTo({top: sec.getBoundingClientRect().top + scrollY, behavior:'auto'});
   return true;
 }
