@@ -23,11 +23,6 @@
   if(ks.includes('tudo')) ks=['ondas','vidro','rosa','logo','fade'];
   ks.forEach(k=>document.documentElement.classList.add('off-'+k));
 })();
-/* TESTE (só celular, comparação): ?rotulos=alto sobe os rótulos fixos das seções 02/03/04 pra ficarem alinhados com o triângulo do menu
-   (opção 2 do alinhamento). Sem o parâmetro, nada muda. As regras ficam em site.css (html.rotulos-alto). */
-(function(){
-  if(/[?&]rotulos=alto(&|#|$)/.test(location.search)) document.documentElement.classList.add('rotulos-alto');
-})();
 
 function initWaves(canvas){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;

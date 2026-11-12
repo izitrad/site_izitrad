@@ -762,11 +762,10 @@ img,svg{display:block}
   /* estado compacto (seção 02 em diante): mesmo tamanho reduzido. A animação de entrada termina em scale(1) com fill
      'both' (anularia um transform fixo), por isso aqui troco pela versão que termina em .65 */
   .site-header[data-compact] .menu-toggle{animation-name:menuToggleInSm;transform-origin:100% 50%;margin-right:12px}   /* 12px = mesma margem direita do estado normal (header-inner, acima) */
-  /* altura do cabeçalho no estado compacto = a da tela inicial (65px): antes eram 112px (valor do desktop) e o triângulo, centralizado,
-     descia ~23px (de 8px do topo pra ~32px) da seção 02 em diante. Agora fica na MESMA posição em todas as seções. Desktop não muda. */
-  .site-header[data-compact] .header-inner{height:65px}
-  /* TESTE ?rotulos=alto (ver site.js): rótulos fixos 02/03/04 (hoje a 40px do topo, centro em 51px) sobem pra centralizar no triângulo (centro a 32,5px) */
-  html.rotulos-alto .intro-eyebrow,html.rotulos-alto .section-id,html.rotulos-alto .s3-id,html.rotulos-alto #iziPre04Kicker{top:21px !important}
+  /* cabeçalho no estado compacto (seção 02 em diante): altura 102,4px = o triângulo (centralizado nela) fica com o centro a 51,2px do topo,
+     EXATAMENTE a linha central dos rótulos fixos das seções ("02 — O CAMINHO"... a 40px do topo, 22,4px de altura). Antes eram 112px do desktop
+     (centro a 56px, ~5px abaixo dos rótulos). Tela inicial (cabeçalho normal, 65px) e desktop não mudam. */
+  .site-header[data-compact] .header-inner{height:102.4px}
 }
 }
 
@@ -858,4 +857,29 @@ html.off-abaixo main > section:not(.hero-s2-story){display:none!important}
     -webkit-clip-path:path('M2.2 .6H13.8Q16.2 .6 15 2.8L9.2 12.6Q8 14.4 6.8 12.6L1 2.8Q-.2 .6 2.2 .6Z');
     clip-path:path('M2.2 .6H13.8Q16.2 .6 15 2.8L9.2 12.6Q8 14.4 6.8 12.6L1 2.8Q-.2 .6 2.2 .6Z');
   }
+}
+
+/* ==== MENU NO CELULAR (<=700px): o da tela inicial fica IGUAL ao das seções (dropdown compacto: lista de itens brancos embaixo do triângulo,
+   sobre um fundo escurecido/desfocado) em vez do painel branco que ocupava a lateral; e SEM a "barra preta" do estado compacto
+   (o painel #141416 tinha só 16px de altura — só o padding — e a lista saía por baixo dele, parecendo uma faixa preta). Desktop e tablet não mudam. ==== */
+@media(max-width:700px){
+  .site-header .main-nav{position:absolute;inset:auto;top:100%;right:20px;left:auto;bottom:auto;height:auto;width:max-content;min-width:168px;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;margin:8px 0 0;padding:8px;background:transparent;border-radius:14px;box-shadow:none;opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .16s ease-in,transform .16s ease-in,visibility .16s}
+  .site-header[data-nav-open] .main-nav{opacity:1;visibility:visible;transform:translateY(0);box-shadow:none;transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1),visibility .3s}
+  .site-header .nav-backdrop{display:block;background:rgba(10,10,20,.4);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);transition:opacity .16s ease-in}
+  .site-header[data-nav-open] .nav-backdrop{opacity:1;transition:opacity .3s cubic-bezier(.16,1,.3,1)}
+  /* com o menu aberto o cabeçalho perde o desfoque de vidro: senão o fundo escurecido (position:fixed) ficaria preso à altura do cabeçalho */
+  .site-header[data-nav-open]{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .site-header .main-nav a{opacity:0;transform:translateY(6px);padding:9px 16px;font-size:13px;border-radius:10px;color:#fff;transition:opacity .14s ease,transform .14s ease,background .2s,color .25s}
+  .site-header[data-nav-open] .main-nav a{opacity:1;transform:translateY(0);transition:opacity .18s ease-out,transform .18s ease-out,background .2s,color .25s}
+  .site-header[data-nav-open] .main-nav a:nth-child(1){transition-delay:.05s}
+  .site-header[data-nav-open] .main-nav a:nth-child(2){transition-delay:.08s}
+  .site-header[data-nav-open] .main-nav a:nth-child(3){transition-delay:.11s}
+  .site-header[data-nav-open] .main-nav a:nth-child(4){transition-delay:.14s}
+  .site-header[data-nav-open] .main-nav a:nth-child(5){transition-delay:.17s}
+  .site-header[data-nav-open] .main-nav a:nth-child(6){transition-delay:.2s}
+  .site-header[data-nav-open] .main-nav a:nth-child(7){transition-delay:.23s}
+  .site-header .main-nav a:hover{background:rgba(255,0,153,.18);color:#fff}
+  .site-header .main-nav a::after{display:none}
+  /* estado compacto (seções): tira o painel preto */
+  .site-header[data-compact] .main-nav{background:transparent;box-shadow:none}
 }
