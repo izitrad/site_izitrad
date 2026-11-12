@@ -841,3 +841,16 @@ html.off-abaixo main > section:not(.hero-s2-story){display:none!important}
   html:root .s3o-title{font-size:15vw;margin-bottom:18px}
   html:root .s3o-title-b{font-size:11.3vw;margin-top:.45em}   /* a "linha em branco" entre os dois grupos */
 }
+
+/* Celular/tablet (<900px): triângulo do link "Explorar o caminho" da 02. O Safari do iPhone desenhava a máscara (-webkit-mask)
+   do ::after em linha como um QUADRADO colorido com o triângulo vazado. Aqui o triângulo vira um bloquinho 16x14 recortado por
+   clip-path (funciona no Safari), com a mesma cor (--seta) e o mesmo jeito de animar. Desktop: continua com a máscara original. */
+@media(max-width:899.98px){
+  .s2-layer .intro-link::after{
+    content:"";display:inline-block;width:16px;height:14px;margin-left:.4em;vertical-align:-1px;
+    -webkit-mask:none;mask:none;
+    -webkit-clip-path:polygon(0 4%,100% 4%,50% 100%);clip-path:polygon(0 4%,100% 4%,50% 100%);
+    -webkit-clip-path:path('M2.2 .6H13.8Q16.2 .6 15 2.8L9.2 12.6Q8 14.4 6.8 12.6L1 2.8Q-.2 .6 2.2 .6Z');
+    clip-path:path('M2.2 .6H13.8Q16.2 .6 15 2.8L9.2 12.6Q8 14.4 6.8 12.6L1 2.8Q-.2 .6 2.2 .6Z');
+  }
+}
