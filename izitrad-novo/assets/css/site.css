@@ -805,6 +805,10 @@ html.off-simples .izi-pre04-simple-zone,html.off-simples .izi-pre04-simple-band,
 html.off-glow .izi-sec04-glow{visibility:hidden!important}
 html.off-kicker .izi-pre04-kicker{visibility:hidden!important}
 html.off-texto .izi-pre04-question{visibility:hidden!important}
+/* Dentro da pergunta da 04: ?off=logo04 (esconde só a logo "izi"), ?off=blur04 (tira o desfoque das palavras), ?off=quebras04 (tira as quebras de linha) */
+html.off-logo04 .izi-pre04-question .izi-question-word{visibility:hidden!important}
+html.off-blur04 .izi-pre04-question .iziq-word{filter:none!important;-webkit-filter:none!important}
+html.off-quebras04 .izi-pre04-question .iziq-br{display:none!important}
 
 /* ---- SEÇÃO DOS CAMINHOS ("UM DOCUMENTO / CINCO JEITOS DE CHEGAR LÁ") NO CELULAR (<=760px) — VERSÃO DA USUÁRIA, PADRÃO ----
    (era a "v3", testada com ?caminhos=v3; virou o padrão em 2026-11-11 — sem versões.)
