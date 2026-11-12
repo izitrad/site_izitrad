@@ -594,6 +594,17 @@ addEventListener("resize",()=>{
     if(line1){
       var line1Words = splitIntoWords(line1);
       gsap.set(line1Words, {display:'inline-block'});
+      // Celular (<=760px, ver secao04.css): "E como / é fazer / isso / com a izi ?" em 4 linhas. Os <span class="iziq-br">
+      // (quebras de linha depois de "como" e de "fazer") só têm efeito dentro da media query do celular; no desktop
+      // ficam display:none e a pergunta segue como antes.
+      line1Words.forEach(function(w){
+        var t = w.textContent.trim().toLowerCase();
+        if(t === 'como' || t === 'fazer'){
+          var br = document.createElement('span');
+          br.className = 'iziq-br'; br.setAttribute('aria-hidden','true');
+          w.insertAdjacentElement('afterend', br);
+        }
+      });
       questionWords = questionWords.concat(line1Words);
     }
     if(prefix){

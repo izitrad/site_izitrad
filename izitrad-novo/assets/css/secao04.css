@@ -1131,3 +1131,11 @@
   mask-composite:intersect;
 }
 .izi-sec04-dark .heading strong{color:#FF0099} /* "simples" do título "E por trás do simples?" no rosa da logo */
+
+/* Celular (<=760px): pergunta em 4 linhas grandes — "E como / é fazer / isso / com a izi ?".
+   O desktop não muda: .iziq-br (quebras depois de "como" e "fazer") fica oculto e a pergunta segue em 2 linhas como antes. */
+.izi-pre04-question .iziq-br{display:none}
+@media(max-width:760px){
+  html:root .izi-pre04-question{font-size:21vw !important}
+  html:root .izi-pre04-question .iziq-br{display:block !important;height:0}
+}
