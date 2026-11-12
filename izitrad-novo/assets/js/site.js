@@ -86,10 +86,9 @@ function initWaves(canvas){
   function setSize(){
     bounding=container.getBoundingClientRect();
     canvas.width=bounding.width; canvas.height=bounding.height;
-    // TESTE (só com ?linhas=nitidas): celular/tablet (<900px) desenha na resolução real da tela (até 2x) — o canvas
-    // padrão é em pixels CSS e o navegador estica 2-3x, deixando as linhas finas serrilhadas. Sem o parâmetro (e no
-    // desktop) fica exatamente como era. Se aprovado, trocar a condição por só innerWidth<900.
-    if(innerWidth<900 && /[?&]linhas=nitidas(&|#|$)/.test(location.search)){
+    // PADRÃO (aprovado 2026-11-12): celular/tablet (<900px) desenha na resolução real da tela (até 2x) — o canvas
+    // em pixels CSS era esticado 2-3x pelo navegador e deixava as linhas finas serrilhadas. Desktop: como era.
+    if(innerWidth<900){
       const dpr=Math.min(window.devicePixelRatio||1, 2);
       if(dpr>1){
         canvas.width=Math.round(bounding.width*dpr); canvas.height=Math.round(bounding.height*dpr);
@@ -1999,13 +1998,12 @@ function initChipTilt(root){
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(window.gsap && window.ScrollTrigger && !reduce){
     gsap.registerPlugin(ScrollTrigger);
-    // CELULAR/TABLET (<900px): o GSAP (que move TODAS as animações presas à rolagem) atualiza a 30 quadros/s em vez
-    // de 60: metade do trabalho de estilo/pintura por segundo, num ritmo estável (mais fluido que um 60 que falha).
-    // A rolagem em si continua nativa (suave); só a animação que acompanha é atualizada a cada ~33ms. Desktop: nada muda.
-    // diagnóstico: ?fps=60 (ritmo nativo da tela), ?fps=45, ?fps=24... troca o limite pra comparar a "sensação" no celular
+    // PADRÃO (aprovado 2026-11-12, testado no celular com os triângulos 3D fora): GSAP no ritmo nativo da tela (60 fps).
+    // Antes, no celular/tablet (<900px), era limitado a 30 quadros/s; voltar a isso = descomentar a linha 'else if' abaixo.
+    // diagnóstico: ?fps=30, ?fps=45, ?fps=24... força um limite pra comparar a "sensação" no celular (60 = nativo)
     const fpsParam=parseInt((/[?&]fps=(\d+)/.exec(location.search)||[])[1],10);
     if(fpsParam>0) gsap.ticker.fps(fpsParam>=60 ? 0 : fpsParam);       // 0 = sem limite (nativo)
-    else if(innerWidth<900) gsap.ticker.fps(30);
+    // else if(innerWidth<900) gsap.ticker.fps(30);
     if(window.CustomEase){
       gsap.registerPlugin(CustomEase);
       CustomEase.create('focusTextEase','0.16,1,0.3,1'); // ver FOCUS TEXT acima
