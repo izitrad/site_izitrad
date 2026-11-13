@@ -1,0 +1,133 @@
+/* ===========================================================================
+   SEÇÃO 03 — FINAL NO CELULAR (protótipos ?solucao=1|2|3|4) — ver solucao-mobile.js
+   Tudo aqui só vale quando o JS cria o bloco .s3m (só com o parâmetro e em tela < 900px). Sem o parâmetro nada disto
+   encontra elemento nenhum: o site fica igual. Sem desfoque (filter:blur) de propósito (faixinhas do Safari do iPhone).
+   =========================================================================== */
+
+/* Opções 3 e 4 não pedem toque num triângulo: tira essa frase do texto de abertura da 03 */
+html.s3v-3 .s3o-hl,html.s3v-4 .s3o-hl{display:none}
+
+/* margin-top negativo: o palco da 03 (100vh, "sticky") termina com ~1/4 da tela vazia/preta embaixo do texto; o bloco sobe sobre essa área
+   (z-index acima do palco) em vez de deixar um vão preto enorme — e também cobre o fio claro (fundo #fbfbfa do <section>) que aparecia na emenda. */
+.s3m{margin-top:-22vh;position:relative;z-index:3;background:#000;color:#fff;font-family:'DM Sans',system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+.s3m *{box-sizing:border-box}
+.s3m-defs{position:absolute;width:0;height:0;overflow:hidden}
+.s3m-inner{padding:44px 20px 12px}
+.s3m--v3 .s3m-inner{padding:0}
+.s3m-kicker{margin:0 0 20px;font:700 12px/1.2 'DM Sans',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#00FF66}
+
+/* triângulo da marca (preenchimento em degradê definido em .s3m-defs) */
+.s3m-tri{display:block;width:44px;height:51px;flex:0 0 auto;overflow:visible}
+.s3m-tri path{fill:url(#s3mTriGrad)}
+
+/* ---------- botões (fecho, folha, quiz) ---------- */
+.s3m-cta{display:block;width:100%;border:0;border-radius:999px;background:linear-gradient(135deg,#D6007F,#FF0099);color:#fff;padding:17px 18px;
+  font:800 16px/1.2 'DM Sans',sans-serif;text-align:center;text-decoration:none;cursor:pointer;box-shadow:0 10px 26px rgba(255,0,153,.35)}
+.s3m-fecho{padding:36px 20px calc(88px + env(safe-area-inset-bottom));text-align:center}
+.s3m-fecho__t{margin:0 0 26px;font:300 6.6vw/1.18 'Outfit',sans-serif;letter-spacing:.005em;color:rgba(255,255,255,.92)}
+.s3m-next{display:inline-block;margin-top:24px;font-size:13px;letter-spacing:.1em;color:rgba(255,255,255,.62);text-decoration:none}
+.s3m-next i{font-style:normal;color:#00FF66;margin-left:4px}
+
+/* ---------- OPÇÃO 1: cartões ---------- */
+.s3m-rows{list-style:none;margin:0;padding:0}
+.s3m-rows li{border-top:1px solid rgba(255,255,255,.14)}
+.s3m-rows li:last-child{border-bottom:1px solid rgba(255,255,255,.14)}
+.s3m-row{display:flex;align-items:center;gap:18px;width:100%;padding:24px 2px;margin:0;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.s3m-row .s3m-tri{width:42px;height:48px;filter:drop-shadow(0 0 12px rgba(255,0,153,.5))}
+.s3m-row__txt{flex:1 1 auto;min-width:0;display:block}
+.s3m-row__txt small{display:block;font:700 11px/1 'DM Sans',sans-serif;letter-spacing:.16em;color:#00FF66;margin-bottom:8px}
+.s3m-row__txt b{display:block;font:300 8.4vw/1 'Outfit',sans-serif;text-transform:uppercase;letter-spacing:.012em}
+.s3m-row__txt span{display:block;margin-top:9px;font-size:14px;line-height:1.4;color:rgba(255,255,255,.64)}
+.s3m-plus{flex:0 0 auto;display:grid;place-items:center;width:34px;height:34px;border:1px solid rgba(255,255,255,.3);border-radius:50%;font-size:20px;line-height:1;color:#fff}
+.s3m-row.is-hint .s3m-tri{animation:s3mPulse 1.9s ease-in-out infinite}
+@keyframes s3mPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+
+/* ---------- OPÇÃO 2: mini-órbita ---------- */
+.s3m--v2 .s3m-inner{padding-left:0;padding-right:0}
+.s3m--v2 .s3m-kicker{padding:0 20px}
+.s3m-orbit{position:relative;width:100%;max-width:520px;margin:0 auto;aspect-ratio:400/360;touch-action:manipulation}
+.s3m-rings{position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:1;pointer-events:none}
+.s3m-rings ellipse{fill:none;stroke:#FF0099;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.s3m-node{position:absolute;left:0;top:0;width:66px;height:66px;margin:0;padding:0;border:0;background:none;color:#fff;cursor:pointer;touch-action:manipulation}
+.s3m-node__in{position:relative;display:grid;place-items:center;width:100%;height:100%}
+.s3m-node__in::before{content:"";position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,0,153,.42),rgba(255,0,153,0));pointer-events:none}
+.s3m-node .s3m-tri{position:relative;width:38px;height:44px}
+.s3m-node__lb{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:-6px;white-space:nowrap;font:700 9px/1 'DM Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.88)}
+.s3m-node.is-hint .s3m-tri{animation:s3mPulse 1.9s ease-in-out infinite}
+
+/* documento miniatura (opções 2 e 3) */
+.s3m-doc{position:absolute;left:50%;top:50%;width:29%;aspect-ratio:.7;z-index:5;transform:translate(-50%,-50%) rotate(-8deg);
+  display:flex;flex-direction:column;padding:6% 6% 0;background:#fff;color:#0e0e12;border-radius:7px;overflow:hidden;
+  box-shadow:0 0 38px rgba(255,0,153,.38),0 12px 30px rgba(0,0,0,.55)}
+.s3m-doc__logo{display:block;height:9%;width:auto;align-self:flex-start;margin-bottom:9%}
+.s3m-doc__t{font:800 .6rem/1 'Outfit',sans-serif;letter-spacing:.04em;color:#FF0099}
+.s3m-doc__s{font:500 .42rem/1.2 'DM Sans',sans-serif;letter-spacing:.06em;margin:2% 0 8%}
+.s3m-doc__ln{display:block;height:3px;width:86%;border-radius:2px;background:rgba(14,14,18,.16);margin-bottom:5%}
+.s3m-doc__ln.s{width:58%}
+.s3m-doc__map{display:block;flex:1 1 auto;margin:4% 0 6%;border-radius:4px;background:radial-gradient(circle,rgba(255,0,153,.5) 0 1px,transparent 1.5px) 0 0/6px 6px,rgba(255,0,153,.07)}
+.s3m-doc__bar{display:flex;align-items:center;justify-content:flex-end;height:16%;margin:0 -9% 0;padding:0 9%;background:#FF0099}
+.s3m-doc__bar svg{height:62%;width:auto}
+.s3m-doc__bar path{fill:#fff}
+
+/* ---------- OPÇÃO 3: um serviço por vez ---------- */
+.s3m-seq{position:relative;height:calc(100vh + 280vh)}
+.s3m-seq__pin{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;padding:92px 22px calc(26px + env(safe-area-inset-bottom));overflow:hidden}
+.s3m-seq__k{flex:0 0 auto;margin-bottom:14px}
+.s3m-seq__k b{font-weight:800;color:#fff}
+.s3m-seq__doc{position:relative;flex:0 0 auto;height:clamp(150px,27svh,230px);margin:0 auto 14px;width:100%;max-width:340px}
+.s3m-doc--big{width:auto;height:100%;transform:translate(-50%,-50%) rotate(-8deg)}
+.s3m-chip{position:absolute;right:2%;bottom:6%;z-index:9;display:flex;align-items:center;gap:8px;padding:8px 14px 8px 10px;border-radius:999px;
+  background:rgba(20,20,24,.92);border:1px solid rgba(255,255,255,.22);font:700 11px/1 'DM Sans',sans-serif;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.s3m-chip .s3m-tri{width:15px;height:17px}
+.s3m-seq__panels{position:relative;flex:1 1 auto;min-height:0}
+.s3m-panel{position:absolute;left:0;right:0;top:0}
+.s3m-panel h3{margin:0 0 12px;font:300 9.2vw/1 'Outfit',sans-serif;text-transform:uppercase;letter-spacing:.012em}
+.s3m-panel p{margin:0 0 16px;font-size:15px;line-height:1.45;color:rgba(255,255,255,.74)}
+.s3m-panel ul,.s3m-sheet__list,.s3m-quiz__l{list-style:none;margin:0;padding:0}
+.s3m-panel li{display:flex;align-items:center;gap:11px;margin:9px 0;font-size:14px;color:rgba(255,255,255,.92)}
+.s3m-panel li::before,.s3m-sheet__list li::before,.s3m-quiz__l li::before{content:"✓";flex:0 0 auto;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#FF0099;color:#fff;font-size:11px;font-weight:900}
+.s3m-seq__dots{position:absolute;right:20px;top:50%;display:flex;flex-direction:column;gap:10px;transform:translateY(-50%);z-index:2}
+.s3m-seq__dots i{display:block;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.28);transition:background .25s,transform .25s}
+.s3m-seq__dots i.on{background:#FF0099;transform:scale(1.5)}
+
+/* ---------- OPÇÃO 4: quiz ---------- */
+.s3m-quiz{padding:22px 18px 24px;border:1px solid rgba(255,255,255,.16);border-radius:22px;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02))}
+.s3m-quiz__n{margin:0 0 12px;font:700 11px/1 'DM Sans',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#00FF66}
+.s3m-quiz__q{margin:0 0 20px;font:300 7.4vw/1.12 'Outfit',sans-serif;letter-spacing:.005em}
+.s3m-quiz__opts{display:grid;gap:10px}
+.s3m-opt{width:100%;margin:0;padding:16px 16px;border:1px solid rgba(255,255,255,.22);border-radius:16px;background:rgba(255,255,255,.04);color:#fff;font:500 15px/1.35 'DM Sans',sans-serif;text-align:left;cursor:pointer}
+.s3m-opt:active{border-color:#FF0099;background:rgba(255,0,153,.16)}
+.s3m-quiz__r{margin:0 0 14px;font:300 11vw/1 'Outfit',sans-serif;text-transform:uppercase;letter-spacing:.012em}
+.s3m-quiz__t{margin:0 0 18px;font-size:15px;line-height:1.45;color:rgba(255,255,255,.76)}
+.s3m-quiz__ap{display:flex;align-items:center;gap:14px;margin:0 0 18px;padding:14px;border-radius:16px;background:rgba(255,0,153,.12);border:1px solid rgba(255,0,153,.4);font-size:13.5px;line-height:1.4;color:rgba(255,255,255,.85)}
+.s3m-quiz__ap .s3m-tri{width:26px;height:30px}
+.s3m-quiz__ap b{color:#fff}
+.s3m-quiz__l{margin:0 0 22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.14)}
+.s3m-quiz__l li{display:flex;align-items:center;gap:11px;margin:10px 0;font-size:14px;color:rgba(255,255,255,.92)}
+.s3m-redo{display:block;margin:18px auto 0;padding:8px 14px;border:0;background:none;color:rgba(255,255,255,.6);font:500 13px/1 'DM Sans',sans-serif;letter-spacing:.08em;text-decoration:underline;cursor:pointer}
+
+/* ---------- folha de detalhes (opções 1 e 2) — mesma linguagem do popover do desktop (vidro claro) ---------- */
+.s3m-sheet{position:fixed;inset:0;z-index:1200;pointer-events:none;font-family:'DM Sans',system-ui,sans-serif}
+.s3m-sheet.open{pointer-events:auto}
+.s3m-sheet__bg{position:absolute;inset:0;background:rgba(45,0,25,.46);opacity:0;transition:opacity .28s ease;touch-action:none}
+.s3m-sheet.open .s3m-sheet__bg{opacity:1}
+.s3m-sheet__panel{position:absolute;left:0;right:0;bottom:0;max-height:88vh;max-height:88svh;overflow-y:auto;overscroll-behavior:contain;
+  padding:10px 22px calc(26px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;
+  background:linear-gradient(170deg,rgba(255,255,255,.97),rgba(255,236,247,.96));color:#0e0e12;
+  box-shadow:0 -18px 60px rgba(50,0,30,.45);transform:translateY(104%);transition:transform .36s cubic-bezier(.2,.8,.2,1)}
+.s3m-sheet.open .s3m-sheet__panel{transform:translateY(0)}
+.s3m-sheet__grip{display:grid;place-items:center;height:22px;margin:0 -22px;touch-action:none}
+.s3m-sheet__grip i{display:block;width:42px;height:4px;border-radius:2px;background:rgba(14,14,18,.2)}
+.s3m-sheet__top{display:flex;justify-content:space-between;align-items:center;margin-top:4px;color:rgba(14,14,18,.55);font-size:13px;letter-spacing:.08em}
+.s3m-sheet__nav{display:flex;gap:8px}
+.s3m-sheet__nav button{display:grid;place-items:center;width:36px;height:36px;padding:0;border-radius:50%;border:1px solid rgba(14,14,18,.14);background:#fff;color:#0e0e12;font-size:19px;line-height:1;cursor:pointer}
+.s3m-sheet__title{margin:20px 0 14px;font:300 10.5vw/1 'Outfit',sans-serif;text-transform:uppercase;letter-spacing:.015em}
+.s3m-sheet__text{margin:0 0 22px;font-size:16px;line-height:1.5;color:rgba(14,14,18,.82)}
+.s3m-sheet .s3m-sheet__list{padding-top:18px;border-top:1px solid rgba(14,14,18,.12)}
+.s3m-sheet__list li{display:flex;align-items:center;gap:12px;margin:13px 0;font-size:15px;color:rgba(14,14,18,.9)}
+.s3m-sheet .s3m-cta{margin-top:26px}
+
+@media (prefers-reduced-motion:reduce){
+  .s3m-row.is-hint .s3m-tri,.s3m-node.is-hint .s3m-tri{animation:none}
+  .s3m-sheet__panel,.s3m-sheet__bg{transition:none}
+}
