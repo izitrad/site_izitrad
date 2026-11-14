@@ -1636,7 +1636,7 @@ function initSolucao(root){
   const irParaSolucao = ()=>{
     const st = tl.scrollTrigger, palco = q('.sol-stage')[0];
     if(!st || !palco || getComputedStyle(palco).position !== 'sticky') return false;
-    const y = st.start + ((ORBITAL_OPEN_AT + 7.8) / tl.duration()) * (st.end - st.start);
+    const y = st.start + ((ORBITAL_OPEN_AT + 7.8 + (window.S3M_HOLD||0)) / tl.duration()) * (st.end - st.start);
     window.scrollTo({top:y, behavior:'auto'});
     return true;
   };
