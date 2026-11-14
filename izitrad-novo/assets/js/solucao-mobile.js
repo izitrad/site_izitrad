@@ -493,6 +493,12 @@
     var BOTSET={cx:59.2,cy:-56.5,tilt:-8,a:[793.9,825.7,857.5],b:[714.5,799.8,889.4]};
     var OPA_TOP=[.88,.76,.66,.56], OPA_BOT=[1,.9,.78];
     var TREF=[{x:97.5,y:62,s:.89,r:0,ring:2},{x:299.5,y:146.5,s:.84,r:0,ring:0},{x:49,y:655.5,s:1.32,r:0,ring:0},{x:320.5,y:703.5,s:1.10,r:-7,ring:1}];
+    /* VARIANTES pra comparar (&op=): 1 (padrão) = a aprovada; 2 = igual à 1, só o NÚCLEO maior (a 12px de cada borda da tela); 3 = igual à 1, só a parte de CIMA com a
+       formatação de linhas da 2ª referência dela (4 linhas paralelas, ~60px de espaço, ponto mais alto à direita, a mais externa sai pelo topo). */
+    var om=/[?&]op=([123])(?:&|#|$)/.exec(location.search), OP=om?+om[1]:1;
+    var TOPPOLY=[[157.356,-23.621,16.402,1.264,2.536],[97.032,-22.243,16.741,0.198,-0.292],[37.248,-20.551,15.06,-1.131,0.266],[-11.462,-17.36,16.594]];   /* y(x) das 4 linhas, em u=(x-187,5)/187,5 (ajuste à imagem: erro ~0,4px) */
+    if(OP===3){ TREF[0].y=50.7; TREF[1].y=149.7; }                      /* os triângulos de cima ficam sobre as linhas novas */
+    function polyY(co,x){ var u=(x-187.5)/187.5, y=0, pw=1; for(var j=0;j<co.length;j++){ y+=co[j]*pw; pw*=u; } return y; }
     var wrap=el('div','s3m-int s3m--v5',
       '<div class="orbit-glow s3m-glow" aria-hidden="true"></div>'+
       '<svg class="s3m-rsvg s3m-int__b" aria-hidden="true"><g class="s3m-rg"></g></svg>'+
@@ -531,7 +537,10 @@
     function build(kx,ky){
       var htmlB='', htmlF='', L=[];
       for(var i=0;i<4;i++){
-        var T=pts(TOPSET,i,0); htmlB+=pathG(T,i,'t',OPA_TOP[i]);
+        var T;
+        if(OP===3){ T=[]; for(var xx=Math.max(VB.x0-40,-40); xx<=Math.min(VB.x1+40,415); xx+=2){ var yy=polyY(TOPPOLY[i],xx); if(yy>VB.y0-60&&yy<VB.y1+60) T.push([xx,yy]); } }
+        else T=pts(TOPSET,i,0);
+        htmlB+=pathG(T,i,'t',OPA_TOP[i]);
         var BOT=[];
         if(i<BOTSET.a.length){
           /* o arco de baixo é UMA linha só (da direita pra esquerda): dividir em "esquerda" e "direita" fazia aparecerem DOIS pedaços soltos ao mesmo tempo, com um vão no
@@ -586,8 +595,9 @@
          O núcleo escala junto com a composição (diâmetro = ZOOM x largura da referência x k), então em tela mais curta ele diminui um pouco, como ela permitiu. */
       K=Math.min(W/REF.W,H/REF.H); OX=(W-REF.W*K)/2; OY=(H-REF.H*K)/2;
       VB={x0:-OX/K,y0:-OY/K,x1:(W-OX)/K,y1:(H-OY)/K};
-      var gd=ZOOM*REF.W*K;
-      glow.style.width=gd+'px'; glow.style.height=gd+'px'; glow.style.left=(OX+REF.gx*K)+'px'; glow.style.top=(OY+REF.gy*K)+'px';
+      var gd=ZOOM*REF.W*K, gl=OX+REF.gx*K;
+      if(OP===2){ gd=W-24; gl=W/2; }                                  /* opção 2: núcleo a 12px de cada borda da tela */
+      glow.style.width=gd+'px'; glow.style.height=gd+'px'; glow.style.left=gl+'px'; glow.style.top=(OY+REF.gy*K)+'px';
       build(K,K);
       nodes.forEach(function(n,i){
         var t=TREF[i], bx=OX+t.x*K, sh=bx+56>W?W-(bx+56):(bx-56<0?56-bx:0);
