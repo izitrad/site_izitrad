@@ -180,4 +180,4 @@ html.s3v-3 .s3o-hl,html.s3v-4 .s3o-hl{display:none}
 }
 
 /* Celular: o traço de energia do desktop (ponto no canto 0,0) não é usado; esconde sem tirar do layout. */
-@media (max-width:899px){.saturn-energy-layer{visibility:hidden!important}}
+@media (max-width:899px){.saturn-energy-layer,.saturn-energy-layer *{visibility:hidden!important}}
