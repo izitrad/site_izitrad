@@ -497,7 +497,7 @@
        formatação de linhas da 2ª referência dela (4 linhas paralelas, ~60px de espaço, ponto mais alto à direita, a mais externa sai pelo topo). */
     var om=/[?&]op=([12345])(?:&|#|$)/.exec(location.search), OP=om?+om[1]:1;
     var TOPPOLY=[[157.356,-23.621,16.402,1.264,2.536],[97.032,-22.243,16.741,0.198,-0.292],[37.248,-20.551,15.06,-1.131,0.266],[-11.462,-17.36,16.594]];   /* y(x) das 4 linhas, em u=(x-187,5)/187,5 (ajuste à imagem: erro ~0,4px) */
-    if(OP===5){ var lm=/[?&]l=(\d+(?:\.\d+)?)/.exec(location.search); BOTSET.a.push(889.3); BOTSET.b.push(lm?+lm[1]:960); OPA_BOT.push(.66); }   /* opção 5: 4ª linha de baixo (família paralela), só um trecho no canto inferior direito, como a de cima */
+    if(OP===5){ var lm=/[?&]l=(\d+(?:\.\d+)?)/.exec(location.search); BOTSET.a.push(889.3); BOTSET.b.push(lm?+lm[1]:983.3); OPA_BOT.push(.66); }   /* opção 5: 4ª linha de baixo (família paralela), só um trecho no canto inferior direito, como a de cima */
     if(OP>=3){ TREF[0].y=50.7; TREF[1].y=149.7; }                      /* os triângulos de cima ficam sobre as linhas novas */
     function polyY(co,x){ var u=(x-187.5)/187.5, y=0, pw=1; for(var j=0;j<co.length;j++){ y+=co[j]*pw; pw*=u; } return y; }
     var wrap=el('div','s3m-int s3m--v5',
