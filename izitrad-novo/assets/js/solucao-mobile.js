@@ -498,7 +498,10 @@
       SERV.map(function(s,i){
         return '<button type="button" class="s3m-node" data-i="'+i+'" aria-label="'+s.a+' '+s.b+'"><span class="s3m-node__in">'+TRI+'<span class="s3m-node__lb">'+s.b+'</span></span></button>';
       }).join(''));
-    stage.appendChild(wrap);
+    /* A cena fica FIXA na tela (filha do body), e não dentro do palco: no Safari do iPhone o palco (100vh) é maior que a área visível, então quando a timeline acaba
+       ele já subiu ~110px e a cena — desenhada pra a tela inteira — ficava deslocada pra cima e cortada (print do iPhone dela, diferente do localhost). Fixa, ela
+       fica sempre na área visível; antes da seção está vazia (tudo escondido) e depois some (esmaecimento no fim da rolagem, que também a esconde). */
+    document.body.appendChild(wrap);
     var glow=wrap.querySelector('.s3m-glow'), svgB=wrap.querySelector('.s3m-int__b'), svgF=wrap.querySelector('.s3m-int__f'), nodes=$$('.s3m-node',wrap);
     var W=0,H=0, RS=[{p:0},{p:0},{p:0},{p:0}], parts=[[],[],[],[]], wins=[null,null,null,null], hookRan=false;
 
@@ -556,8 +559,19 @@
         gsap.set(n,{opacity:p,scale:TREF[i].s*(W/REF.W)*(.78+.22*p)});
       });
     }
+    /* ALTURA DA CENA = a área VISÍVEL da tela, não a do palco. O palco (.sol-stage) tem height:100vh e, no Safari do iPhone, 100vh é a altura com as barras
+       RECOLHIDAS — maior que a área visível; a barra de baixo cobria o fim do palco e a cena (feita pra caber inteira) aparecia cortada embaixo, diferente do
+       localhost. Uso a menor altura já vista (barra visível) e NUNCA aumento depois (a barra recolhe/volta ao rolar: crescer faria a cena "pular"); no desktop/emulador
+       a altura visível = a do palco, então nada muda. */
+    var W0=innerWidth, H0=innerHeight;
+    function sceneH(){
+      if(Math.abs(innerWidth-W0)>2){ W0=innerWidth; H0=innerHeight; }        /* girou a tela: recomeça */
+      else if(innerHeight<H0) H0=innerHeight;                                /* só diminui */
+      return Math.min(stage.clientHeight||H0,H0);
+    }
     function measure(){
-      W=wrap.clientWidth; H=wrap.clientHeight; if(!W||!H) return;
+      W=wrap.clientWidth; H=sceneH(); if(!W||!H) return;
+      wrap.style.height=H+'px'; wrap.style.bottom='auto';
       var kx=W/REF.W, ky=H/REF.H;
       glow.style.width=(ZOOM*W)+'px'; glow.style.height=(ZOOM*W)+'px'; glow.style.left=(REF.gx*kx)+'px'; glow.style.top=(REF.gy*ky)+'px';
       build(kx,ky);
@@ -581,7 +595,7 @@
       /* SAÍDA: quando a timeline acaba, o palco desgruda e sobe junto com a seção — a cena tem overflow cortado na borda de baixo do palco e as linhas
          apareciam CORTADAS ali (print do iPhone dela). Então a cena inteira se desfaz suavemente (opacity, presa à rolagem) enquanto o palco sai da tela:
          começa quando o fim da seção encosta no fim da tela e termina quando ele chegou a 40% da altura. */
-      if(window.ScrollTrigger) gsap.to(wrap,{opacity:0,ease:'none',scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom 62%',scrub:true,invalidateOnRefresh:true}});
+      if(window.ScrollTrigger) gsap.to(wrap,{autoAlpha:0,ease:'none',scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom 62%',scrub:true,invalidateOnRefresh:true}});
       var intro=document.querySelector('.s3o-intro'), sid=document.querySelector('.s3-id');
       if(reduce){ showAll(); return; }
       /* 1) texto sai logo depois de terminar de entrar */

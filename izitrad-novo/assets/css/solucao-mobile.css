@@ -144,9 +144,8 @@ html.s3v-3 .s3o-hl,html.s3v-4 .s3o-hl{display:none}
 .s3m-rsvg .w{stroke:#FFD2EC;stroke-width:.7}
 
 /* ---------- OPÇÃO 6: a cena da 5 DENTRO do palco da seção 03 (ligada à timeline de rolagem) ---------- */
-.s3m-int{position:absolute;inset:0;z-index:13;pointer-events:none;overflow:hidden;
-  /* o palco corta a cena na borda de baixo: sem isto as linhas terminavam de repente ali (visto no iPhone, quando o palco sobe no fim da rolagem) — os últimos 80px esmaecem */
-  -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 80px),transparent 100%);mask-image:linear-gradient(to bottom,#000 calc(100% - 80px),transparent 100%)}
+/* altura: o JS fixa em px a altura VISÍVEL da tela (ver buildV6) — o palco usa 100vh, que no Safari do iPhone é MAIOR que a área visível (a barra de baixo cobre o resto) */
+.s3m-int{position:fixed;left:0;right:0;top:0;bottom:0;z-index:13;pointer-events:none;overflow:hidden}
 .s3m-int .s3m-rsvg{z-index:2;pointer-events:none}
 .s3m-int .s3m-rsvg path{stroke-linecap:butt}
 .s3m-int .s3m-glow{z-index:1}
