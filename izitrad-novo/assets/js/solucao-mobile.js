@@ -512,11 +512,12 @@
        (todos em coordenadas da referência × (kx,ky)) ficam SEMPRE no mesmo lugar uns dos outros, em qualquer proporção de tela. Antes os eixos dos arcos usavam só
        a escala da largura e os centros a da altura: numa tela mais curta (iPhone com barras, ~412x773) os arcos de baixo desciam ~130px em relação aos triângulos e
        uma linha (a do triângulo "Técnica") e parte das outras saíam da tela. */
+    var K=1, OX=0, OY=0, VB={x0:0,y0:0,x1:REF.W,y1:REF.H};
     function pts(S,i,half){
       var cx=S.cx, cy=S.cy, a=S.a[i], b=S.b[i], th=S.tilt*RAD, c=Math.cos(th), s=Math.sin(th), out=[];
       for(var d=0;d<=180;d+=.5){
         var t=(half?d:180+d)*RAD, ex=a*Math.cos(t), ey=b*Math.sin(t), X=cx+ex*c-ey*s, Y=cy+ex*s+ey*c;
-        if(X>-60&&X<REF.W+60&&Y>-60&&Y<REF.H+60) out.push([X,Y]);
+        if(X>VB.x0-60&&X<VB.x1+60&&Y>VB.y0-60&&Y<VB.y1+60) out.push([X,Y]);
       }
       return out;
     }
@@ -531,23 +532,26 @@
       var htmlB='', htmlF='', L=[];
       for(var i=0;i<4;i++){
         var T=pts(TOPSET,i,0); htmlB+=pathG(T,i,'t',OPA_TOP[i]);
-        var BL=[],BR=[];
+        var BOT=[];
         if(i<BOTSET.a.length){
-          var P=pts(BOTSET,i,1), apex=0; for(var j=1;j<P.length;j++) if(P[j][1]>P[apex][1]) apex=j;
-          BR=P.slice(0,apex+1); BL=P.slice(apex);                         /* a ponta de baixo: à direita dela volta no fim da volta, à esquerda sai primeiro */
-          htmlF+=pathG(BL,i,'bl',OPA_BOT[i])+pathG(BR,i,'br',OPA_BOT[i]);
+          /* o arco de baixo é UMA linha só (da direita pra esquerda): dividir em "esquerda" e "direita" fazia aparecerem DOIS pedaços soltos ao mesmo tempo, com um vão no
+             meio, enquanto o anel se desenhava (print do iPhone dela) */
+          BOT=pts(BOTSET,i,1); htmlF+=pathG(BOT,i,'b',OPA_BOT[i]);
         }
-        L[i]={bl:BL.length>1?len(BL):0,t:T.length>1?len(T):0,br:BR.length>1?len(BR):0};
+        L[i]={b:BOT.length>1?len(BOT):0,t:T.length>1?len(T):0};
       }
-      [svgB,svgF].forEach(function(sv){ sv.setAttribute('viewBox','0 0 '+REF.W+' '+REF.H); sv.setAttribute('preserveAspectRatio','none'); });
+      /* viewBox em coordenadas da referência, ESTENDIDO pro que sobra da tela (VB) e com escala UNIFORME (meet): a composição não é esticada nem achatada — em tela
+         mais larga/curta as elipses simplesmente continuam além das bordas da referência */
+      [svgB,svgF].forEach(function(sv){ sv.setAttribute('viewBox',VB.x0+' '+VB.y0+' '+(VB.x1-VB.x0)+' '+(VB.y1-VB.y0)); sv.setAttribute('preserveAspectRatio','xMidYMid meet'); });
       svgB.querySelector('.s3m-rg').innerHTML=htmlB; svgF.querySelector('.s3m-rg').innerHTML=htmlF;
       /* janelas do progresso p (0..1) de cada anel: a volta horária começa embaixo (trecho esquerdo), passa pela esquerda (fora da tela), sobe e cruza o topo da esq. pra dir.,
          desce pela direita (fora da tela) e volta embaixo (trecho direito). Os vãos "fora da tela" gastam tempo proporcional (16% do total visível cada). */
       for(var k=0;k<4;k++){
-        var l=L[k], tot=(l.bl+l.t+l.br)||1, gap=.16*tot, seq=[], cur=0, w={};
-        if(l.bl>0){ seq.push(['bl',cur,cur+l.bl]); cur+=l.bl; }
+        /* ordem horária a partir de baixo, sem pedaços soltos: primeiro o arco de BAIXO inteiro (da direita pra esquerda), depois o vão fora da tela (esquerda), depois o
+           arco de CIMA inteiro (da esquerda pra direita) */
+        var l=L[k], tot=(l.b+l.t)||1, gap=.16*tot, seq=[], cur=0, w={};
+        if(l.b>0){ seq.push(['b',cur,cur+l.b]); cur+=l.b; }
         if(l.t>0){ if(seq.length) cur+=gap; seq.push(['t',cur,cur+l.t]); cur+=l.t; }
-        if(l.br>0){ if(seq.length) cur+=gap; seq.push(['br',cur,cur+l.br]); cur+=l.br; }
         seq.forEach(function(s){ w[s[0]]=[s[1]/cur,s[2]/cur]; }); wins[k]=w;
       }
       parts=[0,1,2,3].map(function(k){ return $$('g[data-r="'+k+'"]',wrap); });
@@ -562,7 +566,7 @@
       nodes.forEach(function(n,i){
         if(TREF[i].ring!==k) return;
         n.style.visibility=p<.02?'hidden':'visible';
-        gsap.set(n,{opacity:p,scale:TREF[i].s*(W/REF.W)*(.78+.22*p)});
+        gsap.set(n,{opacity:p,scale:TREF[i].s*K*(.78+.22*p)});
       });
     }
     /* ALTURA DA CENA = a área VISÍVEL da tela, não a do palco. O palco (.sol-stage) tem height:100vh e, no Safari do iPhone, 100vh é a altura com as barras
@@ -578,12 +582,16 @@
     function measure(){
       W=wrap.clientWidth; H=sceneH(); if(!W||!H) return;
       wrap.style.height=H+'px'; wrap.style.bottom='auto';
-      var kx=W/REF.W, ky=H/REF.H;
-      glow.style.width=(ZOOM*W)+'px'; glow.style.height=(ZOOM*W)+'px'; glow.style.left=(REF.gx*kx)+'px'; glow.style.top=(REF.gy*ky)+'px';
-      build(kx,ky);
+      /* ESCALA UNIFORME: k = a menor das duas (a composição cabe inteira, sem esticar nem achatar); o que sobra (largura ou altura) fica nas bordas, centralizado.
+         O núcleo escala junto com a composição (diâmetro = ZOOM x largura da referência x k), então em tela mais curta ele diminui um pouco, como ela permitiu. */
+      K=Math.min(W/REF.W,H/REF.H); OX=(W-REF.W*K)/2; OY=(H-REF.H*K)/2;
+      VB={x0:-OX/K,y0:-OY/K,x1:(W-OX)/K,y1:(H-OY)/K};
+      var gd=ZOOM*REF.W*K;
+      glow.style.width=gd+'px'; glow.style.height=gd+'px'; glow.style.left=(OX+REF.gx*K)+'px'; glow.style.top=(OY+REF.gy*K)+'px';
+      build(K,K);
       nodes.forEach(function(n,i){
-        var t=TREF[i], bx=t.x*kx, sh=bx+56>W?W-(bx+56):(bx-56<0?56-bx:0);
-        gsap.set(n,{x:bx,y:t.y*ky,xPercent:-50,yPercent:-50,rotation:t.r,zIndex:8});
+        var t=TREF[i], bx=OX+t.x*K, sh=bx+56>W?W-(bx+56):(bx-56<0?56-bx:0);
+        gsap.set(n,{x:bx,y:OY+t.y*K,xPercent:-50,yPercent:-50,rotation:t.r,zIndex:8});
         n.style.setProperty('--sh',sh.toFixed(1)+'px'); n.style.setProperty('--ls',i<2?'.21em':'.13em');
       });
       for(var k=0;k<4;k++) applyRing(k);
