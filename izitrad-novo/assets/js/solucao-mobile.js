@@ -273,18 +273,12 @@
     function showAll(){ gsap.set(glow,{autoAlpha:1,'--gs':1}); gsap.set(docw,{autoAlpha:1,y:0}); RS.forEach(function(r,k){ r.p=1; applyRing(k); }); }
     window.S3M_HOOK=function(tl,T){
       hookRan=true;
-      /* SAÍDA: quando a timeline acaba, o palco desgruda e sobe junto com a seção — a cena tem overflow cortado na borda de baixo do palco e as linhas
-         apareciam CORTADAS ali. Então a cena inteira se desfaz suavemente (opacity, presa à rolagem) enquanto o palco sai da tela: começa quando o fim da seção
-         encosta no fim da tela e termina quando ele chegou a 40% da altura. */
-      /* COMPARAÇÃO (a pedido dela): ?saida=sobe = em vez de esmaecer, a cena SOBE junto com a rolagem (1:1, como se fosse parte da página) e sai pelo topo.
-         Padrão (sem o parâmetro) = esmaecer, como estava. Um só dos dois é criado, então a lista de gatilhos do padrão não muda. */
-      if(window.ScrollTrigger){
-        if(/[?&]saida=sobe(?:&|#|$)/.test(location.search))
-          gsap.fromTo(wrap,{y:0},{y:function(){ return -Math.max(innerHeight,wrap.offsetHeight); },ease:'none',immediateRender:false,
-            scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom top',scrub:true,invalidateOnRefresh:true}});
-        else
-          gsap.to(wrap,{autoAlpha:0,ease:'none',scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom 62%',scrub:true,invalidateOnRefresh:true}});
-      }
+      /* SAÍDA (decisão dela, comparando as duas versões): quando a timeline acaba, o palco desgruda e sobe junto com a seção — a cena (fixa na tela) SOBE junto com a
+         rolagem (1:1, como se fosse parte da página) e sai pelo topo: o fundo da cena acompanha o fim da seção px por px, de quando o fim da seção encosta no fim da tela
+         até ele sair pelo topo. (A versão antiga esmaecia no lugar; foi removida.) */
+      if(window.ScrollTrigger)
+        gsap.fromTo(wrap,{y:0},{y:function(){ return -Math.max(innerHeight,wrap.offsetHeight); },ease:'none',immediateRender:false,
+          scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom top',scrub:true,invalidateOnRefresh:true}});
       var intro=document.querySelector('.s3o-intro'), sid=document.querySelector('.s3-id');
       if(reduce){ showAll(); return; }
       /* 1) texto sai logo depois de terminar de entrar */
