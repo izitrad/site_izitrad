@@ -1530,6 +1530,10 @@ function initSolucao(root){
     const docEl = root.querySelector('.doc-stage');
     const labelEl = root.querySelector('.s3-id');
     if(!docEl || !labelEl) return 0;
+    // CELULAR: o documento não existe (.doc-stage tem display:none, rect 0x0), então não há nada na frente pra esconder o rótulo — com docTop=0 ele nascia COLADO
+    // no topo (a uns 17px do lugar final), por cima da 02 que ainda está saindo e com as letras já girando, e quase não se movia. Sem documento, o rótulo nasce
+    // na parte de baixo da tela (zona preta da máscara, 62% da altura) e sobe até o topo, na mesma subida/giro de sempre. Desktop (documento com altura) intacto.
+    if(!docEl.getBoundingClientRect().height) return innerHeight*0.62 - innerHeight*0.05;
     const docTop = docEl.getBoundingClientRect().top;
     const topOculto = docTop + S3ID_HIDE_MARGIN;
     const topNatural = innerHeight*0.05; // top:5% de CSS, mesmo valor de sempre

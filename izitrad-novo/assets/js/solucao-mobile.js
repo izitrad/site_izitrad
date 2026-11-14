@@ -288,7 +288,7 @@
          (opacity:1) que NÃO desfaz ao voltar; no desktop isso não aparece porque o documento (z-index maior) fica na frente do rótulo, mas no celular o documento não
          aparece. Aqui o rótulo ganha um tween reversível (opacity 0→1) no mesmo instante em que ele nasce (introAt - INTRO_DELAY_AFTER_LABEL = 0,6): voltando, apaga de novo. */
       var sidEl=document.querySelector('.s3-id');
-      if(sidEl) tl.fromTo(sidEl,{opacity:0},{opacity:1,duration:.02,ease:'none',immediateRender:false},T.introAt-.6-.03);   /* .03 ANTES do instante do tl.call do site.js: o tl.call dispara nos dois sentidos, então ao voltar ele liga o rótulo ao cruzar e o meu apaga logo em seguida (mais cedo na timeline) */
+      if(sidEl) tl.fromTo(sidEl,{opacity:0},{opacity:1,duration:.002,ease:'none',immediateRender:false},T.introAt-.6-.004);   /* .004 ANTES do instante do tl.call do site.js: o tl.call dispara nos dois sentidos, então ao voltar ele liga o rótulo ao cruzar e o meu apaga logo em seguida (mais cedo na timeline) */
       var movers=$$('.s3o-title .s3o-line, .s3o-lead').concat(sid?[sid]:[]), tAt=T.openAt-.05;
       if(window.ScrollTrigger && movers.length)
         gsap.fromTo(movers,{y:0},{y:function(){ return -innerHeight; },ease:'none',immediateRender:false,
