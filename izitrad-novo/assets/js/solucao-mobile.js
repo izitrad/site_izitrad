@@ -277,19 +277,22 @@
          apareciam CORTADAS ali. Então a cena inteira se desfaz suavemente (opacity, presa à rolagem) enquanto o palco sai da tela: começa quando o fim da seção
          encosta no fim da tela e termina quando ele chegou a 40% da altura. DECISÃO DELA: fica o ESMAECER (parece travar menos); a versão em que a cena sobe junto com a
          rolagem foi testada e descartada (só o TEXTO de abertura sobe com a rolagem, ver mais abaixo). */
-      if(window.ScrollTrigger) gsap.to(wrap,{autoAlpha:0,ease:'none',scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom 62%',scrub:true,invalidateOnRefresh:true}});
+      if(window.ScrollTrigger) gsap.to(wrap,{autoAlpha:0,ease:'none',scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom 62%',scrub:1,invalidateOnRefresh:true}});
       var intro=document.querySelector('.s3o-intro'), sid=document.querySelector('.s3-id');
       if(reduce){ showAll(); return; }
       /* 0) PAUSA (pedido dela): depois que o texto de abertura termina de entrar (rótulo + título + parágrafo, tudo completo), um trecho de rolagem SEM nada se mexendo,
          pra pessoa ver tudo junto antes de a rolada seguinte começar a subir o texto. HOLD = tamanho da pausa em unidades da timeline (1 unidade = ~0,336 x altura da tela
-         em px de rolagem, ~260px num iPhone; padrão 1,5 = ~390px; &pausa=N ajusta, 0 desliga). Como a timeline é ligada à ALTURA da seção (end:'bottom bottom'), alongo as duas
+         em px de rolagem, ~260px num iPhone; ficou 1 = ~260px, escolha dela comparando 1, 1,5 e 2). Como a timeline é ligada à ALTURA da seção (end:'bottom bottom'), alongo as duas
          coisas na mesma proporção: a timeline ganha HOLD unidades (um tween vazio) e a seção 03 ganha HOLD x (px de rolagem por unidade) — assim os px por unidade não mudam e
          nada que já existia anda mais rápido ou mais devagar. Tudo o que é meu e vem depois do texto completo (subida, núcleo, folha, anéis, pulso final) é deslocado por HOLD. */
-      var pm=/[?&]pausa=(\d+(?:\.\d+)?)/.exec(location.search), HOLD=pm?+pm[1]:1.5, D0=tl.duration(), sec03=document.getElementById('solucao');
+      var HOLD=1, D0=tl.duration(), sec03=document.getElementById('solucao');     /* 1 = ~260px de pausa (escolha dela comparando 1, 1,5 e 2) */
+      /* RISE_DUR = quantas unidades da timeline equivalem a UMA altura de tela de rolagem (px por unidade = (altura da seção - tela)/duração, medido ANTES de alongar a seção).
+         É uma constante (a seção é em vh): ~3 unidades. A subida do texto dura isso, então anda 1:1 com a rolagem. */
+      var secPx0=sec03?sec03.offsetHeight:0, RISE_DUR=(secPx0>innerHeight&&D0>0)?innerHeight*D0/(secPx0-innerHeight):3;
       if(HOLD>0 && sec03 && D0>0){
         var probe=el('div'); probe.style.cssText='position:absolute;visibility:hidden;height:100vh;width:0;pointer-events:none'; document.body.appendChild(probe);
         var vhPx=probe.offsetHeight||innerHeight; document.body.removeChild(probe);
-        var secPx=sec03.offsetHeight, extraPx=HOLD*(secPx-innerHeight)/D0;
+        var secPx=secPx0, extraPx=HOLD*(secPx-innerHeight)/D0;
         sec03.style.height=((secPx+extraPx)/vhPx*100).toFixed(3)+'vh';              /* em vh, como o CSS original: acompanha a tela se ela mudar de tamanho */
         tl.to({},{duration:HOLD},D0);                                              /* alonga a timeline (tween vazio) */
       } else HOLD=0;
@@ -298,20 +301,24 @@
       /* 1) o texto sai: as linhas do título, o parágrafo e o rótulo "03 — A SOLUÇÃO" SOBEM junto com a rolagem (1:1, px por px, todos na mesma velocidade) e saem pelo
          topo da tela, depois da pausa. Ao mesmo tempo as PALAVRAS do título e do parágrafo somem uma a uma, borrando e ficando transparentes, na ordem da leitura — o MESMO
          efeito de saída da pergunta da seção 04 (secao04.js: autoAlpha+blur por palavra, stagger .04, ease none, preso à rolagem); o rótulo só sobe (na 04 o rótulo não some
-         com efeito). É um ScrollTrigger próprio: mapeia o instante da timeline pra posição de rolagem e anda a altura da tela inteira. */
+         com efeito). Anda a altura da tela inteira (RISE_DUR unidades da timeline). */
       /* CORREÇÃO (print dela): rolando pra TRÁS (da 03 de volta pra 02) o rótulo "03 — A SOLUÇÃO" ficava visível em cima da 02. O site.js faz ele "nascer" com um tl.call
          (opacity:1) que NÃO desfaz ao voltar; no desktop isso não aparece porque o documento (z-index maior) fica na frente do rótulo, mas no celular o documento não
          aparece. Aqui o rótulo ganha um tween reversível (opacity 0→1) no mesmo instante em que ele nasce (introAt - INTRO_DELAY_AFTER_LABEL = 0,6): voltando, apaga de novo. */
       var sidEl=document.querySelector('.s3-id');
       if(sidEl) tl.fromTo(sidEl,{opacity:0},{opacity:1,duration:.002,ease:'none',immediateRender:false},T.introAt-.6-.004);   /* .004 ANTES do instante do tl.call do site.js: o tl.call dispara nos dois sentidos, então ao voltar ele liga o rótulo ao cruzar e o meu apaga logo em seguida (mais cedo na timeline) */
       var movers=$$('.s3o-title .s3o-line, .s3o-lead').concat(sid?[sid]:[]), words=$$('.s3o-title .s3o-w, .s3o-lead .s3o-w'), tAt=O-.05;
-      if(window.ScrollTrigger && movers.length){
-        var rise=gsap.timeline({scrollTrigger:{start:function(){ var s=tl.scrollTrigger; return s.start+(tAt/tl.duration())*(s.end-s.start); },end:function(){ return '+='+innerHeight; },scrub:true,invalidateOnRefresh:true}});
-        rise.fromTo(movers,{y:0},{y:function(){ return -innerHeight; },ease:'none',duration:1,immediateRender:false},0);
+      if(movers.length){
+        /* A subida e o sumiço ficam DENTRO da timeline da 03 (não num ScrollTrigger separado). Motivo (testado, bug que ela viu rolando pra TRÁS): com um gatilho separado, ele e
+           a timeline escrevem na MESMA propriedade do mesmo elemento (y das linhas, autoAlpha/blur das palavras — a entrada do texto também mexe nelas), e ao voltar quem
+           escrevia por último "ganhava": (1) com suavização diferente a cena ficava na tela e o texto reaparecia por cima dela; (2) com a mesma suavização, num puxão rápido
+           pra cima o texto ficava parado e visível em vez de voltar pra baixo da tela. Dentro da mesma timeline a ordem é definida nos dois sentidos (o tween mais cedo — a
+           entrada — escreve por último ao voltar) e a suavização é a mesma, naturalmente. */
+        tl.fromTo(movers,{y:0},{y:function(){ return -innerHeight; },ease:'none',duration:RISE_DUR,immediateRender:false},tAt);
         if(words.length){
           /* janela do sumiço = os primeiros 70% da subida (a última palavra termina de sumir antes de o parágrafo sair da tela); mesma proporção stagger/duração da 04 (.04/.2) */
-          var nw=words.length, unit=.7/(.2+.04*(nw-1));
-          rise.fromTo(words,{autoAlpha:1,filter:'blur(0px)'},{autoAlpha:0,filter:function(){ return 'blur('+(innerWidth/1440*10)+'px)'; },ease:'none',duration:.2*unit,stagger:.04*unit,immediateRender:false},0);
+          var nw=words.length, unit=.7*RISE_DUR/(.2+.04*(nw-1));
+          tl.fromTo(words,{autoAlpha:1,filter:'blur(0px)'},{autoAlpha:0,filter:function(){ return 'blur('+(innerWidth/1440*10)+'px)'; },ease:'none',duration:.2*unit,stagger:.04*unit,immediateRender:false},tAt);
         }
       } else tl.to([intro,sid],{autoAlpha:0,duration:.6,ease:'none'},tAt);
       /* 2) núcleo acende e cresce, e pulsa no mesmo instante do desktop (PULSO_AT = revAt-0,3) */
