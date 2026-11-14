@@ -132,6 +132,7 @@
     function polyY(co,x){ var u=(x-187.5)/187.5, y=0, pw=1; for(var j=0;j<co.length;j++){ y+=co[j]*pw; pw*=u; } return y; }
     var wrap=el('div','s3m-int s3m--v5',
       '<div class="orbit-glow s3m-glow" aria-hidden="true"></div>'+
+      '<div class="s3m-docw" aria-hidden="true"><div class="s3m-docr"></div></div>'+
       '<svg class="s3m-rsvg s3m-int__b" aria-hidden="true"><g class="s3m-rg"></g></svg>'+
       '<svg class="s3m-rsvg s3m-int__f" aria-hidden="true"><g class="s3m-rg"></g></svg>'+
       SERV.map(function(s,i){
@@ -142,6 +143,33 @@
        está vazia (tudo escondido) e depois some (esmaecimento no fim da rolagem, que também a esconde). */
     document.body.appendChild(wrap);
     var glow=wrap.querySelector('.s3m-glow'), svgB=wrap.querySelector('.s3m-int__b'), svgF=wrap.querySelector('.s3m-int__f'), nodes=$$('.s3m-node',wrap);
+    var docw=wrap.querySelector('.s3m-docw'), docr=docw.querySelector('.s3m-docr'), DOCH=0, CYC=0;
+    /* DOCUMENTO (a folha do desktop): clone do .doc real (com o QR) + selo. Clona DEPOIS que o site.js montou o QR e posicionou o selo (inline em %). No celular o
+       documento real está escondido, então o site.js não posiciona o selo (medida 0): calcula aqui com a MESMA fórmula do relocateSeal() do desktop (centro em 90%/88%
+       do mapa, largura 74% do mapa), medindo o clone sem rotação/escala. */
+    function fillDoc(){
+      var real=document.querySelector('.doc-mouse .doc'); if(!real||docr.firstChild) return;
+      var c=real.cloneNode(true); c.removeAttribute('style'); c.classList.remove('is-dragging');
+      $$('[id]',c).forEach(function(e){ e.removeAttribute('id'); });
+      docr.appendChild(c);
+      var seal=document.querySelector('.selo-layer .doc__seal');
+      if(seal){
+        var layer=el('div','s3m-selo'), im=seal.cloneNode(true);
+        im.removeAttribute('style'); layer.appendChild(im); docr.appendChild(layer);
+        var map=c.querySelector('.doc__map');
+        if(map){
+          var tr=docr.style.transform; docr.style.transition='none'; docr.style.transform='none';
+          var mr=map.getBoundingClientRect(), dr=c.getBoundingClientRect();
+          docr.style.transform=tr; docr.style.transition='';
+          if(mr.width && dr.width){
+            im.style.left=((mr.left+mr.width*.90-dr.left)/dr.width*100).toFixed(3)+'%';
+            im.style.top=((mr.top+mr.height*.88-dr.top)/dr.height*100).toFixed(3)+'%';
+            im.style.width=(mr.width*.74/dr.width*100).toFixed(3)+'%';
+          }
+        }
+      }
+    }
+    if(document.readyState==='complete') setTimeout(fillDoc,500); else addEventListener('load',function(){ setTimeout(fillDoc,500); });
     var W=0,H=0, RS=[{p:0},{p:0},{p:0},{p:0}], parts=[[],[],[],[]], wins=[null,null,null,null], hookRan=false;
 
     /* As curvas são desenhadas no ESPAÇO DA REFERÊNCIA (375x841) e o <svg> as ajusta à tela com escala uniforme (viewBox + preserveAspectRatio meet): arcos, triângulos
@@ -222,6 +250,10 @@
       VB={x0:-OX/K,y0:-OY/K,x1:(W-OX)/K,y1:(H-OY)/K};
       var gd=W-2*MARGEM;                                                     /* núcleo: diâmetro = largura da tela menos a margem dos dois lados */
       glow.style.width=gd+'px'; glow.style.height=gd+'px'; glow.style.left=(W/2)+'px'; glow.style.top=(OY+REF.gy*K)+'px';
+      /* documento: MESMA proporção do desktop (núcleo = altura do documento x RING_K 2,6 x GLOW_K 0,44 = 1,144; largura/altura = 0,72), no meio do núcleo; o clone tem 446px
+         naturais (largura do .doc a 1440) e é reduzido por --ds */
+      DOCH=gd/1.144; CYC=OY+REF.gy*K;
+      docw.style.left=(W/2)+'px'; docw.style.top=CYC+'px'; docr.style.setProperty('--ds',(DOCH*.72/446).toFixed(4));
       build();
       nodes.forEach(function(n,i){
         var t=TREF[i], bx=OX+t.x*K, sh=bx+56>W?W-(bx+56):(bx-56<0?56-bx:0);
@@ -237,7 +269,8 @@
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(measure);
     wrap.addEventListener('click',function(e){ var b=e.target.closest('.s3m-node'); if(b && b.style.visibility!=='hidden') openSheet(+b.getAttribute('data-i')); });
 
-    function showAll(){ gsap.set(glow,{autoAlpha:1,'--gs':1}); RS.forEach(function(r,k){ r.p=1; applyRing(k); }); }
+    gsap.set(docw,{autoAlpha:0});                                            /* a folha só aparece quando desce (ver o gancho) */
+    function showAll(){ gsap.set(glow,{autoAlpha:1,'--gs':1}); gsap.set(docw,{autoAlpha:1,y:0}); RS.forEach(function(r,k){ r.p=1; applyRing(k); }); }
     window.S3M_HOOK=function(tl,T){
       hookRan=true;
       /* SAÍDA: quando a timeline acaba, o palco desgruda e sobe junto com a seção — a cena tem overflow cortado na borda de baixo do palco e as linhas
@@ -255,30 +288,35 @@
       var intro=document.querySelector('.s3o-intro'), sid=document.querySelector('.s3-id');
       if(reduce){ showAll(); return; }
       /* 1) texto sai logo depois de terminar de entrar */
-      /* COMPARAÇÃO (a pedido dela): ?texto=sobe = em vez de esmaecer no lugar, as linhas do título e o parágrafo SOBEM junto com a rolagem (1:1, px por px) e saem
-         pelo topo da tela, a partir do mesmo instante em que hoje começam a sumir. É um ScrollTrigger próprio (mapeia o instante da timeline pra posição de rolagem
-         e anda a altura da tela inteira). Sem o parâmetro: esmaece como estava, e nenhum gatilho novo é criado. O rótulo "03 — A SOLUÇÃO" continua esmaecendo. */
-      if(/[?&]texto=sobe(?:&|#|$)/.test(location.search) && window.ScrollTrigger){
-        var movers=$$('.s3o-title .s3o-line, .s3o-lead'), tAt=T.openAt-.05;
-        if(sid) tl.to(sid,{autoAlpha:0,duration:.6,ease:'none'},tAt);
-        if(movers.length) gsap.fromTo(movers,{y:0},{y:function(){ return -innerHeight; },ease:'none',immediateRender:false,
+      /* As linhas do título, o parágrafo e o rótulo "03 — A SOLUÇÃO" SOBEM junto com a rolagem (1:1, px por px, todos na mesma velocidade) e saem pelo topo da tela,
+         a partir do instante em que antes começavam a esmaecer (decisão dela, comparando as duas versões). É um ScrollTrigger próprio: mapeia o instante da timeline pra
+         posição de rolagem e anda a altura da tela inteira. */
+      var movers=$$('.s3o-title .s3o-line, .s3o-lead').concat(sid?[sid]:[]), tAt=T.openAt-.05;
+      if(window.ScrollTrigger && movers.length)
+        gsap.fromTo(movers,{y:0},{y:function(){ return -innerHeight; },ease:'none',immediateRender:false,
           scrollTrigger:{start:function(){ var s=tl.scrollTrigger; return s.start+(tAt/tl.duration())*(s.end-s.start); },end:function(){ return '+='+innerHeight; },scrub:true,invalidateOnRefresh:true}});
-      } else {
-        tl.to([intro,sid],{autoAlpha:0,duration:.6,ease:'none'},T.openAt-.05);
-      }
+      else tl.to([intro,sid],{autoAlpha:0,duration:.6,ease:'none'},tAt);
       /* 2) núcleo acende e cresce, e pulsa no mesmo instante do desktop (PULSO_AT = revAt-0,3) */
       tl.fromTo(glow,{autoAlpha:0,'--gs':.25},{autoAlpha:1,'--gs':1,duration:1.0,ease:'power2.out',immediateRender:false},T.openAt+.5);
       var B='brightness(1.62) saturate(1.28)', N='brightness(1) saturate(1)';
       tl.fromTo(glow,{filter:N,'--gs':1},{filter:B,'--gs':1.15,duration:.3,ease:'power2.out',immediateRender:false},T.revAt-.3);
       tl.fromTo(glow,{filter:B,'--gs':1.15},{filter:N,'--gs':1,duration:.6,ease:'power2.inOut',immediateRender:false},T.revAt);
-      /* 3) anéis UM POR VEZ, de dentro pra fora, com o triângulo de cada um */
+      /* 3) a FOLHA do desktop desce de cima e assenta no meio do núcleo, depois que o núcleo acendeu e pulsou. Começa logo após o pico do pulso (revAt) e leva 1,2
+         unidades de rolagem (power2.out: chega suave). Os anéis começam 1,0 depois (a folha já está quase assentada) — a folga do fim da timeline absorve esse
+         deslocamento; se não couber (S menor que 1), encolhe o deslocamento pra NÃO alongar a timeline (isso mudaria a página inteira). */
+      var S=Math.max(0,Math.min(1.0,tl.duration()-(T.revAt+3*T.step+T.dur+.6))), docAt=T.revAt+.1, docDur=S+.2;
+      if(S>0){
+        tl.fromTo(docw,{autoAlpha:0},{autoAlpha:1,duration:.05,ease:'none',immediateRender:false},docAt);
+        tl.fromTo(docw,{y:function(){ return -(CYC+DOCH); }},{y:0,ease:'power2.out',duration:docDur,immediateRender:false},docAt);
+      } else gsap.set(docw,{autoAlpha:1,y:0});
+      /* 4) anéis UM POR VEZ, de dentro pra fora, com o triângulo de cada um */
       RS.forEach(function(r,k){
-        tl.fromTo(r,{p:0},{p:1,duration:T.dur,ease:'power1.inOut',immediateRender:false,onUpdate:function(){ applyRing(k); },onReverseComplete:function(){ applyRing(k); }},T.revAt+k*T.step);
+        tl.fromTo(r,{p:0},{p:1,duration:T.dur,ease:'power1.inOut',immediateRender:false,onUpdate:function(){ applyRing(k); },onReverseComplete:function(){ applyRing(k); }},T.revAt+S+k*T.step);
       });
-      /* 4) fecho: pulso do núcleo quando o último anel termina */
-      var fim=T.revAt+3*T.step+T.dur;
-      tl.fromTo(glow,{filter:N},{filter:B,duration:.3,ease:'power2.out',immediateRender:false},fim);
-      tl.fromTo(glow,{filter:B},{filter:N,duration:.7,ease:'power2.inOut',immediateRender:false},fim+.3);
+      /* 5) fecho: pulso do núcleo quando o último anel termina */
+      var fim=T.revAt+S+3*T.step+T.dur;
+      tl.fromTo(glow,{filter:N},{filter:B,duration:.25,ease:'power2.out',immediateRender:false},fim);
+      tl.fromTo(glow,{filter:B},{filter:N,duration:.35,ease:'power2.inOut',immediateRender:false},fim+.25);
     };
     /* rede de segurança: se a timeline da 03 não chamar o gancho (ex.: erro no motor orbital), mostra o estado final em vez de uma cena vazia */
     addEventListener('load',function(){ setTimeout(function(){ if(!hookRan) showAll(); },4000); });

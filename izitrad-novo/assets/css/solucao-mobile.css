@@ -83,3 +83,11 @@
 
 /* Celular: os aneis originais do desktop ficam encolhidos em 4x4px no canto (0,0) e aparecem como um pontinho; nao sao usados. */
 @media (max-width:899px){.saturn-ring-v23,.saturn-ring-v23 *{visibility:hidden!important}}
+
+/* ---------- a FOLHA (clone do documento do desktop) que desce e assenta no meio do núcleo ---------- */
+/* .s3m-docw: só se move (GSAP, y); .s3m-docr: tamanho/inclinação fixos (446px naturais do .doc, reduzidos por --ds = 0,72 x altura do documento / 446) */
+.s3m-docw{position:absolute;left:0;top:0;width:0;height:0;z-index:3;pointer-events:none}
+.s3m-docr{position:absolute;left:0;top:0;width:446px;transform:translate(-50%,-50%) rotate(-4deg) scale(var(--ds,.4));transform-origin:50% 50%;pointer-events:none}
+.s3m-docr .doc{width:100%}
+.s3m-selo{position:absolute;inset:0;pointer-events:none}
+.s3m-selo .doc__seal{transform:translate(-50%,-50%)}
