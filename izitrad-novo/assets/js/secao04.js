@@ -654,7 +654,7 @@ addEventListener("resize",()=>{
       });
       return spans;
     }
-    // Celular (<=760px, ver secao04.css) — composição APROVADA: "E como / é fazer / isso com / a izi?". As quebras de linha
+    // Celular (<=760px, ver secao04.css) — composição APROVADA: "Como / é fazer / isso com / a izi?" (o "E" inicial foi retirado a pedido dela). As quebras de linha
     // são <span class="iziq-br"> depois destas palavras (minúsculas); fora do celular o span fica display:none e a
     // pergunta segue como no desktop. (As outras 3 diagramações testadas com ?pergunta=1..3 foram removidas.)
     var Q04_QUEBRAS = ['como','fazer','com'];
