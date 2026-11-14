@@ -291,6 +291,11 @@
       /* As linhas do título, o parágrafo e o rótulo "03 — A SOLUÇÃO" SOBEM junto com a rolagem (1:1, px por px, todos na mesma velocidade) e saem pelo topo da tela,
          a partir do instante em que antes começavam a esmaecer (decisão dela, comparando as duas versões). É um ScrollTrigger próprio: mapeia o instante da timeline pra
          posição de rolagem e anda a altura da tela inteira. */
+      /* CORREÇÃO (print dela): rolando pra TRÁS (da 03 de volta pra 02) o rótulo "03 — A SOLUÇÃO" ficava visível em cima da 02. O site.js faz ele "nascer" com um tl.call
+         (opacity:1) que NÃO desfaz ao voltar; no desktop isso não aparece porque o documento (z-index maior) fica na frente do rótulo, mas no celular o documento não
+         aparece. Aqui o rótulo ganha um tween reversível (opacity 0→1) no mesmo instante em que ele nasce (introAt - INTRO_DELAY_AFTER_LABEL = 0,6): voltando, apaga de novo. */
+      var sidEl=document.querySelector('.s3-id');
+      if(sidEl) tl.fromTo(sidEl,{opacity:0},{opacity:1,duration:.02,ease:'none',immediateRender:false},T.introAt-.6-.03);   /* .03 ANTES do instante do tl.call do site.js: o tl.call dispara nos dois sentidos, então ao voltar ele liga o rótulo ao cruzar e o meu apaga logo em seguida (mais cedo na timeline) */
       var movers=$$('.s3o-title .s3o-line, .s3o-lead').concat(sid?[sid]:[]), tAt=T.openAt-.05;
       if(window.ScrollTrigger && movers.length)
         gsap.fromTo(movers,{y:0},{y:function(){ return -innerHeight; },ease:'none',immediateRender:false,
