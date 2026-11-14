@@ -375,10 +375,12 @@
     var BOTSET={cx:59.2,cy:-56.5,tilt:-8,a:[793.9,825.7,857.5],b:[714.5,799.8,889.4]};
     var OPA_TOP=[.88,.76,.66,.56], OPA_BOT=[1,.9,.78];                         /* opacidade do fio por anel (de dentro pra fora) */
     function drawRef(kx,ky){
+      /* anéis em SVG: desenha no espaço da referência e deixa o <svg> esticar pra tela (viewBox + preserveAspectRatio none) — ver buildV6 */
+      if(LEVE){ kx=1; ky=1; }
       [[TOPSET,svgB,ringsB,0,OPA_TOP],[BOTSET,svgF,ringsF,1,OPA_BOT]].forEach(function(c){
         var S=c[0], sv=c[1], rings=c[2], half=c[3], opa=c[4], cx=S.cx*kx, cy=S.cy*ky;
         if(LEVE){
-          sv.setAttribute('viewBox','0 0 '+W+' '+H);
+          sv.setAttribute('viewBox','0 0 '+REF.W+' '+REF.H); sv.setAttribute('preserveAspectRatio','none');
           var g=sv.querySelector('.s3m-rg'); g.setAttribute('transform','rotate('+S.tilt+' '+cx+' '+cy+')');
           g.innerHTML=S.a.map(function(a0,i){
             var a=a0*kx, b=S.b[i]*kx, d=half?('M'+(cx+a)+' '+cy+'A'+a+' '+b+' 0 0 1 '+(cx-a)+' '+cy):('M'+(cx-a)+' '+cy+'A'+a+' '+b+' 0 0 1 '+(cx+a)+' '+cy);
@@ -506,11 +508,15 @@
     var W=0,H=0, RS=[{p:0},{p:0},{p:0},{p:0}], parts=[[],[],[],[]], wins=[null,null,null,null], hookRan=false;
 
     /* pontos (px da tela) da metade de cima (half 0: esq.->dir.) ou de baixo (half 1: dir.->esq.) da elipse i do conjunto S, só o trecho visível */
-    function pts(S,i,half,kx,ky){
-      var cx=S.cx*kx, cy=S.cy*ky, a=S.a[i]*kx, b=S.b[i]*kx, th=S.tilt*RAD, c=Math.cos(th), s=Math.sin(th), out=[];
+    /* As curvas são desenhadas no ESPAÇO DA REFERÊNCIA (375x841) e o <svg> as estica pra tela (viewBox + preserveAspectRatio none): assim arcos, triângulos e núcleo
+       (todos em coordenadas da referência × (kx,ky)) ficam SEMPRE no mesmo lugar uns dos outros, em qualquer proporção de tela. Antes os eixos dos arcos usavam só
+       a escala da largura e os centros a da altura: numa tela mais curta (iPhone com barras, ~412x773) os arcos de baixo desciam ~130px em relação aos triângulos e
+       uma linha (a do triângulo "Técnica") e parte das outras saíam da tela. */
+    function pts(S,i,half){
+      var cx=S.cx, cy=S.cy, a=S.a[i], b=S.b[i], th=S.tilt*RAD, c=Math.cos(th), s=Math.sin(th), out=[];
       for(var d=0;d<=180;d+=.5){
         var t=(half?d:180+d)*RAD, ex=a*Math.cos(t), ey=b*Math.sin(t), X=cx+ex*c-ey*s, Y=cy+ex*s+ey*c;
-        if(X>-60&&X<W+60&&Y>-60&&Y<H+60) out.push([X,Y]);
+        if(X>-60&&X<REF.W+60&&Y>-60&&Y<REF.H+60) out.push([X,Y]);
       }
       return out;
     }
@@ -524,16 +530,16 @@
     function build(kx,ky){
       var htmlB='', htmlF='', L=[];
       for(var i=0;i<4;i++){
-        var T=pts(TOPSET,i,0,kx,ky); htmlB+=pathG(T,i,'t',OPA_TOP[i]);
+        var T=pts(TOPSET,i,0); htmlB+=pathG(T,i,'t',OPA_TOP[i]);
         var BL=[],BR=[];
         if(i<BOTSET.a.length){
-          var P=pts(BOTSET,i,1,kx,ky), apex=0; for(var j=1;j<P.length;j++) if(P[j][1]>P[apex][1]) apex=j;
+          var P=pts(BOTSET,i,1), apex=0; for(var j=1;j<P.length;j++) if(P[j][1]>P[apex][1]) apex=j;
           BR=P.slice(0,apex+1); BL=P.slice(apex);                         /* a ponta de baixo: à direita dela volta no fim da volta, à esquerda sai primeiro */
           htmlF+=pathG(BL,i,'bl',OPA_BOT[i])+pathG(BR,i,'br',OPA_BOT[i]);
         }
         L[i]={bl:BL.length>1?len(BL):0,t:T.length>1?len(T):0,br:BR.length>1?len(BR):0};
       }
-      svgB.setAttribute('viewBox','0 0 '+W+' '+H); svgF.setAttribute('viewBox','0 0 '+W+' '+H);
+      [svgB,svgF].forEach(function(sv){ sv.setAttribute('viewBox','0 0 '+REF.W+' '+REF.H); sv.setAttribute('preserveAspectRatio','none'); });
       svgB.querySelector('.s3m-rg').innerHTML=htmlB; svgF.querySelector('.s3m-rg').innerHTML=htmlF;
       /* janelas do progresso p (0..1) de cada anel: a volta horária começa embaixo (trecho esquerdo), passa pela esquerda (fora da tela), sobe e cruza o topo da esq. pra dir.,
          desce pela direita (fora da tela) e volta embaixo (trecho direito). Os vãos "fora da tela" gastam tempo proporcional (16% do total visível cada). */
