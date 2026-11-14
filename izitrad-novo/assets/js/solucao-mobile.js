@@ -578,6 +578,10 @@
     function showAll(){ gsap.set(glow,{autoAlpha:1,'--gs':1}); RS.forEach(function(r,k){ r.p=1; applyRing(k); }); }
     window.S3M_HOOK=function(tl,T){
       hookRan=true;
+      /* SAÍDA: quando a timeline acaba, o palco desgruda e sobe junto com a seção — a cena tem overflow cortado na borda de baixo do palco e as linhas
+         apareciam CORTADAS ali (print do iPhone dela). Então a cena inteira se desfaz suavemente (opacity, presa à rolagem) enquanto o palco sai da tela:
+         começa quando o fim da seção encosta no fim da tela e termina quando ele chegou a 40% da altura. */
+      if(window.ScrollTrigger) gsap.to(wrap,{opacity:0,ease:'none',scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom 62%',scrub:true,invalidateOnRefresh:true}});
       var intro=document.querySelector('.s3o-intro'), sid=document.querySelector('.s3-id');
       if(reduce){ showAll(); return; }
       /* 1) texto sai logo depois de terminar de entrar */
