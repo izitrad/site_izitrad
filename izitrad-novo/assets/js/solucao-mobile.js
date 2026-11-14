@@ -495,8 +495,9 @@
     var TREF=[{x:97.5,y:62,s:.89,r:0,ring:2},{x:299.5,y:146.5,s:.84,r:0,ring:0},{x:49,y:655.5,s:1.32,r:0,ring:0},{x:320.5,y:703.5,s:1.10,r:-7,ring:1}];
     /* VARIANTES pra comparar (&op=): 1 (padrão) = a aprovada; 2 = igual à 1, só o NÚCLEO maior (a 12px de cada borda da tela); 3 = igual à 1, só a parte de CIMA com a
        formatação de linhas da 2ª referência dela (4 linhas paralelas, ~60px de espaço, ponto mais alto à direita, a mais externa sai pelo topo). */
-    var om=/[?&]op=([1234])(?:&|#|$)/.exec(location.search), OP=om?+om[1]:1;
+    var om=/[?&]op=([12345])(?:&|#|$)/.exec(location.search), OP=om?+om[1]:1;
     var TOPPOLY=[[157.356,-23.621,16.402,1.264,2.536],[97.032,-22.243,16.741,0.198,-0.292],[37.248,-20.551,15.06,-1.131,0.266],[-11.462,-17.36,16.594]];   /* y(x) das 4 linhas, em u=(x-187,5)/187,5 (ajuste à imagem: erro ~0,4px) */
+    if(OP===5){ BOTSET.a.push(889.3); BOTSET.b.push(983.3); OPA_BOT.push(.66); }   /* opção 5: 4ª linha de baixo (família paralela), só um trecho no canto inferior direito, como a de cima */
     if(OP>=3){ TREF[0].y=50.7; TREF[1].y=149.7; }                      /* os triângulos de cima ficam sobre as linhas novas */
     function polyY(co,x){ var u=(x-187.5)/187.5, y=0, pw=1; for(var j=0;j<co.length;j++){ y+=co[j]*pw; pw*=u; } return y; }
     var wrap=el('div','s3m-int s3m--v5',
@@ -596,7 +597,7 @@
       K=Math.min(W/REF.W,H/REF.H); OX=(W-REF.W*K)/2; OY=(H-REF.H*K)/2;
       VB={x0:-OX/K,y0:-OY/K,x1:(W-OX)/K,y1:(H-OY)/K};
       var gd=ZOOM*REF.W*K, gl=OX+REF.gx*K;
-      if(OP===2){ gd=W-24; gl=W/2; } if(OP===4){ gd=W-30; gl=W/2; }                                  /* opção 2: núcleo a 12px de cada borda da tela */
+      if(OP===2){ gd=W-24; gl=W/2; } if(OP>=4){ gd=W-32; gl=W/2; }                                  /* opção 2: núcleo a 12px de cada borda da tela */
       glow.style.width=gd+'px'; glow.style.height=gd+'px'; glow.style.left=gl+'px'; glow.style.top=(OY+REF.gy*K)+'px';
       build(K,K);
       nodes.forEach(function(n,i){
