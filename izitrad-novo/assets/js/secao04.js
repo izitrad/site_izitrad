@@ -576,8 +576,17 @@ addEventListener("resize",()=>{
   // inteira). Voltando pra "none" pra igualar de verdade com a "02" — se
   // voltar a sensação de "arrasta no começo", o ajuste certo é ENCURTAR a
   // janela (end mais perto de -56%), não trocar o ease de novo.
+  // CELULAR (pedido dela): o rótulo anda em linha reta (ease none) e PARA DE UMA VEZ ao chegar no triângulo do menu (alinhamento de 12/11 deixou isso à vista:
+  // antes ele passava direto pela altura do triângulo). Agora, só no celular, ele segue na velocidade de sempre e nos ÚLTIMOS 30% do trajeto DESACELERA até parar.
+  // Curva: reta com inclinação m até a=.7 e depois uma parábola que vai de m a 0 (sem solavanco na emenda). Pra terminar exatamente em 1: m = 1/(a + s/2), s = 1-a
+  // (a parte reta anda ~17% mais rápido pra compensar o trecho que desacelera). O giro das letras usa a MESMA curva, então os dois param juntos. Desktop: "none".
+  var ease04Kicker = "none";
+  if(matchMedia("(max-width:760px)").matches){
+    var dA = .7, dS = 1-dA, dM = 1/(dA+dS/2);
+    ease04Kicker = function(p){ if(p<=dA) return dM*p; var q=p-dA; return dM*dA + dM*q - dM*q*q/(2*dS); };
+  }
   gsap.to("#iziPre04Kicker",{
-    opacity:1,y:0,ease:"none",
+    opacity:1,y:0,ease:ease04Kicker,
     scrollTrigger:{trigger:"#iziPre04Intro",start:"top bottom",end:"top -56%",scrub:true}
   });
 
@@ -595,7 +604,7 @@ addEventListener("resize",()=>{
     var kickerReels = buildRollingLabel(kickerEl);
     gsap.set(kickerReels.map(function(r){return r.char;}), {scale:1.4, filter:'blur(5px)'});
     var kickerRollProxy = {p:0};
-    gsap.to(kickerRollProxy, {p:1, ease:'none',
+    gsap.to(kickerRollProxy, {p:1, ease:ease04Kicker,
       scrollTrigger:{trigger:"#iziPre04Intro",start:"top bottom",end:"top -56%",scrub:true},
       onUpdate:function(){
         var p = kickerRollProxy.p;
