@@ -8,6 +8,10 @@
      ?solucao=2  Mini-órbita 2D: documento pequeno + anéis em SVG + 4 triângulos girando devagar; tocar abre a mesma folha.
      ?solucao=3  Um serviço por vez, ligado à rolagem (bloco "sticky", sem toque): o documento muda e o texto troca.
      ?solucao=4  "Qual é a sua?": mini-pergunta (2 perguntas) que indica o serviço e leva ao orçamento.
+     ?solucao=6  A opção 5 INTEGRADA na rolagem da seção 03 (usa o espaço de scroll que sobra): texto sai, núcleo acende e os anéis entram um por vez, de dentro pra
+                 fora, como no desktop, cada um com o seu triângulo (ligada à MESMA timeline via gancho window.S3M_HOOK chamado em solucao-orbital.js).
+     ?solucao=5  Ideia da usuária (esboço): a ARTE REAL da cena orbital do desktop (anéis, núcleo, documento) encaixada no retrato em tela
+                 cheia, como se tivesse um zoom; triângulos refeitos em SVG (mais leves) balançando sobre os anéis; tocar abre a folha.
 
    Todas terminam com o mesmo FECHO (frase + botão "Receber orçamento" + dica pra seção 04).
 
@@ -19,7 +23,7 @@
    =========================================================================== */
 (function(){
   'use strict';
-  var mm=/[?&]solucao=([1-4])(?:&|#|$)/.exec(location.search);
+  var mm=/[?&]solucao=([1-6])(?:&|#|$)/.exec(location.search);
   if(!mm || innerWidth>=900) return;
   var host=document.getElementById('solucao');
   if(!host) return;
@@ -265,7 +269,338 @@
     reveal([box],box,0);
   }
 
-  /* ===================== FECHO (igual nas 4) ===================== */
+  /* ===================== OPÇÃO 5 — ideia da usuária: a ARTE REAL da 03, com "zoom", em tela cheia ===================== */
+  /* Reaproveita a arte pronta da cena orbital do desktop (mesmas classes/CSS de solucao-orbital.css): os 4 anéis Saturno (metade de trás
+     atrás do documento, metade da frente na frente), o NÚCLEO (.orbit-glow) e o DOCUMENTO REAL (clone de .doc, com o selo). A cena é
+     encaixada no retrato como se tivesse levado um zoom (o núcleo ocupa ~62% da largura; os anéis, maiores que a tela, saem pelas bordas).
+     MESMA geometria e MESMO movimento do desktop (solucao-orbital.js / solucao-nodes.js): anéis com os 4 planos de escala e achatamento
+     originais (rotação -8°), os 4 triângulos igualmente espaçados girando pelos anéis (começam com o 1º no topo, mesma velocidade),
+     escala/opacidade por profundidade, e tocar num triângulo gira o anel até ele ficar no topo e abre a folha (como o popover do desktop).
+     Os triângulos 3D (WebGL) viram SVG planos. */
+  function buildV5(){
+    var RAD=Math.PI/180;
+    /* ?forma= como a arte preenche o retrato (o esboço dela ocupa a tela inteira: núcleo grande, arcos perto do topo e do fim):
+         2 (padrão) = anéis na orientação do desktop (inclinação -8°, mesma escala), mas esticados na vertical (quase círculos) pra os arcos
+                      chegarem perto do topo e do fim da tela — a mais parecida com o esboço;
+         3          = a MESMA arte do desktop (anéis achatados, mesma escala e inclinação) GIRADA 90°: o eixo longo dos anéis fica na vertical;
+         1          = a cena do desktop como está (faixa horizontal achatada), só com zoom. */
+    var fm=/[?&]forma=([1234])(?:&|#|$)/.exec(location.search), FORMA=fm?+fm[1]:4;
+    /* SEM o documento por enquanto (pedido dela: trabalhar só com a arte — anéis, núcleo e triângulos — e inserir a folha depois). &folha=1 liga. */
+    var WITH_DOC=/[?&]folha=1(?:&|#|$)/.test(location.search);
+    /* inclinação dos anéis: a da arte original é -8°, mas como aqui só aparecem pedaços de anéis enormes, a linha visível sobe menos (~6°) do que
+       na arte (referência dela: ~9° nas linhas de baixo e de trás). Na forma 1 uso -12° pra a inclinação VISÍVEL ficar como a da arte;
+       &incl=NN ajusta (graus, positivo = sobe pra direita). */
+    var im=/[?&]incl=(\d{1,2})(?:&|#|$)/.exec(location.search), INCL=im?+im[1]:12;
+    var TILT_DEG=FORMA===3?82:(FORMA===1?-INCL:-8), TILT=TILT_DEG*RAD, cosT=Math.cos(TILT), sinT=Math.sin(TILT);
+    var DOC_NAT=446, DOC_AR=.72, RING_K=2.6, GLOW_K=.44;                   /* largura natural do .doc (31vw a 1440) e constantes do orbital */
+    var PLANES=[{s:.68,sy:.47},{s:.86,sy:.49},{s:1.04,sy:.51},{s:1.22,sy:.53}];   /* PLANES de solucao-orbital.js (escala e achatamento de cada anel) */
+    var RYF=[.22,.30,.38,.45];                                             /* forma 2: meia-altura alvo de cada anel (fração da altura da cena) */
+    /* forma 1: cada anel mantém o achatamento (sy) e a inclinação (-8°) ORIGINAIS, mas é dimensionado pela meia-altura (fração da altura da
+       tela) em vez de pelo núcleo: o eixo longo fica bem maior que a tela, então só os ARCOS de cima e de baixo aparecem, nas extremidades,
+       levemente curvos e inclinados, e o meio fica livre pro núcleo (que ocupa quase a largura toda). */
+    var RYF1=[.28,.34,.40,.45];
+    var S2P=[2,0,1,3];                                                     /* serviço -> plano (serviceToPlane de solucao-nodes.js) */
+    /* forma 4 (PADRÃO) = IDÊNTICA à imagem de referência dela (375x841). Só a METADE DE BAIXO da imagem era dela (a de cima era a minha, sem alteração);
+       ajustei elipses às 3 linhas de baixo e elas batem com os anéis ORIGINAIS do desktop (rotação -8°, planos .68/.86/1.04/1.22 e achatamento
+       .47/.49/.51/.53): erro de 2,6px com centro (113,394) e escala base=1630 (px da imagem). Os arcos de CIMA saem dessas mesmas elipses (antes eu
+       desenhava com outra curvatura). Núcleo: centro (186,397), diâmetro 90,4% da largura. Triângulos: posição, tamanho e inclinação medidos na imagem
+       (os de trás, em cima, menores; os da frente, embaixo, ~1,4x; "Simples" inclinado -7° junto com o rótulo). Coordenadas em px da imagem 375x841. */
+    var REF={W:375,H:841,cx:113.2,cy:394,base:1630,gx:186,gy:397};
+    var TREF=[{x:97.5,y:62,s:.89,r:0,snap:0},{x:299.5,y:146.5,s:.84,r:0,snap:0},{x:49,y:655.5,s:1.32,r:0,snap:0},{x:320.5,y:703.5,s:1.10,r:-7,snap:0}];
+    /* o "zoom": diâmetro do núcleo como fração da largura da tela (padrão 78% como no esboço; 47% na forma 1). &zoom=60, &zoom=90... muda. */
+    var zm=/[?&]zoom=(\d{2})(?:&|#|$)/.exec(location.search);
+    var ZOOM_CORE=zm ? Math.max(.35,Math.min(.99,+zm[1]/100)) : (FORMA===4?.904:(FORMA===1?.9:.78));
+    /* triângulos PARADOS (decisão dela), no lugar do esboço (fração da cena), sobre o ponto do anel do serviço mais perto desse lugar */
+    var TG=FORMA===1
+      ? [{x:.27,y:.11},{x:.80,y:.23},{x:.19,y:.86},{x:.68,y:.93}]       /* forma 1: 2 triângulos nos arcos de cima e 2 nos de baixo (como no esboço) */
+      : [{x:.33,y:.13},{x:.88,y:.21},{x:.17,y:.72},{x:.66,y:.88}];      /* formas 2 e 3 (tela cheia): cantos do esboço */
+    /* Juramentada topo-esq., Certificada topo-dir., Técnica baixo-esq., Simples baixo-dir. */
+    /* Anéis em SVG (3 traços: halo + fio + brilho, sem máscara/sombra/filtro) = PADRÃO. Motivos: com os anéis CSS gigantes aparecem retângulos/faixas
+       de desenho errado (viram retângulos escuros atrás dos triângulos no print de referência dela e uma faixa translúcida no meu teste) e o peso
+       é ~7x maior. &leve=0 volta aos anéis CSS originais (tubo com máscara, sombra e reflexo) pra comparar. */
+    var LEVE=!/[?&]leve=0(?:&|#|$)/.test(location.search);
+    function ringsHTML(){ return LEVE ? '<svg class="s3m-rsvg" aria-hidden="true"><g class="s3m-rg"></g></svg>' : [0,1,2,3].map(function(){ return '<div class="saturn-ring-v23"></div>'; }).join(''); }
+    inner.innerHTML=
+      '<div class="s3m-uni s3m-uni--f'+FORMA+'">'+
+        '<div class="orbit-glow s3m-glow" aria-hidden="true"></div>'+
+        '<div class="saturn-back-layer s3m-lay s3m-lay--b" aria-hidden="true">'+ringsHTML()+'</div>'+
+        '<div class="s3m-docr" aria-hidden="true"></div>'+
+        '<div class="saturn-front-layer-v23 s3m-lay s3m-lay--f" aria-hidden="true">'+ringsHTML()+'</div>'+
+        SERV.map(function(s,i){
+          return '<button type="button" class="s3m-node'+(i===0?' is-hint':'')+'" data-i="'+i+'" aria-label="'+s.a+' '+s.b+'"><span class="s3m-node__in">'+TRI+
+            '<span class="s3m-node__lb">'+s.b+'</span></span></button>';
+        }).join('')+
+      '</div>';
+    var uni=inner.querySelector('.s3m-uni'), glow=uni.querySelector('.s3m-glow'), docr=uni.querySelector('.s3m-docr'),
+        ringsB=$$('.s3m-lay--b .saturn-ring-v23',uni), ringsF=$$('.s3m-lay--f .saturn-ring-v23',uni), nodes=$$('.s3m-node',uni),
+        svgB=uni.querySelector('.s3m-lay--b .s3m-rsvg'), svgF=uni.querySelector('.s3m-lay--f .s3m-rsvg');
+
+    /* documento real: clona DEPOIS que o site.js montou o QR e posicionou o selo (inline em %) */
+    function fillDoc(){
+      var real=document.querySelector('.doc-mouse .doc'); if(!real) return;
+      var c=real.cloneNode(true); c.removeAttribute('style'); c.classList.remove('is-dragging');
+      $$('[id]',c).forEach(function(e){ e.removeAttribute('id'); });
+      docr.innerHTML=''; docr.appendChild(c);
+      /* selo: no celular o site.js não o posiciona (documento escondido -> medida 0), então calcula aqui com a MESMA fórmula do
+         relocateSeal() (centro em 90%/88% do mapa, largura 74% do mapa), medindo o clone sem rotação/escala */
+      var seal=document.querySelector('.selo-layer .doc__seal');
+      if(seal){
+        var layer=el('div','s3m-selo'), im=seal.cloneNode(true);
+        im.removeAttribute('style'); layer.appendChild(im); docr.appendChild(layer);
+        var map=c.querySelector('.doc__map');
+        if(map){
+          docr.style.transition='none'; docr.style.transform='none';
+          var mr=map.getBoundingClientRect(), dr=c.getBoundingClientRect();
+          docr.style.transform=''; docr.style.transition='';
+          if(mr.width && dr.width){
+            im.style.left=((mr.left+mr.width*.90-dr.left)/dr.width*100).toFixed(3)+'%';
+            im.style.top=((mr.top+mr.height*.88-dr.top)/dr.height*100).toFixed(3)+'%';
+            im.style.width=(mr.width*.74/dr.width*100).toFixed(3)+'%';
+          }
+        }
+      }
+      docr.classList.add('on');
+    }
+    if(WITH_DOC){
+      if(document.readyState==='complete') setTimeout(fillDoc,500);
+      else addEventListener('load',function(){ setTimeout(fillDoc,500); });
+    }
+
+    /* Elipses medidas na referência (px da imagem 375x841). METADE DE CIMA (camada de trás) e METADE DE BAIXO (camada da frente) têm cada uma o seu conjunto:
+       ajustei as 4 linhas de cima (erro 0,15px, rotação -7,99°) e as 3 de baixo (erro 1,0px, rotação -8°) separadamente, pra a curvatura de cima e a de
+       baixo ficarem EXATAMENTE como na imagem. */
+    var TOPSET={cx:173.7,cy:306.5,tilt:-7.99,a:[404.2,493.4,576.1,630.1],b:[151.2,202.0,252.2,294.8]};
+    /* baixo: as 3 linhas como UMA família de curvas paralelas (mesma trajetória, espaçamento igual ~87px) — o ajuste com uma elipse independente por linha deixava a 1ª
+       com curvatura diferente das outras duas. Erro 0,94px em relação à imagem. */
+    var BOTSET={cx:59.2,cy:-56.5,tilt:-8,a:[793.9,825.7,857.5],b:[714.5,799.8,889.4]};
+    var OPA_TOP=[.88,.76,.66,.56], OPA_BOT=[1,.9,.78];                         /* opacidade do fio por anel (de dentro pra fora) */
+    function drawRef(kx,ky){
+      [[TOPSET,svgB,ringsB,0,OPA_TOP],[BOTSET,svgF,ringsF,1,OPA_BOT]].forEach(function(c){
+        var S=c[0], sv=c[1], rings=c[2], half=c[3], opa=c[4], cx=S.cx*kx, cy=S.cy*ky;
+        if(LEVE){
+          sv.setAttribute('viewBox','0 0 '+W+' '+H);
+          var g=sv.querySelector('.s3m-rg'); g.setAttribute('transform','rotate('+S.tilt+' '+cx+' '+cy+')');
+          g.innerHTML=S.a.map(function(a0,i){
+            var a=a0*kx, b=S.b[i]*kx, d=half?('M'+(cx+a)+' '+cy+'A'+a+' '+b+' 0 0 1 '+(cx-a)+' '+cy):('M'+(cx-a)+' '+cy+'A'+a+' '+b+' 0 0 1 '+(cx+a)+' '+cy);
+            return '<path d="'+d+'" class="h" style="opacity:'+(.16*opa[i])+'"/><path d="'+d+'" class="c" style="opacity:'+opa[i]+'"/><path d="'+d+'" class="w" style="opacity:'+(.22*opa[i])+'"/>';
+          }).join('');
+        }else{
+          rings.forEach(function(r,i){
+            if(i>=S.a.length){ r.style.display='none'; return; }
+            var a=S.a[i]*kx, b=S.b[i]*kx, d=2*a;
+            r.style.width=d+'px'; r.style.height=d+'px'; r.style.left=(cx-a)+'px'; r.style.top=(cy-a)+'px'; r.style.transform='rotate('+S.tilt+'deg) scaleY('+(b/a)+')';
+          });
+        }
+      });
+    }
+    var W=0,H=0,CX=0,CY=0,GX=0,GY=0,RX=[],RY=[],seeded=false;
+    function pt(ri,th){ var x=RX[ri]*Math.cos(th), y=RY[ri]*Math.sin(th); return {x:CX+x*cosT-y*sinT,y:CY+x*sinT+y*cosT}; }
+    function measure(){
+      W=uni.clientWidth; H=uni.clientHeight;
+      /* geometria do desktop (getGeometry): base = altura exibida do documento * RING_K; núcleo = base * GLOW_K. Aqui a base sai do zoom escolhido. */
+      var base=ZOOM_CORE*W/GLOW_K, docH=base/RING_K, docW=docH*DOC_AR, ds=docW/DOC_NAT;
+      CX=W/2; CY=H*.5+(FORMA===1&&WITH_DOC?40*(docW/245.5):0);   /* forma 1 com folha: +40px é o DOC_FINAL_Y_OFFSET do desktop (documento exibido de ~245px de largura lá) */
+      var kx=W/REF.W, ky=H/REF.H;
+      if(FORMA===4){ CX=REF.cx*kx; CY=REF.cy*ky; base=REF.base*kx; }       /* centro e escala dos anéis medidos na referência */
+      GX=FORMA===4?REF.gx*kx:CX; GY=FORMA===4?REF.gy*ky:CY;               /* centro do núcleo */
+      docr.style.setProperty('--ds',ds);
+      docr.style.left=GX+'px'; docr.style.top=GY+'px';
+      if(FORMA===4){ drawRef(kx,ky); } else {
+      for(var i=0;i<4;i++){
+          var d=base*PLANES[i].s, sy=FORMA===2?Math.min(1.15,2*RYF[i]*H/d):PLANES[i].sy;
+          if(FORMA===1) d=2*(RYF1[i]*H)/sy;                                 /* forma 1: tamanho pela meia-altura desejada, achatamento original */
+          RX[i]=d/2; RY[i]=d/2*sy;
+          if(!LEVE){
+            var st={width:d+'px',height:d+'px',left:(CX-d/2)+'px',top:(CY-d/2)+'px',transform:'rotate('+TILT_DEG+'deg) scaleY('+sy+')'};
+            [ringsB[i],ringsF[i]].forEach(function(r){ for(var k in st) r.style[k]=st[k]; });
+          }
+        }
+        if(LEVE){
+          /* anéis em SVG: metade de CIMA (atrás do documento) e de BAIXO (na frente), 3 traços cada (halo largo, fio, brilho fino) */
+          [svgB,svgF].forEach(function(sv,half){
+            sv.setAttribute('viewBox','0 0 '+W+' '+H);
+            var g=sv.querySelector('.s3m-rg'); g.setAttribute('transform','rotate('+TILT_DEG+' '+CX+' '+CY+')');
+            g.innerHTML=RX.map(function(rx,i){
+              var ry=RY[i], d=half?('M'+(CX+rx)+' '+CY+'A'+rx+' '+ry+' 0 0 1 '+(CX-rx)+' '+CY):('M'+(CX-rx)+' '+CY+'A'+rx+' '+ry+' 0 0 1 '+(CX+rx)+' '+CY), a=half?1:.72;
+              var ra=[.78,.68,.58,.5][i]*(half?1:.9);          /* opacidade do fio por anel (de dentro pra fora), medida na referência: ~.74 no anel 0 e ~.53 no 2 */
+              return '<path d="'+d+'" class="h" style="opacity:'+(.16*ra)+'"/><path d="'+d+'" class="c" style="opacity:'+ra+'"/>';
+            }).join('');
+          });
+        }
+        }
+      var gd=FORMA===4?ZOOM_CORE*W:base*GLOW_K; glow.style.width=gd+'px'; glow.style.height=gd+'px'; glow.style.left=GX+'px'; glow.style.top=GY+'px';
+      /* triângulos PARADOS: cada um no ponto do anel do seu serviço (plano S2P) mais perto do lugar do esboço */
+      if(FORMA===4){
+        nodes.forEach(function(n,i){
+          var t=TREF[i], tx=t.x*kx, ty=t.y*ky, bq={x:tx,y:ty};
+          if(t.snap){ var best=1e9; for(var r=0;r<4;r++) for(var d3=0;d3<360;d3+=.5){ var q=pt(r,d3*RAD), dd=Math.pow(q.x-tx,2)+Math.pow(q.y-ty,2); if(dd<best){ best=dd; bq={x:q.x,y:q.y}; } } }   /* em cima os arcos mudaram: reassenta no arco mais próximo */
+          gsap.set(n,{x:bq.x,y:bq.y,xPercent:-50,yPercent:-50,scale:t.s*kx,rotation:t.r,opacity:1,zIndex:i<2?3:8});
+          var sh=bq.x+56>W?W-(bq.x+56):(bq.x-56<0?56-bq.x:0); n.style.setProperty('--sh',sh.toFixed(1)+'px');
+          n.style.setProperty('--ls',i<2?'.21em':'.13em');      /* espaçamento das letras do rótulo medido na referência (os de trás, mais abertos) */
+        });
+        seeded=true; return;
+      }
+      nodes.forEach(function(n,i){
+        var ring=S2P[i], best=1e9, bq=null;
+        for(var d2=0;d2<360;d2+=.5){ var q=pt(ring,d2*RAD), dist=Math.pow(q.x-TG[i].x*W,2)+Math.pow(q.y-TG[i].y*H,2); if(dist<best){ best=dist; bq={x:q.x,y:q.y,a:d2}; } }
+        /* profundidade como no desktop (placeNodes): lado de baixo = FRENTE (maior e mais forte), lado de cima = ATRÁS (menor); em cima passa atrás do
+           núcleo. minS por plano e escala até 1.08 são os do desktop; a opacidade de trás é mais alta que a do desktop (.58) pra não apagar. */
+        var depth=(Math.sin(bq.a*RAD)+1)/2, de=depth*depth*(3-2*depth), pl=PLANES[ring].s;
+        var minS=pl>=1.2?.73:pl>=1?.76:pl>=.8?.79:.82;
+        gsap.set(n,{x:bq.x,y:bq.y,xPercent:-50,yPercent:-50,scale:minS+de*(1.08-minS),opacity:.85+.15*de,zIndex:depth<.5?3:8});
+        /* rótulo sempre legível: se o triângulo está colado na borda, o texto desliza pra dentro da tela */
+        var sh=bq.x+56>W?W-(bq.x+56):(bq.x-56<0?56-bq.x:0);
+        n.style.setProperty('--sh',sh.toFixed(1)+'px');
+      });
+    }
+    if(!gsap) return;
+    measure();
+    addEventListener('resize',measure,{passive:true});
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    uni.addEventListener('click',function(e){
+      var b=e.target.closest('.s3m-node'); if(!b) return;
+      nodes.forEach(function(x){ x.classList.remove('is-hint'); });
+      openSheet(+b.getAttribute('data-i'));
+    });
+    /* entrada por TRANSIÇÃO DE CSS (tempo real, não depende de quadros do GSAP — com o GSAP a entrada podia ficar travada e os triângulos
+       invisíveis quando o aparelho engasgava). Fica escondido só até a cena aparecer na tela; se o observador não existir, já mostra. */
+    nodes.forEach(function(n,i){ n.style.setProperty('--d',(.45+i*.14)+'s'); });
+    if(canAnim && 'IntersectionObserver' in window){
+      uni.classList.add('is-wait');
+      var io=new IntersectionObserver(function(es){ if(es[0].isIntersecting){ uni.classList.add('is-in'); io.disconnect(); } },{threshold:.18});
+      io.observe(uni);
+      setTimeout(function(){ uni.classList.add('is-in'); },6000);          /* rede de segurança: nunca fica escondido */
+    }
+  }
+
+  /* ===================== OPÇÃO 6 — a opção 5 INTEGRADA na rolagem da seção 03 (mesmo esquema da animação do desktop) ===================== */
+  /* Usa o espaço de rolagem que sobra no celular: depois que o texto termina de entrar (t=16,4 da timeline) a seção ainda rola ~2500px (~3 telas) sem nada acontecer,
+     porque o desktop reserva esse trecho pra núcleo + anéis + triângulos e no celular essas camadas ficam escondidas. Aqui a cena (a da opção 5, forma 4) entra
+     DENTRO do palco da 03 e é ligada à MESMA timeline (gancho S3M_HOOK chamado por solucao-orbital.js, só com ?solucao=6), nos MESMOS instantes do desktop:
+       - texto sai (logo depois de terminar de entrar);
+       - núcleo acende e cresce (começa em openAt; pulso em revAt-0,3 = igual ao desktop);
+       - anéis entram UM POR VEZ, de dentro pra fora (revAt + k*1,4, duração 0,9, easing power1.inOut), cada um "desenhado" como no desktop: o traço sai de BAIXO e
+         segue no sentido HORÁRIO (esquerda, cima, direita, volta embaixo) — aqui em SVG (stroke-dashoffset) em vez da máscara cônica (cara no iPhone);
+       - o triângulo de cada anel aparece junto com o SEU anel (mesmo fator de revelação do desktop);
+       - fecho: pulso do núcleo no instante em que o último anel termina. Reversível (scrub). Sem o parâmetro nada muda. */
+  function buildV6(){
+    var stage=document.querySelector('#solucao .sol-stage');
+    if(!stage||!gsap) return;
+    var RAD=Math.PI/180, REF={W:375,H:841,gx:186,gy:397}, ZOOM=.904;
+    var TOPSET={cx:173.7,cy:306.5,tilt:-7.99,a:[404.2,493.4,576.1,630.1],b:[151.2,202.0,252.2,294.8]};
+    var BOTSET={cx:59.2,cy:-56.5,tilt:-8,a:[793.9,825.7,857.5],b:[714.5,799.8,889.4]};
+    var OPA_TOP=[.88,.76,.66,.56], OPA_BOT=[1,.9,.78];
+    var TREF=[{x:97.5,y:62,s:.89,r:0,ring:2},{x:299.5,y:146.5,s:.84,r:0,ring:0},{x:49,y:655.5,s:1.32,r:0,ring:0},{x:320.5,y:703.5,s:1.10,r:-7,ring:1}];
+    var wrap=el('div','s3m-int s3m--v5',
+      '<div class="orbit-glow s3m-glow" aria-hidden="true"></div>'+
+      '<svg class="s3m-rsvg s3m-int__b" aria-hidden="true"><g class="s3m-rg"></g></svg>'+
+      '<svg class="s3m-rsvg s3m-int__f" aria-hidden="true"><g class="s3m-rg"></g></svg>'+
+      SERV.map(function(s,i){
+        return '<button type="button" class="s3m-node" data-i="'+i+'" aria-label="'+s.a+' '+s.b+'"><span class="s3m-node__in">'+TRI+'<span class="s3m-node__lb">'+s.b+'</span></span></button>';
+      }).join(''));
+    stage.appendChild(wrap);
+    var glow=wrap.querySelector('.s3m-glow'), svgB=wrap.querySelector('.s3m-int__b'), svgF=wrap.querySelector('.s3m-int__f'), nodes=$$('.s3m-node',wrap);
+    var W=0,H=0, RS=[{p:0},{p:0},{p:0},{p:0}], parts=[[],[],[],[]], wins=[null,null,null,null], hookRan=false;
+
+    /* pontos (px da tela) da metade de cima (half 0: esq.->dir.) ou de baixo (half 1: dir.->esq.) da elipse i do conjunto S, só o trecho visível */
+    function pts(S,i,half,kx,ky){
+      var cx=S.cx*kx, cy=S.cy*ky, a=S.a[i]*kx, b=S.b[i]*kx, th=S.tilt*RAD, c=Math.cos(th), s=Math.sin(th), out=[];
+      for(var d=0;d<=180;d+=.5){
+        var t=(half?d:180+d)*RAD, ex=a*Math.cos(t), ey=b*Math.sin(t), X=cx+ex*c-ey*s, Y=cy+ex*s+ey*c;
+        if(X>-60&&X<W+60&&Y>-60&&Y<H+60) out.push([X,Y]);
+      }
+      return out;
+    }
+    function len(P){ var L=0; for(var i=1;i<P.length;i++) L+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); return L; }
+    function pathG(P,ring,part,opa){
+      if(P.length<2) return '';
+      var d='M'+P.map(function(q){ return q[0].toFixed(1)+' '+q[1].toFixed(1); }).join('L');
+      return '<g data-r="'+ring+'" data-part="'+part+'" style="stroke-dasharray:1 1;stroke-dashoffset:1;visibility:hidden">'+
+        '<path pathLength="1" d="'+d+'" class="h" style="opacity:'+(.16*opa)+'"/><path pathLength="1" d="'+d+'" class="c" style="opacity:'+opa+'"/><path pathLength="1" d="'+d+'" class="w" style="opacity:'+(.22*opa)+'"/></g>';
+    }
+    function build(kx,ky){
+      var htmlB='', htmlF='', L=[];
+      for(var i=0;i<4;i++){
+        var T=pts(TOPSET,i,0,kx,ky); htmlB+=pathG(T,i,'t',OPA_TOP[i]);
+        var BL=[],BR=[];
+        if(i<BOTSET.a.length){
+          var P=pts(BOTSET,i,1,kx,ky), apex=0; for(var j=1;j<P.length;j++) if(P[j][1]>P[apex][1]) apex=j;
+          BR=P.slice(0,apex+1); BL=P.slice(apex);                         /* a ponta de baixo: à direita dela volta no fim da volta, à esquerda sai primeiro */
+          htmlF+=pathG(BL,i,'bl',OPA_BOT[i])+pathG(BR,i,'br',OPA_BOT[i]);
+        }
+        L[i]={bl:BL.length>1?len(BL):0,t:T.length>1?len(T):0,br:BR.length>1?len(BR):0};
+      }
+      svgB.setAttribute('viewBox','0 0 '+W+' '+H); svgF.setAttribute('viewBox','0 0 '+W+' '+H);
+      svgB.querySelector('.s3m-rg').innerHTML=htmlB; svgF.querySelector('.s3m-rg').innerHTML=htmlF;
+      /* janelas do progresso p (0..1) de cada anel: a volta horária começa embaixo (trecho esquerdo), passa pela esquerda (fora da tela), sobe e cruza o topo da esq. pra dir.,
+         desce pela direita (fora da tela) e volta embaixo (trecho direito). Os vãos "fora da tela" gastam tempo proporcional (16% do total visível cada). */
+      for(var k=0;k<4;k++){
+        var l=L[k], tot=(l.bl+l.t+l.br)||1, gap=.16*tot, seq=[], cur=0, w={};
+        if(l.bl>0){ seq.push(['bl',cur,cur+l.bl]); cur+=l.bl; }
+        if(l.t>0){ if(seq.length) cur+=gap; seq.push(['t',cur,cur+l.t]); cur+=l.t; }
+        if(l.br>0){ if(seq.length) cur+=gap; seq.push(['br',cur,cur+l.br]); cur+=l.br; }
+        seq.forEach(function(s){ w[s[0]]=[s[1]/cur,s[2]/cur]; }); wins[k]=w;
+      }
+      parts=[0,1,2,3].map(function(k){ return $$('g[data-r="'+k+'"]',wrap); });
+    }
+    function applyRing(k){
+      var p=RS[k].p, w=wins[k]; if(!w) return;
+      parts[k].forEach(function(g){
+        var win=w[g.getAttribute('data-part')]; if(!win) return;
+        var q=Math.max(0,Math.min(1,(p-win[0])/(win[1]-win[0]||1)));
+        g.style.strokeDashoffset=(1-q).toFixed(4); g.style.visibility=q>0?'visible':'hidden';
+      });
+      nodes.forEach(function(n,i){
+        if(TREF[i].ring!==k) return;
+        n.style.visibility=p<.02?'hidden':'visible';
+        gsap.set(n,{opacity:p,scale:TREF[i].s*(W/REF.W)*(.78+.22*p)});
+      });
+    }
+    function measure(){
+      W=wrap.clientWidth; H=wrap.clientHeight; if(!W||!H) return;
+      var kx=W/REF.W, ky=H/REF.H;
+      glow.style.width=(ZOOM*W)+'px'; glow.style.height=(ZOOM*W)+'px'; glow.style.left=(REF.gx*kx)+'px'; glow.style.top=(REF.gy*ky)+'px';
+      build(kx,ky);
+      nodes.forEach(function(n,i){
+        var t=TREF[i], bx=t.x*kx, sh=bx+56>W?W-(bx+56):(bx-56<0?56-bx:0);
+        gsap.set(n,{x:bx,y:t.y*ky,xPercent:-50,yPercent:-50,rotation:t.r,zIndex:8});
+        n.style.setProperty('--sh',sh.toFixed(1)+'px'); n.style.setProperty('--ls',i<2?'.21em':'.13em');
+      });
+      for(var k=0;k<4;k++) applyRing(k);
+    }
+    /* estado inicial (antes da timeline chegar lá): tudo escondido */
+    gsap.set(glow,{autoAlpha:0,'--gs':.25});
+    measure();
+    addEventListener('resize',measure,{passive:true});
+    if(document.fonts&&document.fonts.ready) document.fonts.ready.then(measure);
+    wrap.addEventListener('click',function(e){ var b=e.target.closest('.s3m-node'); if(b && b.style.visibility!=='hidden') openSheet(+b.getAttribute('data-i')); });
+
+    function showAll(){ gsap.set(glow,{autoAlpha:1,'--gs':1}); RS.forEach(function(r,k){ r.p=1; applyRing(k); }); }
+    window.S3M_HOOK=function(tl,T){
+      hookRan=true;
+      var intro=document.querySelector('.s3o-intro'), sid=document.querySelector('.s3-id');
+      if(reduce){ showAll(); return; }
+      /* 1) texto sai logo depois de terminar de entrar */
+      tl.to([intro,sid],{autoAlpha:0,duration:.6,ease:'none'},T.openAt-.05);
+      /* 2) núcleo acende e cresce, e pulsa no mesmo instante do desktop (PULSO_AT = revAt-0,3) */
+      tl.fromTo(glow,{autoAlpha:0,'--gs':.25},{autoAlpha:1,'--gs':1,duration:1.0,ease:'power2.out',immediateRender:false},T.openAt+.5);
+      var B='brightness(1.62) saturate(1.28)', N='brightness(1) saturate(1)';
+      tl.fromTo(glow,{filter:N,'--gs':1},{filter:B,'--gs':1.15,duration:.3,ease:'power2.out',immediateRender:false},T.revAt-.3);
+      tl.fromTo(glow,{filter:B,'--gs':1.15},{filter:N,'--gs':1,duration:.6,ease:'power2.inOut',immediateRender:false},T.revAt);
+      /* 3) anéis UM POR VEZ, de dentro pra fora, com o triângulo de cada um */
+      RS.forEach(function(r,k){
+        tl.fromTo(r,{p:0},{p:1,duration:T.dur,ease:'power1.inOut',immediateRender:false,onUpdate:function(){ applyRing(k); },onReverseComplete:function(){ applyRing(k); }},T.revAt+k*T.step);
+      });
+      /* 4) fecho: pulso do núcleo quando o último anel termina */
+      var fim=T.revAt+3*T.step+T.dur;
+      tl.fromTo(glow,{filter:N},{filter:B,duration:.3,ease:'power2.out',immediateRender:false},fim);
+      tl.fromTo(glow,{filter:B},{filter:N,duration:.7,ease:'power2.inOut',immediateRender:false},fim+.3);
+    };
+    /* rede de segurança: se a timeline da 03 não chamar o gancho (ex.: erro no motor orbital), mostra o estado final em vez de uma cena vazia */
+    addEventListener('load',function(){ setTimeout(function(){ if(!hookRan) showAll(); },4000); });
+  }
+
+  /* ===================== FECHO (igual nas 5) ===================== */
   function buildFecho(){
     var f=el('div','s3m-fecho',
       '<p class="s3m-fecho__t">Sem compromisso: você vê o valor antes de começar.</p>'+
@@ -284,7 +619,7 @@
     e.preventDefault(); closeSheet(); t.click();
   });
 
-  if(V===1||V===2) buildSheet();
-  [null,buildV1,buildV2,buildV3,buildV4][V]();
+  if(V===1||V===2||V===5||V===6) buildSheet();
+  [null,buildV1,buildV2,buildV3,buildV4,buildV5,buildV6][V]();
   buildFecho();
 })();

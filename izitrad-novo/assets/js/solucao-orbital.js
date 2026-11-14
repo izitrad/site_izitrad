@@ -344,6 +344,11 @@
       addEventListener('resize', sync, {passive:true});
       if(window.ScrollTrigger && ScrollTrigger.addEventListener) ScrollTrigger.addEventListener('refresh', sync);
     }
+    /* Gancho OPCIONAL (só existe com ?solucao=6 no celular, definido em solucao-mobile.js): deixa a versão mobile da cena (anéis/núcleo/triângulos em SVG) usar
+       os MESMOS instantes desta timeline. Sem o gancho nada acontece aqui (desktop e padrão do celular intactos). */
+    if(window.S3M_HOOK){
+      window.S3M_HOOK(tl, { introAt: introAt, openAt: openAt, revAt: openAt + NUCLEO_LEAD + OPEN_DUR, step: 1.4, dur: 0.9 });
+    }
   }
 
   window.SolucaoOrbital = {
