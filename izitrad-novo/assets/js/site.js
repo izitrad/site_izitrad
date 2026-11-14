@@ -1636,14 +1636,26 @@ function initSolucao(root){
   const irParaSolucao = ()=>{
     const st = tl.scrollTrigger, palco = q('.sol-stage')[0];
     if(!st || !palco || getComputedStyle(palco).position !== 'sticky') return false;
-    const y = st.start + ((ORBITAL_OPEN_AT + 7.8 + (window.S3M_HOLD||0)) / tl.duration()) * (st.end - st.start);
+    // CELULAR (solucao-mobile.js define window.S3M_HOLD = tamanho da pausa em unidades da timeline): o botão leva à PÁGINA da 03 com o texto de abertura completo e PARADO
+    // (rótulo + título + parágrafo, o trecho da pausa que vem antes de o texto subir) — no MEIO da pausa, ORBITAL_OPEN_AT-0,05 (onde o texto começaria a subir) + HOLD/2 — e não
+    // mais ao fim da animação (folha e anéis). Desktop (S3M_HOLD indefinido): continua indo ao fim, como sempre.
+    const tAlvo = (typeof window.S3M_HOLD === 'number') ? (ORBITAL_OPEN_AT - .05 + window.S3M_HOLD/2) : (ORBITAL_OPEN_AT + 7.8);
+    const y = st.start + (tAlvo / tl.duration()) * (st.end - st.start);
     window.scrollTo({top:y, behavior:'auto'});
     return true;
   };
   document.querySelectorAll('.main-nav a[href="#solucao"]').forEach(a=>a.addEventListener('click', e=>{
     if(irParaSolucao()){ e.preventDefault(); history.replaceState(null, '', '#solucao'); }
   }));
-  if(location.hash === '#solucao'){ setTimeout(irParaSolucao, 0); setTimeout(irParaSolucao, 500); }
+  if(location.hash === '#solucao'){
+    setTimeout(irParaSolucao, 0); setTimeout(irParaSolucao, 500);
+    // CELULAR: a seção 03 ganhou a pausa (solucao-mobile.js alonga a seção e a timeline) e o ScrollTrigger só remede os pontos depois do carregamento completo, então as duas
+    // tentativas acima podiam cair num ponto desatualizado (pousava ANTES do texto). Novas tentativas mais tarde, só se a pessoa ainda não mexeu na tela.
+    if(typeof window.S3M_HOLD === 'number'){
+      let mexeu = false; ['wheel','touchstart','keydown','mousedown'].forEach(ev=>addEventListener(ev,()=>{ mexeu = true; },{once:true,passive:true}));
+      [1200, 2500, 4000].forEach(ms=>setTimeout(()=>{ if(!mexeu) irParaSolucao(); }, ms));
+    }
+  }
 
   gsap.to(q('.progress i'),{height:'100%',ease:'none',
     scrollTrigger:{trigger:root,start:'top top',end:'bottom bottom',scrub:true}});

@@ -129,10 +129,17 @@ function setupDesktop(){
   /* No celular as palavras do título ficam em camadas estáveis (translateZ/backface, ver secao04.css — antes era o teste ?risco=2, aprovado);
      o teste ?risco=1 (um desfoque só pro bloco) foi descartado e removido. */
   const blurH = viewportW/scaleBase*10;
+  /* CELULAR (pedido dela, comparando no iPhone): o título "E por trás do simples?" e a frase de abertura entram um pouco MAIS borrados (desfoque inicial 6px fixos; antes ~2,9px
+     numa tela de 412px) e só ficam nítidos um pouco mais pra CIMA (quando o topo do bloco chega a 30% da altura da tela, em vez de 50% = "center"/"50%"; ~75px a mais de
+     subida num iPhone). Sutil, só no celular; os compromissos que vêm depois não mudam. ?borrao=0 volta ao de antes (comparação). */
+  const novoBorrao = celular && !/[?&]borrao=0(&|#|$)/.test(location.search);
+  const blurT = novoBorrao ? 6 : blurH;                       /* 6px fixos no celular (escolha dela; antes: ~2,9px a 412px de largura) */
+  const endTitulo = novoBorrao ? "top 30%" : "top center";
+  const endFrase = novoBorrao ? "top 30%" : "top 50%";
   gsap.set(headingWords,{
     display:"inline-block",
     autoAlpha:0,
-    filter:`blur(${blurH}px)`
+    filter:`blur(${blurT}px)`
   });
 
   const headingTween = gsap.timeline({
@@ -140,12 +147,12 @@ function setupDesktop(){
     scrollTrigger:{
       scrub:true,
       start:"top bottom",
-      end:"top center",
+      end:endTitulo,
       trigger:heading
     }
   }).fromTo(
     headingWords,
-    {autoAlpha:0, filter:`blur(${blurH}px)`},
+    {autoAlpha:0, filter:`blur(${blurT}px)`},
     {
       autoAlpha:1,
       stagger:.04,
@@ -164,13 +171,13 @@ function setupDesktop(){
     if(par){
       const parWords = dividirEmPalavras(par);
       if(parWords.length){
-        gsap.set(parWords, {display:"inline-block", autoAlpha:0, filter:`blur(${blurH}px)`});
+        gsap.set(parWords, {display:"inline-block", autoAlpha:0, filter:`blur(${blurT}px)`});
         const parTween = gsap.timeline({
           paused:true,
-          scrollTrigger:{ scrub:true, start:"top 92%", end:"top 50%", trigger:par }
+          scrollTrigger:{ scrub:true, start:"top 92%", end:endFrase, trigger:par }
         }).fromTo(
           parWords,
-          {autoAlpha:0, filter:`blur(${blurH}px)`},
+          {autoAlpha:0, filter:`blur(${blurT}px)`},
           {autoAlpha:1, stagger:.04, duration:.2, ease:"none", filter:"blur(0px)"}
         );
         desktopAnimations.push(parTween);
