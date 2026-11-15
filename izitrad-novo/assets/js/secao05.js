@@ -77,9 +77,16 @@ function build(){
      percurso (o pouso). ?triop=NN ajusta o valor (em %, 100 = como no desktop) pra ela comparar no iPhone. Desktop: 1, nada muda. */
   const mop=/[?&]triop=(\d{1,3})(?:&|#|$)/.exec(location.search);
   const OPA_VOO=celular?Math.max(0,Math.min(1,(mop?+mop[1]:50)/100)):1;
-  tl=gsap.timeline({paused:true,scrollTrigger:{scrub:true,start:'top bottom',end:`bottom =+${innerHeight*1.3}`,trigger:section,onUpdate:self=>{if(self.progress>0&&self.progress<1)wrapper.classList.add('is-scrolling');else wrapper.classList.remove('is-scrolling')}},defaults:{duration:1,ease:'none'}})
+  /* VERSÃO LEVE (celular, ?leve=1 pra ela comparar no iPhone): o voo travava. Medido no simulador, o triângulo acrescenta ~12% ao tempo de rolagem dessa parte (a maior fatia é a
+     MÁSCARA do formato; depois o DESFOQUE). Aqui: (1) SEM desfoque — ele só aparece por opacidade (o filtro animado recalcula o desenho a cada quadro no iPhone); (2) o triângulo e o botão
+     dele viram camadas próprias SÓ durante o voo (will-change, pra o iPhone animar posição/giro/escala/opacidade sem redesenhar a máscara); (3) transition do CSS desligada durante o voo
+     (o .technology tem transition:opacity .35s, e o voo muda a opacidade a cada quadro: reiniciava a transição o tempo todo). Fora do voo tudo volta ao normal. */
+  const leve=celular&&/[?&]leve=1(?:&|#|$)/.test(location.search);
+  document.documentElement.classList.toggle('tri-leve',leve);   // (4) o triângulo vira imagem SVG com degradê em vez de degradê + máscara (secao05.css, html.tri-leve)
+  const voando=on=>{ first.style.willChange=(leve&&on)?'transform,opacity':''; first.firstElementChild.style.willChange=(leve&&on)?'transform':''; first.style.transition=(leve&&on)?'none':''; };
+  tl=gsap.timeline({paused:true,scrollTrigger:{scrub:true,start:'top bottom',end:`bottom =+${innerHeight*1.3}`,trigger:section,onUpdate:self=>{if(self.progress>0&&self.progress<1){wrapper.classList.add('is-scrolling');voando(true)}else{wrapper.classList.remove('is-scrolling');voando(false)}}},defaults:{duration:1,ease:'none'}})
     .to(first,{motionPath:{path:'#motionPath',align:'#motionPath',start:1,end:0,alignOrigin:[.5,.5],autoRotate:false},ease:'none'},0)
-    .fromTo(first,{opacity:0,filter:`blur(${blur}px)`},Object.assign({opacity:OPA_VOO,filter:'blur(0px)',duration:.4,ease:'none'},celular?{clearProps:'filter'}:{}),0)   /* celular: ao ficar nítido o filtro é REMOVIDO (blur(0px) ainda deixaria o triângulo numa camada de filtro no iPhone, mais pesada) */
+    .fromTo(first,leve?{opacity:0}:{opacity:0,filter:`blur(${blur}px)`},leve?{opacity:OPA_VOO,duration:.4,ease:'none'}:Object.assign({opacity:OPA_VOO,filter:'blur(0px)',duration:.4,ease:'none'},celular?{clearProps:'filter'}:{}),0)   /* celular: ao ficar nítido o filtro é REMOVIDO (blur(0px) ainda deixaria o triângulo numa camada de filtro no iPhone, mais pesada); ?leve=1: nem tem filtro */
     .fromTo(first.firstElementChild,{rotate:450,scale:.3},{rotate:0,scale:1,ease:'none'},0);
   if(OPA_VOO<1) tl.to(first,{opacity:1,duration:.2,ease:'none'},.8);   // pouso: volta a 100%
 }
