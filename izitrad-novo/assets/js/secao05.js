@@ -45,15 +45,43 @@ function buildHeading(){
   );
 }
 
+/* CELULAR (pedido dela): o triângulo "Nossa Missão" faz no celular a MESMA animação do desktop — voa pela curva (#motionPath), girando (450° -> 0), crescendo (30% -> 100%)
+   e ficando nítido/opaco — e pousa no lugar dele; só ele anima (os outros dois aparecem quando ele pousa, via .is-scrolling). Mudanças só pro celular: (1) a curva é
+   escondida por CSS (display:none) e fica desenhada pra uma tela larga, então aqui ela é REPOSICIONADA e esticada pra tela vertical: o INÍCIO dela (ponto de pouso,
+   539,5/1131,5 do viewBox) é posto exatamente no CENTRO do triângulo (o MotionPath leva o centro do elemento pra cima da curva, então só assim ele termina no lugar
+   certo), a largura da curva cabe na tela (96%) e a altura é ~0,9 da altura da tela (sem passar do topo da seção); (2) desfoque inicial 15px (no desktop é ~50px — no
+   iPhone um desfoque forte num triângulo grande pesa/gera faixas). Devolve false se algo faltar (aí fica sem animação, como antes). */
+function posicionarCurvaCelular(){
+  const svg=document.querySelector('.path-svg'), path=document.getElementById('motionPath'), bg=svg&&svg.parentElement;
+  if(!svg||!path||!bg) return false;
+  bg.style.display='block'; bg.style.pointerEvents='none';     // secao04.css (bloco do celular) tem ".background{display:none}" global, que esconde este fundo (transparente, atrás do conteúdo) e zera a medida da curva
+  svg.style.display='block';                                   // o CSS do celular tem display:none (visibility:hidden continua: a curva não aparece)
+  svg.setAttribute('preserveAspectRatio','none');
+  const bb=path.getBBox(), br=bg.getBoundingClientRect(), fr=first.getBoundingClientRect();
+  if(!bb.width||!bb.height||!br.width||!fr.width) return false;
+  const LX=539.5, LY=1131.5;                                    // início da curva (ponto de pouso), em coordenadas do viewBox 1226x1132
+  const cx=fr.left+fr.width/2-br.left, cy=fr.top+fr.height/2-br.top;   // centro do triângulo em repouso, relativo ao fundo da seção
+  const sx=(br.width*.96)/bb.width;
+  const sy=Math.max(.05,Math.min(.9*innerHeight/bb.height, cy/(LY-bb.y)));
+  svg.style.cssText+=';position:absolute;bottom:auto;transform:none;left:'+(cx-LX*sx)+'px;top:'+(cy-LY*sy)+'px;width:'+(1226*sx)+'px;height:'+(1132*sy)+'px';
+  return true;
+}
+
 function build(){
   if(tl){tl.scrollTrigger?.kill();tl.kill();tl=null;}
   gsap.set(first,{clearProps:'all'});gsap.set(first.firstElementChild,{clearProps:'transform'});wrapper.classList.remove('is-scrolling');
-  if(innerWidth<=600)return;
-  const blur=innerWidth/1440*50;
+  const celular=innerWidth<=600;
+  if(celular && !posicionarCurvaCelular()) return;
+  const blur=celular?15:innerWidth/1440*50;
+  /* CELULAR (pedido dela): durante o voo o triângulo passa POR CIMA do texto do parágrafo, então a opacidade dele no voo é menor (OPA_VOO) e só sobe a 100% nos ÚLTIMOS 20% do
+     percurso (o pouso). ?triop=NN ajusta o valor (em %, 100 = como no desktop) pra ela comparar no iPhone. Desktop: 1, nada muda. */
+  const mop=/[?&]triop=(\d{1,3})(?:&|#|$)/.exec(location.search);
+  const OPA_VOO=celular?Math.max(0,Math.min(1,(mop?+mop[1]:50)/100)):1;
   tl=gsap.timeline({paused:true,scrollTrigger:{scrub:true,start:'top bottom',end:`bottom =+${innerHeight*1.3}`,trigger:section,onUpdate:self=>{if(self.progress>0&&self.progress<1)wrapper.classList.add('is-scrolling');else wrapper.classList.remove('is-scrolling')}},defaults:{duration:1,ease:'none'}})
     .to(first,{motionPath:{path:'#motionPath',align:'#motionPath',start:1,end:0,alignOrigin:[.5,.5],autoRotate:false},ease:'none'},0)
-    .fromTo(first,{opacity:0,filter:`blur(${blur}px)`},{opacity:1,filter:'blur(0px)',duration:.4,ease:'none'},0)
+    .fromTo(first,{opacity:0,filter:`blur(${blur}px)`},Object.assign({opacity:OPA_VOO,filter:'blur(0px)',duration:.4,ease:'none'},celular?{clearProps:'filter'}:{}),0)   /* celular: ao ficar nítido o filtro é REMOVIDO (blur(0px) ainda deixaria o triângulo numa camada de filtro no iPhone, mais pesada) */
     .fromTo(first.firstElementChild,{rotate:450,scale:.3},{rotate:0,scale:1,ease:'none'},0);
+  if(OPA_VOO<1) tl.to(first,{opacity:1,duration:.2,ease:'none'},.8);   // pouso: volta a 100%
 }
 buildHeading();
 build();
