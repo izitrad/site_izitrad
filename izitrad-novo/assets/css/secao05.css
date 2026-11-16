@@ -255,7 +255,7 @@ body.panel-lock{overflow:hidden}
   box-sizing:border-box;
 }
 
-/* ---------- CELULAR, versão leve do voo (?leve=1, ver secao05.js): o triângulo "Nossa Missão" desenhado como IMAGEM SVG com degradê em vez de degradê + máscara ----------
+/* ---------- CELULAR, versão leve do voo (padrão no celular, ver secao05.js): o triângulo "Nossa Missão" desenhado como IMAGEM SVG com degradê em vez de degradê + máscara ----------
    Medido no simulador: a máscara (mask-image) sobre o degradê, com o triângulo girando e crescendo, era a maior parte do custo do voo; um SVG com degradê (mesmas cores/paradas,
    degradê vertical = --app-deg:180deg, mesmo formato do triângulo) custa metade. Só o 1º triângulo (o que voa), só no celular e só com a classe tri-leve (colocada pelo JS). */
 @media(max-width:600px){

@@ -31,26 +31,17 @@ function buildHeading(){
   const words=heading.querySelectorAll('.word');
   gsap.set(words,{autoAlpha:0});
   const refWidth=innerWidth<=600?375:1440;
-  /* CELULAR, VERSÃO PRA COMPARAR (?tleve=1): depois que cada palavra do título fica nítida, o filtro "blur(0px)" e o will-change (CSS: .word{will-change:filter,opacity}) ficavam nela
-     pra sempre — no iPhone cada palavra continuava sendo uma camada com filtro, e o triângulo que voa por cima do título tem que se misturar com todas. Aqui o filtro é REMOVIDO quando a
-     palavra termina de aparecer e o will-change só vale ENQUANTO o título está aparecendo (ao rolar de volta tudo volta como era). Visualmente igual: blur(0px) = sem desfoque. Desktop: nada muda. */
-  const tleve=innerWidth<=600&&/[?&]tleve=1(?:&|#|$)/.test(location.search);
-  /* SÓ DIAGNÓSTICO (celular, por URL — remover depois do teste): ?diag=texto = palavras do título aparecem só por opacidade (sem desfoque); ?diag=tri = o triângulo "Nossa Missão" não aparece. */
-  const diagTexto=innerWidth<=600&&/[?&]diag=texto(?:&|#|$)/.test(location.search);
-  if(innerWidth<=600&&/[?&]diag=tri(?:&|#|$)/.test(location.search)&&!document.getElementById('diag-tri')){ const s=document.createElement('style'); s.id='diag-tri'; s.textContent='.technology:first-child{visibility:hidden!important}'; document.head.appendChild(s); }
-  document.documentElement.classList.toggle('tit-leve',tleve);
   headingTl=gsap.timeline({
     paused:true,
     scrollTrigger:{
       scrub:true,
       start:'top bottom',
       end:`=-${innerHeight/2}`,
-      trigger:heading,
-      onUpdate:tleve?(self=>{ const wc=(self.progress>0&&self.progress<1)?'':'auto'; if(words[0]&&words[0].style.willChange!==wc) words.forEach(w=>{w.style.willChange=wc}); }):undefined
+      trigger:heading
     }
   }).fromTo(words,
-    diagTexto?{autoAlpha:0}:{autoAlpha:0,filter:`blur(${innerWidth/refWidth*10}px)`},
-    diagTexto?{autoAlpha:1,stagger:.04,duration:.2,ease:'none'}:Object.assign({autoAlpha:1,filter:'blur(0px)',stagger:.04,duration:.2,ease:'none'},tleve?{clearProps:'filter'}:{})
+    {autoAlpha:0,filter:`blur(${innerWidth/refWidth*10}px)`},
+    {autoAlpha:1,filter:'blur(0px)',stagger:.04,duration:.2,ease:'none'}
   );
 }
 
@@ -81,21 +72,20 @@ function build(){
   gsap.set(first,{clearProps:'all'});gsap.set(first.firstElementChild,{clearProps:'transform'});wrapper.classList.remove('is-scrolling');
   const celular=innerWidth<=600;
   if(celular && !posicionarCurvaCelular()) return;
-  const blur=celular?15:innerWidth/1440*50;
-  /* CELULAR (pedido dela): durante o voo o triângulo passa POR CIMA do texto do parágrafo, então a opacidade dele no voo é menor (OPA_VOO) e só sobe a 100% nos ÚLTIMOS 20% do
-     percurso (o pouso). ?triop=NN ajusta o valor (em %, 100 = como no desktop) pra ela comparar no iPhone. Desktop: 1, nada muda. */
-  const mop=/[?&]triop=(\d{1,3})(?:&|#|$)/.exec(location.search);
-  const OPA_VOO=celular?Math.max(0,Math.min(1,(mop?+mop[1]:50)/100)):1;
-  /* VERSÃO LEVE (celular, ?leve=1 pra ela comparar no iPhone): o voo travava. Medido no simulador, o triângulo acrescenta ~12% ao tempo de rolagem dessa parte (a maior fatia é a
+  const blur=innerWidth/1440*50;   // só desktop (no celular o triângulo não usa desfoque, ver "leve" abaixo)
+  /* CELULAR (pedido dela): durante o voo o triângulo passa POR CIMA do texto do parágrafo, então a opacidade dele no voo é menor (OPA_VOO = 75%, escolhida por ela comparando 50% x 75% no
+     iPhone) e só sobe a 100% nos ÚLTIMOS 20% do percurso (o pouso). Desktop: 1, nada muda. */
+  const OPA_VOO=celular?.75:1;
+  /* VERSÃO LEVE (celular; aprovada por ela no iPhone, virou o padrão): o voo travava. Medido no simulador, o triângulo acrescentava ~12% ao tempo de rolagem dessa parte (a maior fatia é a
      MÁSCARA do formato; depois o DESFOQUE). Aqui: (1) SEM desfoque — ele só aparece por opacidade (o filtro animado recalcula o desenho a cada quadro no iPhone); (2) o triângulo e o botão
      dele viram camadas próprias SÓ durante o voo (will-change, pra o iPhone animar posição/giro/escala/opacidade sem redesenhar a máscara); (3) transition do CSS desligada durante o voo
      (o .technology tem transition:opacity .35s, e o voo muda a opacidade a cada quadro: reiniciava a transição o tempo todo). Fora do voo tudo volta ao normal. */
-  const leve=celular&&/[?&]leve=1(?:&|#|$)/.test(location.search);
+  const leve=celular;
   document.documentElement.classList.toggle('tri-leve',leve);   // (4) o triângulo vira imagem SVG com degradê em vez de degradê + máscara (secao05.css, html.tri-leve)
   const voando=on=>{ first.style.willChange=(leve&&on)?'transform,opacity':''; first.firstElementChild.style.willChange=(leve&&on)?'transform':''; first.style.transition=(leve&&on)?'none':''; };
   tl=gsap.timeline({paused:true,scrollTrigger:{scrub:true,start:'top bottom',end:`bottom =+${innerHeight*1.3}`,trigger:section,onUpdate:self=>{if(self.progress>0&&self.progress<1){wrapper.classList.add('is-scrolling');voando(true)}else{wrapper.classList.remove('is-scrolling');voando(false)}}},defaults:{duration:1,ease:'none'}})
     .to(first,{motionPath:{path:'#motionPath',align:'#motionPath',start:1,end:0,alignOrigin:[.5,.5],autoRotate:false},ease:'none'},0)
-    .fromTo(first,leve?{opacity:0}:{opacity:0,filter:`blur(${blur}px)`},leve?{opacity:OPA_VOO,duration:.4,ease:'none'}:Object.assign({opacity:OPA_VOO,filter:'blur(0px)',duration:.4,ease:'none'},celular?{clearProps:'filter'}:{}),0)   /* celular: ao ficar nítido o filtro é REMOVIDO (blur(0px) ainda deixaria o triângulo numa camada de filtro no iPhone, mais pesada); ?leve=1: nem tem filtro */
+    .fromTo(first,leve?{opacity:0}:{opacity:0,filter:`blur(${blur}px)`},leve?{opacity:OPA_VOO,duration:.4,ease:'none'}:{opacity:OPA_VOO,filter:'blur(0px)',duration:.4,ease:'none'},0)   /* celular: só opacidade, sem filtro (ver "leve"); desktop: opacidade + desfoque como sempre */
     .fromTo(first.firstElementChild,{rotate:450,scale:.3},{rotate:0,scale:1,ease:'none'},0);
   if(OPA_VOO<1) tl.to(first,{opacity:1,duration:.2,ease:'none'},.8);   // pouso: volta a 100%
 }

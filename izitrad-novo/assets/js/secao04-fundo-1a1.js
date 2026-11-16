@@ -76,10 +76,7 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     if(techBg) techBg.classList.add('tech-bg-fallback');
     return;
   }
-  /* CELULAR, VERSÃO PRA COMPARAR (?fpx=1): o fundo é um degradê suave e desfocado, então calcular em resolução 1x (em vez de até 1,5x) quase não muda o que se vê e tira ~55% dos pixels
-     que o iPhone calcula por quadro (3 ruídos 3D por pixel). Sem o parâmetro: igual a antes. */
-  const FPX = innerWidth <= 600 && /[?&]fpx=1(?:&|#|$)/.test(location.search);
-  renderer.setPixelRatio(FPX ? 1 : Math.min(Math.max(devicePixelRatio,1),1.5));
+  renderer.setPixelRatio(Math.min(Math.max(devicePixelRatio,1),1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.domElement.className = "izi-sec04-gl";
   renderer.domElement.setAttribute("aria-hidden","true");
@@ -288,8 +285,6 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   }
 
   let scrollCurrent = scrollY, lastProgress = 0, last = performance.now(), running = false, inView = true;
-  const DIAG_FUNDO = innerWidth <= 600 && /[?&]diag=fundo(?:&|#|$)/.test(location.search); let diagCont = 0;   // só diagnóstico (ver tick)
-  const F30 = innerWidth <= 600 && /[?&]f30=1(?:&|#|$)/.test(location.search); let lastDraw = 0;   // versão pra comparar (ver tick)
   function snapState(p){
     // carregou já no meio da seção: aplica o estado direto, sem o morph de 3 s
     if(p >= pB) Object.assign(cfg,STATE_A,STATE_B); else if(p >= pA) Object.assign(cfg,STATE_A);
@@ -303,12 +298,6 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     if(p !== lastProgress){ crossCallbacks(p,lastProgress); lastProgress = p; }
     checkExtraZones(scrollCurrent);
     U.uTime.value += .01 * fr * cfg.globalSpeed;
-    /* SÓ DIAGNÓSTICO (?diag=fundo, celular): na 05/06 o fundo é redesenhado só 1 a cada 6 quadros, pra ela ver no iPhone se o fundo animado é o que causa o travadinho.
-       Sem o parâmetro nada muda. Remover depois do teste. */
-    if(DIAG_FUNDO && (activeStageIndex >= 0 || scrollCurrent >= extraZones[0].top - innerHeight) && (++diagCont % 6)){ requestAnimationFrame(tick); return; }
-    /* CELULAR, VERSÃO PRA COMPARAR (?f30=1): da entrada da 05 em diante o fundo é redesenhado no máximo ~30x por segundo (o resto dos quadros pula o desenho; a animação do fundo é lenta,
-       então não se percebe). Por tempo, não por contagem: em tela de 60 Hz desenha 1 a cada 2 quadros, em 120 Hz 1 a cada 4. A 04 (antes da 05) continua desenhando todo quadro. */
-    if(F30 && (activeStageIndex >= 0 || scrollCurrent >= extraZones[0].top - innerHeight)){ if(now - lastDraw < 28){ requestAnimationFrame(tick); return; } lastDraw = now; }
     render();
     requestAnimationFrame(tick);
   }
