@@ -182,11 +182,11 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   // a leitura do texto branco de lá (reportado pela usuária).
   const STATE_B_RESTORE = {...STATE_B, color1:PREV.color1, color2:PREV.color2, color3:PREV.color3};
   // 2º estágio: verde #006633 -> #CCFFCC (mais claro, era #99FFCC) -> #FF9999.
-  /* CELULAR (pedido dela): a base da 05 deixa de ser o salmão #FF9999. ?base=a|b|c|d escolhe a nova cor (sem parâmetro = a); ?base=s volta ao salmão pra comparar.
+  /* CELULAR (pedido dela): a base da 05 deixa de ser o salmão #FF9999. ?base=a|b|c|d escolhe a nova cor (sem parâmetro = c, ESCOLHIDA POR ELA: rosa da logo); ?base=s volta ao salmão pra comparar.
      a = rosa claro #FFC2E6 (o mesmo rosa do "meio" da transição 05->06, opção 1) | b = rosa vivo #FF66C4 | c = rosa da logo #FF0099 | d = verde muito claro #E0F5E8 (sem rosa na 05).
      Desktop: continua #FF9999 (nada muda). */
   const BASES05 = {a:'#FFC2E6', b:'#FF66C4', c:'#FF0099', d:'#E0F5E8', s:'#FF9999'};
-  const BASE05 = innerWidth <= 600 ? (BASES05[(/[?&]base=([a-ds])(?:&|#|$)/i.exec(location.search)||[])[1]?.toLowerCase()] || BASES05.a) : BASES05.s;
+  const BASE05 = innerWidth <= 600 ? (BASES05[(/[?&]base=([a-ds])(?:&|#|$)/i.exec(location.search)||[])[1]?.toLowerCase()] || BASES05.c) : BASES05.s;
   const STATE_SUBTLE = {...STATE_B, color1:'#006633', color2:'#CCFFCC', color3:BASE05, colorWeightFactor:.5, applyNoise:.1};
   // Seção 06 (avaliações): claro (topo da tela) -> rosa da logo #FF0099
   // (meio, onde ficam os depoimentos) -> preto (embaixo). Geometria = STATE_B
