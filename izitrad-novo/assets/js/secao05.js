@@ -31,17 +31,23 @@ function buildHeading(){
   const words=heading.querySelectorAll('.word');
   gsap.set(words,{autoAlpha:0});
   const refWidth=innerWidth<=600?375:1440;
+  /* CELULAR, VERSÃO PRA COMPARAR (?tleve=1): depois que cada palavra do título fica nítida, o filtro "blur(0px)" e o will-change (CSS: .word{will-change:filter,opacity}) ficavam nela
+     pra sempre — no iPhone cada palavra continuava sendo uma camada com filtro, e o triângulo que voa por cima do título tem que se misturar com todas. Aqui o filtro é REMOVIDO quando a
+     palavra termina de aparecer e o will-change só vale ENQUANTO o título está aparecendo (ao rolar de volta tudo volta como era). Visualmente igual: blur(0px) = sem desfoque. Desktop: nada muda. */
+  const tleve=innerWidth<=600&&/[?&]tleve=1(?:&|#|$)/.test(location.search);
+  document.documentElement.classList.toggle('tit-leve',tleve);
   headingTl=gsap.timeline({
     paused:true,
     scrollTrigger:{
       scrub:true,
       start:'top bottom',
       end:`=-${innerHeight/2}`,
-      trigger:heading
+      trigger:heading,
+      onUpdate:tleve?(self=>{ const wc=(self.progress>0&&self.progress<1)?'':'auto'; if(words[0]&&words[0].style.willChange!==wc) words.forEach(w=>{w.style.willChange=wc}); }):undefined
     }
   }).fromTo(words,
     {autoAlpha:0,filter:`blur(${innerWidth/refWidth*10}px)`},
-    {autoAlpha:1,filter:'blur(0px)',stagger:.04,duration:.2,ease:'none'}
+    Object.assign({autoAlpha:1,filter:'blur(0px)',stagger:.04,duration:.2,ease:'none'},tleve?{clearProps:'filter'}:{})
   );
 }
 
