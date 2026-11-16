@@ -294,7 +294,12 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   let linkedTrans = false;
   function transT(s){
     const z = extraZones[2]; if(!z) return -1;
-    return clamp01((s - (z.top - TRANS_OPT.ini*innerHeight)) / (TRANS_OPT.len*innerHeight));
+    const ih = innerHeight;
+    let a = z.top - TRANS_OPT.ini*ih; const b = a + TRANS_OPT.len*ih;          // faixa da transição 05 -> 06 (o fim é sempre z6.top - 0,15 tela)
+    /* a 05 tem só ~1,55 tela (z6.top - z5.top) e a 05->06 começa em z5.top+0,4 tela: se a transição do NEON (04->05, ?neon=) ainda estiver rolando nessa hora, as duas brigavam e o fundo
+       dava um salto (medido com ?neon=5: neon #00ff66 -> rosa #d6fbd4 em 0,1 tela). Com neon ativo, a 05->06 só começa quando o neon termina (e termina no mesmo ponto de antes, ficando mais curta). */
+    if(NEON_OPT && extraZones[0]){ a = Math.max(a, extraZones[0].top + (NEON_OPT.len - NEON_OPT.ini)*ih); if(b - a < .3*ih) a = b - .3*ih; }
+    return clamp01((s - a) / (b - a));
   }
   function applyFrames(fr,t){
     let i = 0; while(i < fr.length-2 && t > fr[i+1][0]) i++;
@@ -317,7 +322,7 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   if(NEON_TOPO[NEON_ID]) STATE_SUBTLE.color1 = NEON_TOPO[NEON_ID];
   const NEON_OPTS = {
     1:{ini:.9,len:1.2,fr:[[0,STATE_B_RESTORE],[1,STATE_SUBTLE]]},
-    2:{ini:.9,len:2.2,fr:[[0,STATE_B_RESTORE],[.35,mkEst('#00FF66','#8FFFB8','#CCFFCC')],[1,STATE_SUBTLE]]},
+    2:{ini:.9,len:1.7,fr:[[0,STATE_B_RESTORE],[.35,mkEst('#00FF66','#8FFFB8','#CCFFCC')],[1,STATE_SUBTLE]]},
     3:{ini:.9,len:1.4,fr:[[0,STATE_B_RESTORE],[.4,mkEst('#00AA44','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]},
     /* 4 = a 1 com MAIS PRETO (pedido dela: gostou do "preto com neon" da 1): o topo segura o preto por mais tempo enquanto o neon sobe de baixo até o meio da tela (t=.45: topo preto, meio neon,
        base verde claro); depois o preto recua pra cima e o topo vira neon, como na 1. Termina igual à 1. */
