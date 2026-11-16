@@ -182,7 +182,12 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   // a leitura do texto branco de lá (reportado pela usuária).
   const STATE_B_RESTORE = {...STATE_B, color1:PREV.color1, color2:PREV.color2, color3:PREV.color3};
   // 2º estágio: verde #006633 -> #CCFFCC (mais claro, era #99FFCC) -> #FF9999.
-  const STATE_SUBTLE = {...STATE_B, color1:'#006633', color2:'#CCFFCC', color3:'#FF9999', colorWeightFactor:.5, applyNoise:.1};
+  /* CELULAR (pedido dela): a base da 05 deixa de ser o salmão #FF9999. ?base=a|b|c|d escolhe a nova cor (sem parâmetro = a); ?base=s volta ao salmão pra comparar.
+     a = rosa claro #FFC2E6 (o mesmo rosa do "meio" da transição 05->06, opção 1) | b = rosa vivo #FF66C4 | c = rosa da logo #FF0099 | d = verde muito claro #E0F5E8 (sem rosa na 05).
+     Desktop: continua #FF9999 (nada muda). */
+  const BASES05 = {a:'#FFC2E6', b:'#FF66C4', c:'#FF0099', d:'#E0F5E8', s:'#FF9999'};
+  const BASE05 = innerWidth <= 600 ? (BASES05[(/[?&]base=([a-ds])(?:&|#|$)/i.exec(location.search)||[])[1]?.toLowerCase()] || BASES05.a) : BASES05.s;
+  const STATE_SUBTLE = {...STATE_B, color1:'#006633', color2:'#CCFFCC', color3:BASE05, colorWeightFactor:.5, applyNoise:.1};
   // Seção 06 (avaliações): claro (topo da tela) -> rosa da logo #FF0099
   // (meio, onde ficam os depoimentos) -> preto (embaixo). Geometria = STATE_B
   // (a mesma do original aprovado da 06 depois dos 50% de progresso).
@@ -271,17 +276,30 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
      Agora: entre z6.top-1,15 tela e z6.top-0,15 tela, o fundo é calculado direto da posição da rolagem (ida e volta iguais): 05 (verde / verde claro / salmão) ->
      etapa do meio (verde claro / rosa claro / ROSA DA LOGO #FF0099 na base: "o rosa sobe de baixo") -> 06 (rosa quase branco / rosa / preto). Os dois extremos são EXATAMENTE
      os estados de antes (STATE_SUBTLE e STATE_06), só o caminho entre eles muda. Desktop: nada muda. */
-  const TRANS_MOB = innerWidth <= 600 && !/[?&]trans=0(?:&|#|$)/.test(location.search);
-  const STATE_MEIO = {...STATE_SUBTLE, color1:'#CCFFCC', color2:'#FFC2E6', color3:'#FF0099'};
+  /* OPÇÕES (?trans=N, só celular; sem parâmetro = 1): 0 = transição antiga (troca por tempo); 1 = APROVADA/salva como "opção 1" (rosa sobe de baixo; tag git transicao-05-06-opcao-1);
+     2 = rosa forte mais cedo; 3 = "horizonte": só a base vira rosa primeiro, o topo e o meio ficam verde claro até o fim; 4 = passa por um tom quase branco (respiro) e o rosa cresce depois.
+     Cada opção = faixa de rolagem (ini/len em telas antes do topo da 06) + estados-chave [posição 0..1, cores]; entre eles é interpolação linear. Os extremos são sempre STATE_SUBTLE e STATE_06. */
+  const TRANS_ID = (m => m ? +m[1] : 1)(/[?&]trans=(\d)(?:&|#|$)/.exec(location.search));
+  const mkEst = (c1,c2,c3) => ({...STATE_SUBTLE, color1:c1, color2:c2, color3:c3});
+  const TRANS_OPTS = {
+    1:{ini:1.15,len:1.0,fr:[[0,STATE_SUBTLE],[.5,mkEst('#CCFFCC','#FFC2E6','#FF0099')],[1,STATE_06]]},
+    2:{ini:1.35,len:1.2,fr:[[0,STATE_SUBTLE],[.4,mkEst('#CCFFCC','#FF66C4','#FF0099')],[1,STATE_06]]},
+    3:{ini:1.15,len:1.0,fr:[[0,STATE_SUBTLE],[.45,mkEst('#006633','#CCFFCC','#FF0099')],[.75,mkEst('#CCFFCC','#FFC2E6','#FF0099')],[1,STATE_06]]},
+    4:{ini:1.15,len:1.0,fr:[[0,STATE_SUBTLE],[.5,mkEst('#FFF4F9','#FFE9F4','#FFB3DC')],[1,STATE_06]]}
+  };
+  const TRANS_OPT = TRANS_OPTS[TRANS_ID] || (TRANS_ID === 0 ? null : TRANS_OPTS[1]);
+  const TRANS_MOB = innerWidth <= 600 && !!TRANS_OPT;
   const mixHex = (a,b,t) => { const pa=[1,3,5].map(i=>parseInt(a.substr(i,2),16)), pb=[1,3,5].map(i=>parseInt(b.substr(i,2),16)); return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t).toString(16).padStart(2,'0')).join(''); };
   const mixState = (A,B,t) => { const o={}; for(const k of ['color1','color2','color3']) o[k]=mixHex(A[k],B[k],t); for(const k of ['colorWeightFactor','applyNoise']) o[k]=A[k]+(B[k]-A[k])*t; return o; };
   let linkedTrans = false;
   function transT(s){
     const z = extraZones[2]; if(!z) return -1;
-    return clamp01((s - (z.top - 1.15*innerHeight)) / (1.0*innerHeight));
+    return clamp01((s - (z.top - TRANS_OPT.ini*innerHeight)) / (TRANS_OPT.len*innerHeight));
   }
   function applyTrans(t){
-    Object.assign(cfg, t <= .5 ? mixState(STATE_SUBTLE, STATE_MEIO, t/.5) : mixState(STATE_MEIO, STATE_06, (t-.5)/.5));
+    const fr = TRANS_OPT.fr; let i = 0; while(i < fr.length-2 && t > fr[i+1][0]) i++;
+    const a = fr[i], b = fr[i+1];
+    Object.assign(cfg, mixState(a[1], b[1], clamp01((t-a[0])/(b[0]-a[0]))));
     // geometria (STATE_B) é a mesma nos dois extremos: não precisa interpolar
     syncU();
     if(reduce) render();   // "reduzir movimento": não há laço de desenho, então desenha aqui
