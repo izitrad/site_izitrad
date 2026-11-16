@@ -265,8 +265,15 @@ body.panel-lock{overflow:hidden}
   }
 }
 
-/* CELULAR (pedido dela): o triângulo "Nossos Valores" (3º) deixa de ser o degradê vermelho/salmão e vira BRANCO; o texto dele passa a ser preto (como o do "Nossa Visão", 2º, que é claro). Desktop: nada muda. */
+/* CELULAR (pedido dela): o triângulo "Nossos Valores" (3º) deixa de ser o degradê vermelho/salmão e vira BRANCO, COM A MESMA SOMBRA NO TOPO dos outros dois (escuro em cima até 36%, cheio a
+   partir de 65%: cinza suave -> branco); o texto dele passa a ser preto (como o do "Nossa Visão", 2º, que é claro). Desktop: nada muda. */
 @media(max-width:600px){
-  .technology:nth-child(3) .hover{background:#fff}
+  .technology:nth-child(3) .hover{background:linear-gradient(var(--app-deg),#c9c9c9 0,#e2e2e2 36%,#ffffff 65%,#ffffff 100%)}
   .technology:nth-child(3) .button{color:#000}
+}
+
+/* CELULAR (pedido dela, opção C): a setinha do "FECHAR" do painel "Nossos Valores" deixa de ser o vermelho #FF3333 (que ela via como laranja) e vira CINZA #8E8E8E, parente do cinza da sombra do triângulo branco
+   (o painel é branco, então a seta não pode ser branca). Missão (#FF0099) e Visão (#00FF66) não mudam. Desktop: nada muda. */
+@media(max-width:600px){
+  .tech-panel[data-panel="2"] .tech-panel__close .arrow{color:#8E8E8E}
 }
