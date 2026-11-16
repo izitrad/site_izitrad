@@ -296,21 +296,66 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     const z = extraZones[2]; if(!z) return -1;
     return clamp01((s - (z.top - TRANS_OPT.ini*innerHeight)) / (TRANS_OPT.len*innerHeight));
   }
-  function applyTrans(t){
-    const fr = TRANS_OPT.fr; let i = 0; while(i < fr.length-2 && t > fr[i+1][0]) i++;
+  function applyFrames(fr,t){
+    let i = 0; while(i < fr.length-2 && t > fr[i+1][0]) i++;
     const a = fr[i], b = fr[i+1];
     Object.assign(cfg, mixState(a[1], b[1], clamp01((t-a[0])/(b[0]-a[0]))));
     // geometria (STATE_B) é a mesma nos dois extremos: não precisa interpolar
     syncU();
     if(reduce) render();   // "reduzir movimento": não há laço de desenho, então desenha aqui
   }
+  function applyTrans(t){ applyFrames(TRANS_OPT.fr, t); }
+
+  /* CELULAR, TRANSIÇÃO 04 -> 05 COM O NEON (pedido dela; ?neon=1|2|3, sem parâmetro = como antes): em vez do corte de .3 s (e do "flash" STATE_PINK) o fundo vai da 04 (preto / #05421f / neon #00FF66)
+     pra 05 LIGADO À ROLAGEM (ida/volta/pulo dão o mesmo fundo), passando pelo neon:
+       1 = o neon sobe pro TOPO da 05 e fica (topo #00FF66, meio #CCFFCC); 2 = o neon domina a entrada e clareia até um verde claro no topo (#9FFFC4); 3 = passa pelo neon e assenta no verde escuro de hoje.
+     Faixa de rolagem: de z5.top-0,9 tela até z5.top-0,9+len telas. O estado final é o STATE_SUBTLE (nas opções 1 e 2 com a cor do topo trocada; a transição 05->06 parte dele).
+     COR DO TÍTULO ("Simplificando o que leva você"): vem da cor REAL do fundo atrás dele (luminância relativa em ~30% da altura da tela, a partir de cfg) e troca branco<->escuro
+     exatamente no ponto em que os dois têm o mesmo contraste (luminância .179), a cada quadro; assim nunca fica ilegível no meio da transição. Desktop: nada muda. */
+  const NEON_ID = innerWidth <= 600 ? (m => m ? +m[1] : 0)(/[?&]neon=(\d)(?:&|#|$)/.exec(location.search)) : 0;
+  const NEON_TOPO = {1:'#00FF66', 2:'#9FFFC4'};
+  if(NEON_TOPO[NEON_ID]) STATE_SUBTLE.color1 = NEON_TOPO[NEON_ID];
+  const NEON_OPTS = {
+    1:{ini:.9,len:1.2,fr:[[0,STATE_B_RESTORE],[1,STATE_SUBTLE]]},
+    2:{ini:.9,len:2.2,fr:[[0,STATE_B_RESTORE],[.35,mkEst('#00FF66','#8FFFB8','#CCFFCC')],[1,STATE_SUBTLE]]},
+    3:{ini:.9,len:1.4,fr:[[0,STATE_B_RESTORE],[.4,mkEst('#00AA44','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]}
+  };
+  const NEON_OPT = NEON_OPTS[NEON_ID] || null;
+  if(NEON_OPT && extraZones[0]) extraZones[0].state = STATE_SUBTLE;   // sem o "flash" verde-menta (STATE_PINK) na entrada
+  let linkedNeon = false;
+  const tituloEl = document.querySelector('.technologies .heading');
+  let tituloEscuro = '#000';
+  if(NEON_OPT && tituloEl && techWrapEl){
+    const tinha = techWrapEl.classList.contains('tech-on-dark'); techWrapEl.classList.remove('tech-on-dark');
+    tituloEscuro = getComputedStyle(tituloEl).color || '#000'; if(tinha) techWrapEl.classList.add('tech-on-dark');
+    tituloEl.style.transition = 'color .15s linear';
+  }
+  const lumHex = h => { const c=[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)); return .2126*c[0]+.7152*c[1]+.0722*c[2]; };
+  let tituloUlt = '';
+  function syncTituloNeon(){
+    if(!NEON_OPT || !tituloEl) return;
+    const u = clamp01(.3 / (cfg.colorWeightFactor || .5));                 // ~30% da altura da tela, na escala do degradê (c1 -> c2 em colorWeightFactor)
+    const L = lumHex(mixHex(cfg.color1, cfg.color2, u));
+    const cor = L < .179 ? '#ffffff' : tituloEscuro;                      // mesmo contraste com branco e com escuro em L = .179
+    if(cor !== tituloUlt){ tituloUlt = cor; tituloEl.style.color = cor; }
+  }
   function checkExtraZones(s){
     const idx = stageIndexFor(s);
+    if(NEON_OPT && extraZones[0]){
+      const t0 = clamp01((s - (extraZones[0].top - NEON_OPT.ini*innerHeight)) / (NEON_OPT.len*innerHeight));
+      if(t0 > 0 && t0 < 1){
+        if(!linkedNeon){ linkedNeon = true; gsap.killTweensOf(cfg); }
+        applyFrames(NEON_OPT.fr, t0); activeStageIndex = idx; syncTituloNeon();
+        return;
+      }
+      if(linkedNeon){ linkedNeon = false; activeStageIndex = -2; }          // saiu da faixa: força o estado normal da etapa em que está
+    }
+    if(NEON_OPT) syncTituloNeon();
     if(TRANS_MOB){
       const t = idx >= 1 ? transT(s) : -1;
       if(t > 0){
         if(!linkedTrans){ linkedTrans = true; gsap.killTweensOf(cfg); }
-        applyTrans(t); activeStageIndex = idx; syncTextColor(idx);
+        applyTrans(t); activeStageIndex = idx; syncTextColor(idx); syncTituloNeon();
         return;
       }
       if(linkedTrans){ linkedTrans = false; activeStageIndex = -2; }   // saiu da faixa (voltou): força o estado normal da etapa em que está
