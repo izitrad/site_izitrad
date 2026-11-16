@@ -1138,7 +1138,7 @@
    O desktop não muda: .iziq-br fica oculto e a pergunta segue em 2 linhas como antes. */
 .izi-pre04-question .iziq-br{display:none}
 @media(max-width:760px){
-  html:root .izi-pre04-question{font-size:24vw !important}
+  html:root .izi-pre04-question{font-size:22.5vw !important}
   html:root .izi-pre04-question .iziq-br{display:block !important;height:0}
   html:root .izi-pre04-question .izi-q-line1,
   html:root .izi-pre04-question .izi-q-line2{display:inline !important;width:auto !important;height:auto !important;white-space:normal !important}
@@ -1198,4 +1198,18 @@ html:root .guiding-principles .par-logo{box-sizing:content-box;padding:.5em .1em
      A logo "izi" (.izi-question-word) fica de fora: tem overflow:hidden e largura fixa de propósito. */
   html:root .izi-pre04-question span.iziq-word:not(.izi-question-word){padding:.08em .1em .08em 0;margin:-.08em -.1em -.08em 0}
   html:root:root .izi-pre04-question .izi-q-mark{padding:.08em .1em .08em 0 !important;margin-right:-.1em !important;margin-top:-.08em !important;margin-bottom:-.08em !important}
+}
+
+/* CELULAR (<=760px, pedido dela): na pergunta "Como é fazer isso com a ...?" a logo "izi" é trocada pela logo IZITRAD COMPLETA (assets/logo-izitrad-rodape.svg: letras brancas + triângulo rosa).
+   A <img class="izi-q-logo-full"> existe no HTML nos dois tamanhos de tela mas só aparece aqui; no desktop continua a logo "izi" de sempre (o <img> novo fica display:none).
+   --lh = altura da logo em em (relativa ao tamanho da pergunta); a largura segue a proporção do SVG (1128,5 x 371,44 = 3,038:1). O wrapper .izi-q-logo-crop (que o JS anima com blur+fade
+   junto com as outras palavras) continua o mesmo; só mudam o tamanho dele e a imagem de dentro. */
+.izi-pre04-question .izi-q-logo-full{display:none}
+@media(max-width:760px){
+  html:root .izi-pre04-question .izi-q-logo-crop{--lh:1.027em;margin-bottom:.012em !important;width:calc(var(--lh)*3.038) !important;height:var(--lh) !important;overflow:visible !important}
+  html:root .izi-pre04-question .izi-q-logo-img{display:none !important}
+  /* a logo completa tem 3,12em (mesma escala da 'izi' antiga): fica sozinha numa linha com o '?' (quebras em secao04.js, Q04_QUEBRAS: 'Como é / fazer isso / com a / [logo]?') */
+  html:root .izi-pre04-question .izi-q-mark{margin-left:-.12em !important}
+  html:root .izi-pre04-question .izi-q-logo-crop{margin-left:0 !important}
+  html:root .izi-pre04-question .izi-q-logo-full{display:block;position:absolute;left:0;top:0;width:100%;height:100%;max-width:none}
 }
