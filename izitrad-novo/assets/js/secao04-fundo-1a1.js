@@ -313,12 +313,15 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
      COR DO TÍTULO ("Simplificando o que leva você"): vem da cor REAL do fundo atrás dele (luminância relativa em ~30% da altura da tela, a partir de cfg) e troca branco<->escuro
      exatamente no ponto em que os dois têm o mesmo contraste (luminância .179), a cada quadro; assim nunca fica ilegível no meio da transição. Desktop: nada muda. */
   const NEON_ID = innerWidth <= 600 ? (m => m ? +m[1] : 0)(/[?&]neon=(\d)(?:&|#|$)/.exec(location.search)) : 0;
-  const NEON_TOPO = {1:'#00FF66', 2:'#9FFFC4'};
+  const NEON_TOPO = {1:'#00FF66', 2:'#9FFFC4', 4:'#00FF66'};
   if(NEON_TOPO[NEON_ID]) STATE_SUBTLE.color1 = NEON_TOPO[NEON_ID];
   const NEON_OPTS = {
     1:{ini:.9,len:1.2,fr:[[0,STATE_B_RESTORE],[1,STATE_SUBTLE]]},
     2:{ini:.9,len:2.2,fr:[[0,STATE_B_RESTORE],[.35,mkEst('#00FF66','#8FFFB8','#CCFFCC')],[1,STATE_SUBTLE]]},
-    3:{ini:.9,len:1.4,fr:[[0,STATE_B_RESTORE],[.4,mkEst('#00AA44','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]}
+    3:{ini:.9,len:1.4,fr:[[0,STATE_B_RESTORE],[.4,mkEst('#00AA44','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]},
+    /* 4 = a 1 com MAIS PRETO (pedido dela: gostou do "preto com neon" da 1): o topo segura o preto por mais tempo enquanto o neon sobe de baixo até o meio da tela (t=.45: topo preto, meio neon,
+       base verde claro); depois o preto recua pra cima e o topo vira neon, como na 1. Termina igual à 1. */
+    4:{ini:.9,len:1.4,fr:[[0,STATE_B_RESTORE],[.45,mkEst('#000000','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]}
   };
   const NEON_OPT = NEON_OPTS[NEON_ID] || null;
   if(NEON_OPT && extraZones[0]) extraZones[0].state = STATE_SUBTLE;   // sem o "flash" verde-menta (STATE_PINK) na entrada
@@ -332,11 +335,14 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   }
   const lumHex = h => { const c=[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)); return .2126*c[0]+.7152*c[1]+.0722*c[2]; };
   let tituloUlt = '';
+  // luminância do texto escuro de verdade (não é preto puro): ponto de troca = onde branco e o escuro têm o MESMO contraste, (1,05)/(L+,05) = (L+,05)/(Ld+,05)
+  const tituloLd = (m => { if(!m) return 0; const c=m.slice(0,3).map(v=>+v/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)); return .2126*c[0]+.7152*c[1]+.0722*c[2]; })(String(tituloEscuro).match(/\d+/g));
+  const tituloLimiar = Math.sqrt(1.05*(tituloLd+.05)) - .05;
   function syncTituloNeon(){
     if(!NEON_OPT || !tituloEl) return;
     const u = clamp01(.3 / (cfg.colorWeightFactor || .5));                 // ~30% da altura da tela, na escala do degradê (c1 -> c2 em colorWeightFactor)
     const L = lumHex(mixHex(cfg.color1, cfg.color2, u));
-    const cor = L < .179 ? '#ffffff' : tituloEscuro;                      // mesmo contraste com branco e com escuro em L = .179
+    const cor = L < tituloLimiar ? '#ffffff' : tituloEscuro;               // mesmo contraste com branco e com o escuro no limiar
     if(cor !== tituloUlt){ tituloUlt = cor; tituloEl.style.color = cor; }
   }
   function checkExtraZones(s){
