@@ -313,7 +313,7 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
      COR DO TÍTULO ("Simplificando o que leva você"): vem da cor REAL do fundo atrás dele (luminância relativa em ~30% da altura da tela, a partir de cfg) e troca branco<->escuro
      exatamente no ponto em que os dois têm o mesmo contraste (luminância .179), a cada quadro; assim nunca fica ilegível no meio da transição. Desktop: nada muda. */
   const NEON_ID = innerWidth <= 600 ? (m => m ? +m[1] : 0)(/[?&]neon=(\d)(?:&|#|$)/.exec(location.search)) : 0;
-  const NEON_TOPO = {1:'#00FF66', 2:'#9FFFC4', 4:'#00FF66'};
+  const NEON_TOPO = {1:'#00FF66', 2:'#9FFFC4', 4:'#00FF66', 5:'#00FF66'};
   if(NEON_TOPO[NEON_ID]) STATE_SUBTLE.color1 = NEON_TOPO[NEON_ID];
   const NEON_OPTS = {
     1:{ini:.9,len:1.2,fr:[[0,STATE_B_RESTORE],[1,STATE_SUBTLE]]},
@@ -321,7 +321,11 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     3:{ini:.9,len:1.4,fr:[[0,STATE_B_RESTORE],[.4,mkEst('#00AA44','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]},
     /* 4 = a 1 com MAIS PRETO (pedido dela: gostou do "preto com neon" da 1): o topo segura o preto por mais tempo enquanto o neon sobe de baixo até o meio da tela (t=.45: topo preto, meio neon,
        base verde claro); depois o preto recua pra cima e o topo vira neon, como na 1. Termina igual à 1. */
-    4:{ini:.9,len:1.4,fr:[[0,STATE_B_RESTORE],[.45,mkEst('#000000','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]}
+    4:{ini:.9,len:1.4,fr:[[0,STATE_B_RESTORE],[.45,mkEst('#000000','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]},
+    /* 5 = MAIS PRETO AINDA (pedido dela, depois da 4): o preto da 04 domina quase todo o caminho; o neon aparece só como brilho embaixo (como na 04) e sobe devagar:
+       t=.3 ainda igual ao fim da 04 (preto / verde escuro / neon na base, só um respiro de verde no meio), t=.6 o neon já está no meio da tela e a base clareia (topo ainda PRETO),
+       depois o preto recua pra cima e o topo vira neon (final igual ao da 1 e da 4). Faixa mais longa (1,8 telas) pra o preto durar. */
+    5:{ini:.9,len:1.8,fr:[[0,STATE_B_RESTORE],[.3,mkEst('#000000','#0B6B30','#00FF66')],[.6,mkEst('#000000','#00FF66','#CCFFCC')],[1,STATE_SUBTLE]]}
   };
   const NEON_OPT = NEON_OPTS[NEON_ID] || null;
   if(NEON_OPT && extraZones[0]) extraZones[0].state = STATE_SUBTLE;   // sem o "flash" verde-menta (STATE_PINK) na entrada
