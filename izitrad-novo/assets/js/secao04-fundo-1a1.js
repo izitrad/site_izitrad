@@ -266,8 +266,37 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     if(!techWrapEl) return;
     techWrapEl.classList.toggle('tech-on-dark', idx < 1);
   }
+  /* CELULAR (pedido dela; ?trans=0 volta à transição de antes pra comparar): transição 05 -> 06 LIGADA À ROLAGEM, passando pelo rosa da logo.
+     Antes: ao cruzar o gatilho da 06 as cores iam do salmão/verde da 05 pro rosa claro/preto da 06 numa troca de .3 s (quase um corte seco, por tempo e não pela rolagem).
+     Agora: entre z6.top-1,15 tela e z6.top-0,15 tela, o fundo é calculado direto da posição da rolagem (ida e volta iguais): 05 (verde / verde claro / salmão) ->
+     etapa do meio (verde claro / rosa claro / ROSA DA LOGO #FF0099 na base: "o rosa sobe de baixo") -> 06 (rosa quase branco / rosa / preto). Os dois extremos são EXATAMENTE
+     os estados de antes (STATE_SUBTLE e STATE_06), só o caminho entre eles muda. Desktop: nada muda. */
+  const TRANS_MOB = innerWidth <= 600 && !/[?&]trans=0(?:&|#|$)/.test(location.search);
+  const STATE_MEIO = {...STATE_SUBTLE, color1:'#CCFFCC', color2:'#FFC2E6', color3:'#FF0099'};
+  const mixHex = (a,b,t) => { const pa=[1,3,5].map(i=>parseInt(a.substr(i,2),16)), pb=[1,3,5].map(i=>parseInt(b.substr(i,2),16)); return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t).toString(16).padStart(2,'0')).join(''); };
+  const mixState = (A,B,t) => { const o={}; for(const k of ['color1','color2','color3']) o[k]=mixHex(A[k],B[k],t); for(const k of ['colorWeightFactor','applyNoise']) o[k]=A[k]+(B[k]-A[k])*t; return o; };
+  let linkedTrans = false;
+  function transT(s){
+    const z = extraZones[2]; if(!z) return -1;
+    return clamp01((s - (z.top - 1.15*innerHeight)) / (1.0*innerHeight));
+  }
+  function applyTrans(t){
+    Object.assign(cfg, t <= .5 ? mixState(STATE_SUBTLE, STATE_MEIO, t/.5) : mixState(STATE_MEIO, STATE_06, (t-.5)/.5));
+    // geometria (STATE_B) é a mesma nos dois extremos: não precisa interpolar
+    syncU();
+    if(reduce) render();   // "reduzir movimento": não há laço de desenho, então desenha aqui
+  }
   function checkExtraZones(s){
     const idx = stageIndexFor(s);
+    if(TRANS_MOB){
+      const t = idx >= 1 ? transT(s) : -1;
+      if(t > 0){
+        if(!linkedTrans){ linkedTrans = true; gsap.killTweensOf(cfg); }
+        applyTrans(t); activeStageIndex = idx; syncTextColor(idx);
+        return;
+      }
+      if(linkedTrans){ linkedTrans = false; activeStageIndex = -2; }   // saiu da faixa (voltou): força o estado normal da etapa em que está
+    }
     if(idx !== activeStageIndex){
       // .3s (era .6s, 1.2s, e 3s como a 04 usa pra suas próprias trocas) —
       // pedido da usuária pra mudar mais rápido ainda.
