@@ -285,6 +285,7 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   }
 
   let scrollCurrent = scrollY, lastProgress = 0, last = performance.now(), running = false, inView = true;
+  const DIAG_FUNDO = innerWidth <= 600 && /[?&]diag=fundo(?:&|#|$)/.test(location.search); let diagCont = 0;   // só diagnóstico (ver tick)
   function snapState(p){
     // carregou já no meio da seção: aplica o estado direto, sem o morph de 3 s
     if(p >= pB) Object.assign(cfg,STATE_A,STATE_B); else if(p >= pA) Object.assign(cfg,STATE_A);
@@ -298,6 +299,9 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     if(p !== lastProgress){ crossCallbacks(p,lastProgress); lastProgress = p; }
     checkExtraZones(scrollCurrent);
     U.uTime.value += .01 * fr * cfg.globalSpeed;
+    /* SÓ DIAGNÓSTICO (?diag=fundo, celular): na 05/06 o fundo é redesenhado só 1 a cada 6 quadros, pra ela ver no iPhone se o fundo animado é o que causa o travadinho.
+       Sem o parâmetro nada muda. Remover depois do teste. */
+    if(DIAG_FUNDO && (activeStageIndex >= 0 || scrollCurrent >= extraZones[0].top - innerHeight) && (++diagCont % 6)){ requestAnimationFrame(tick); return; }
     render();
     requestAnimationFrame(tick);
   }

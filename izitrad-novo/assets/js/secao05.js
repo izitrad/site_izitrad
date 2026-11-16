@@ -35,6 +35,9 @@ function buildHeading(){
      pra sempre — no iPhone cada palavra continuava sendo uma camada com filtro, e o triângulo que voa por cima do título tem que se misturar com todas. Aqui o filtro é REMOVIDO quando a
      palavra termina de aparecer e o will-change só vale ENQUANTO o título está aparecendo (ao rolar de volta tudo volta como era). Visualmente igual: blur(0px) = sem desfoque. Desktop: nada muda. */
   const tleve=innerWidth<=600&&/[?&]tleve=1(?:&|#|$)/.test(location.search);
+  /* SÓ DIAGNÓSTICO (celular, por URL — remover depois do teste): ?diag=texto = palavras do título aparecem só por opacidade (sem desfoque); ?diag=tri = o triângulo "Nossa Missão" não aparece. */
+  const diagTexto=innerWidth<=600&&/[?&]diag=texto(?:&|#|$)/.test(location.search);
+  if(innerWidth<=600&&/[?&]diag=tri(?:&|#|$)/.test(location.search)&&!document.getElementById('diag-tri')){ const s=document.createElement('style'); s.id='diag-tri'; s.textContent='.technology:first-child{visibility:hidden!important}'; document.head.appendChild(s); }
   document.documentElement.classList.toggle('tit-leve',tleve);
   headingTl=gsap.timeline({
     paused:true,
@@ -46,8 +49,8 @@ function buildHeading(){
       onUpdate:tleve?(self=>{ const wc=(self.progress>0&&self.progress<1)?'':'auto'; if(words[0]&&words[0].style.willChange!==wc) words.forEach(w=>{w.style.willChange=wc}); }):undefined
     }
   }).fromTo(words,
-    {autoAlpha:0,filter:`blur(${innerWidth/refWidth*10}px)`},
-    Object.assign({autoAlpha:1,filter:'blur(0px)',stagger:.04,duration:.2,ease:'none'},tleve?{clearProps:'filter'}:{})
+    diagTexto?{autoAlpha:0}:{autoAlpha:0,filter:`blur(${innerWidth/refWidth*10}px)`},
+    diagTexto?{autoAlpha:1,stagger:.04,duration:.2,ease:'none'}:Object.assign({autoAlpha:1,filter:'blur(0px)',stagger:.04,duration:.2,ease:'none'},tleve?{clearProps:'filter'}:{})
   );
 }
 
