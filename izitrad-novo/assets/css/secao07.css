@@ -68,7 +68,7 @@
   .s07-sum{list-style:none;display:grid;gap:12px}
   .s07-sum li{border-bottom:1px solid rgba(14,14,18,.08);padding-bottom:9px}
   .s07-sum span{display:block;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-  .s07-sum b{display:block;font:800 17px/1.15 'Outfit',sans-serif;color:#c9c6d2;transition:color .25s}
+  .s07-sum b{display:block;font:600 17px/1.15 'Outfit',sans-serif;   /* respostas do canhoto: peso 600 (era 800, pedido dela de tirar um pouco do peso) */color:#c9c6d2;transition:color .25s}
   .s07-sum li.on b{color:var(--ink)}
   .s07-prog{display:flex;gap:6px;margin-top:auto;padding-top:18px}
   .s07-prog u{flex:1;height:5px;border-radius:3px;background:#ebe8f0;text-decoration:none;transition:background .3s}
@@ -91,9 +91,9 @@
   .s07-cta{display:inline-block;background:var(--pink);color:#fff;font:800 17px/1 'DM Sans',sans-serif;padding:18px 34px;border-radius:999px;text-decoration:none;
        box-shadow:0 14px 36px rgba(255,0,153,.45);opacity:0;pointer-events:none}
   .s07-cta.on{pointer-events:auto}
-  .s07-cta{display:inline-flex;align-items:center;gap:10px;padding:19px 33.6px 17px 34.4px}   /* "Enviar" + triângulo da izi (o mesmo desenho do bilhete), em branco. O padding 19/17 desce o conteúdo 1px: o texto da DM Sans fica visualmente ~1px alto na caixa de linha, medido em pixels */
+  .s07-cta{display:inline-flex;align-items:center;gap:6px;padding:18.4px 32.4px 17.6px 35.6px}   /* centrado pelo peso visual (centro de massa dos pixels brancos), não só pelas bordas: o triângulo é mais "leve" na ponta direita */   /* "Enviar" + triângulo da izi (o mesmo desenho do bilhete), em branco. O padding 19/17 desce o conteúdo 1px: o texto da DM Sans fica visualmente ~1px alto na caixa de linha, medido em pixels */
   .s07-cta-tri{width:17px;height:17px;fill:#fff;flex:none;transform:translateY(-.4px)}   /* alinha o centro do triângulo com o centro das letras (medido a 4x) */
-  .s07-again{display:block;margin:16px auto 0;background:none;border:0;color:var(--on-bg-soft);font:500 14px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer;opacity:0;pointer-events:none}
+  .s07-again{display:block;margin:16px auto 0;background:none;border:0;color:#00FF66;font:500 14px 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer;opacity:0;pointer-events:none}
   .s07-again.on{pointer-events:auto}
   .s07-msg{margin:14px auto 0;max-width:620px;font-size:13px;color:var(--on-bg-soft);line-height:1.5;opacity:0}
   .s07-msg code{font-family:inherit;color:var(--on-bg)}
@@ -322,6 +322,7 @@
 @media(min-width:761px){
   .s07-v1 .s07-row2,.s07-v2 .s07-row2,.s07-v3 .s07-row2,.s07-v4 .s07-row2,.s07-v5 .s07-row2{grid-column:1/-1}
   .s07-v1 .s07-body>.s07-row2,.s07-v2 .s07-body>.s07-row2,.s07-v3 .s07-body>.s07-row2,.s07-v4 .s07-body>.s07-row2,.s07-v5 .s07-body>.s07-row2{position:relative;z-index:1}
+  .s07-cta-wrap{margin-top:74px}   /* era 34px (40px abaixo, pedido dela): o botão Enviar encostava na borda de baixo do bilhete inclinado e no aviso de privacidade (só desktop) */
 }
 
 

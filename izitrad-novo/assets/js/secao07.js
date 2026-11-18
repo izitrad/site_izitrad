@@ -40,6 +40,17 @@ function escalarBilhete(){
 }
 escalarBilhete();
 addEventListener('resize',escalarBilhete);
+/* O bilhete CRESCE ou ENCOLHE com o conteúdo (opções da tradução numa linha nova, lista de arquivos, avisos, fontes que terminam de carregar). Como o transform não muda o layout, a altura
+   reservada do palco precisa acompanhar: senão o bilhete ampliado passa por cima do botão "Enviar". Observa o invólucro e refaz só a altura mínima (a escala e a largura não mudam). */
+if(window.ResizeObserver && escala && palco){
+  new ResizeObserver(()=>{
+    if(mobile()) return;
+    const z=Math.max(1,Math.min(1.3,Math.min(1400,innerWidth*.9)/960*ESCALA_DESKTOP));
+    if(z<=1.005) return;
+    const alvo=Math.round(escala.offsetHeight*z)+'px';
+    if(palco.style.minHeight!==alvo) palco.style.minHeight=alvo;
+  }).observe(escala);
+}
 
 /* OPÇÕES DE DESENHO DO BILHETE (pedido dela, inspiradas em cartões de embarque; só DESKTOP, só por URL): ?bilhete=1 (faixa rosa + rota gigante + mapa + canhoto com código de barras),
    ?bilhete=2 (lateral rosa com código de barras vertical + rota central), ?bilhete=3 (preto e branco, moldura escura, rosa só no triângulo). Sem o parâmetro (ou no celular) o bilhete é
