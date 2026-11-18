@@ -267,7 +267,7 @@
     measure();
     addEventListener('resize',measure,{passive:true});
     if(document.fonts&&document.fonts.ready) document.fonts.ready.then(measure);
-    wrap.addEventListener('click',function(e){ var b=e.target.closest('.s3m-node'); if(b && b.style.visibility!=='hidden') openSheet(+b.getAttribute('data-i')); });
+    wrap.addEventListener('click',function(e){ var b=e.target.closest('.s3m-node'); if(b && b.style.visibility!=='hidden' && !wrap.classList.contains('s3m-off')) openSheet(+b.getAttribute('data-i')); });
 
     gsap.set(docw,{autoAlpha:0});                                            /* a folha só aparece quando desce (ver o gancho) */
     function showAll(){ gsap.set(glow,{autoAlpha:1,'--gs':1}); gsap.set(docw,{autoAlpha:1,y:0}); RS.forEach(function(r,k){ r.p=1; applyRing(k); }); }
@@ -277,7 +277,10 @@
          apareciam CORTADAS ali. Então a cena inteira se desfaz suavemente (opacity, presa à rolagem) enquanto o palco sai da tela: começa quando o fim da seção
          encosta no fim da tela e termina quando ele chegou a 40% da altura. DECISÃO DELA: fica o ESMAECER (parece travar menos); a versão em que a cena sobe junto com a
          rolagem foi testada e descartada (só o TEXTO de abertura sobe com a rolagem, ver mais abaixo). */
-      if(window.ScrollTrigger) gsap.to(wrap,{autoAlpha:0,ease:'none',scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom 62%',scrub:1,invalidateOnRefresh:true}});
+      /* TOQUE: os triângulos têm visibility e pointer-events:auto próprios, então continuavam tocáveis (e abrindo o painel da 03) por cima das seções seguintes depois que a cena
+         esmaece. Enquanto a cena estiver quase invisível (opacidade < .5) ela ganha a classe s3m-off, que desliga o toque dos triângulos (ver solucao-mobile.css). Só um callback
+         no mesmo tween: não muda nenhum gatilho de rolagem. */
+      if(window.ScrollTrigger) gsap.to(wrap,{autoAlpha:0,ease:'none',onUpdate:function(){ wrap.classList.toggle('s3m-off',+gsap.getProperty(wrap,'opacity')<.5); },scrollTrigger:{trigger:'#solucao',start:'bottom bottom',end:'bottom 62%',scrub:1,invalidateOnRefresh:true}});
       var intro=document.querySelector('.s3o-intro'), sid=document.querySelector('.s3-id');
       if(reduce){ showAll(); return; }
       /* 0) PAUSA (pedido dela): depois que o texto de abertura termina de entrar (rótulo + título + parágrafo, tudo completo), um trecho de rolagem SEM nada se mexendo,

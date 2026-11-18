@@ -25,12 +25,12 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400;9..40,500;9..40,700;9..40,800&family=Outfit:wght@200;300;400;600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/site.css?v=219">
 <link rel="stylesheet" href="assets/css/solucao-orbital.css?v=40">
-<link rel="stylesheet" href="assets/css/solucao-mobile.css?v=10">
+<link rel="stylesheet" href="assets/css/solucao-mobile.css?v=11">
 <!-- Seção 04: fonte do "SIMPLES" (Steelfish Eb) hospedada local em assets/fonts/, ver @font-face em secao04.css -->
 <link rel="stylesheet" href="assets/css/secao04.css?v=156">
 <link rel="stylesheet" href="assets/css/secao05.css?v=64">
 <link rel="stylesheet" href="assets/css/secao06.css?v=13">
-<link rel="stylesheet" href="assets/css/secao07.css?v=2">
+<link rel="stylesheet" href="assets/css/secao07.css?v=42">
 </head>
 <body class="pre-anim">
 
@@ -533,27 +533,40 @@
   </div>
   <!-- SEÇÃO 07 — ORÇAMENTO (transporte do proto-orcamento.html): bilhete com picote;
        o visitante monta o pedido e o canhoto se DESTACA. Fundo provisório próprio
-       (ver secao07.css). Destino do botão "Pedir orçamento" ainda a definir. -->
+       (ver secao07.css). Destino do botão "Enviar" ainda a definir. -->
   <section id="orcamento" class="sec s07" data-sec="orcamento" aria-labelledby="s07-titulo">
     <div class="s07-kicker">07 — ORÇAMENTO</div>
     <h2 class="s07-h2" id="s07-titulo">Monte seu <em>bilhete</em></h2>
     <p class="s07-lead">Escolha o que você precisa e o seu canhoto sai pronto, com o pedido já montado.</p>
 
     <div class="s07-stage">
+     <div class="s07-escala"><!-- recebe a escala proporcional do bilhete no desktop (secao07.js, escalarBilhete); no celular não faz nada -->
       <div class="s07-ticket">
         <div class="s07-part s07-body">
+          <!-- Elementos das OPÇÕES DE DESENHO do bilhete (?bilhete=1|2|3, só desktop; ver secao07.css). Sem o parâmetro ficam todos display:none e o bilhete é o de sempre. -->
+          <div class="s07-band" aria-hidden="true"><span>Bilhete de orçamento</span><span>Nº 0001</span></div>
+          <div class="s07-map" aria-hidden="true"></div>
+          <div class="s07-strip" aria-hidden="true"><svg class="s07-strip-tri" viewBox="0 0 24 24"><path d="M5 3.5c0-1.2 1.3-1.9 2.3-1.3l13 8.5c.9.6.9 1.9 0 2.5l-13 8.5c-1 .6-2.3-.1-2.3-1.3z"/></svg><div class="s07-strip-bar s07-bar" data-vertical="1"></div></div>
           <div class="s07-head">
             <div class="s07-brand"><img src="assets/img/logo-principal.svg?v=1" alt="iziTrad" draggable="false"></div>
             <div class="s07-tag">Bilhete de orçamento<small>Nº 0001</small></div>
+          </div>
+          <div class="s07-route" aria-hidden="true">
+            <div class="s07-rt"><small>De</small><b>PT</b><span>Português</span></div>
+            <div class="s07-rline"><svg viewBox="0 0 24 24"><path d="M5 3.5c0-1.2 1.3-1.9 2.3-1.3l13 8.5c.9.6.9 1.9 0 2.5l-13 8.5c-1 .6-2.3-.1-2.3-1.3z"/></svg></div>
+            <div class="s07-rt s07-rt-to"><small>Para</small><b>…</b><span>Idioma</span></div>
           </div>
 
           <div class="s07-field" data-key="doc">
             <div class="s07-lbl"><i></i>Documento</div>
             <div class="s07-chips" role="radiogroup" aria-label="Documento">
-              <button type="button" class="s07-chip" role="radio" aria-checked="false">Diploma</button>
               <button type="button" class="s07-chip" role="radio" aria-checked="false">Certidão</button>
-              <button type="button" class="s07-chip" role="radio" aria-checked="false">Histórico escolar</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Diploma</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Histórico Escolar</button>
               <button type="button" class="s07-chip" role="radio" aria-checked="false">Contrato</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Documento pessoal (RG, CNH, passaporte)</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Antecedentes Criminais</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Procuração</button>
               <button type="button" class="s07-chip" role="radio" aria-checked="false">Outro</button>
             </div>
           </div>
@@ -563,42 +576,109 @@
               <button type="button" class="s07-chip" role="radio" aria-checked="false">Inglês</button>
               <button type="button" class="s07-chip" role="radio" aria-checked="false">Italiano</button>
               <button type="button" class="s07-chip" role="radio" aria-checked="false">Espanhol</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Francês</button>
               <button type="button" class="s07-chip" role="radio" aria-checked="false">Outro</button>
+              <!-- aparece AO LADO do botão "Outro" quando o cliente o escolhe (secao07.js, aplicarIdiomaDigitado); o texto digitado substitui o "Outro" no canhoto, na rota e na mensagem -->
+              <span class="s07-outro" hidden><input class="s07-outro-in" type="text" maxlength="40" placeholder="Qual idioma?" aria-label="Qual idioma?" autocomplete="off"></span>
             </div>
           </div>
           <div class="s07-field" data-key="servico">
             <div class="s07-lbl"><i></i>Serviço</div>
             <div class="s07-chips" role="radiogroup" aria-label="Serviço">
-              <button type="button" class="s07-chip" role="radio" aria-checked="false">Tradução juramentada</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Tradução Juramentada</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Tradução Certificada</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Tradução Técnica</button>
+              <button type="button" class="s07-chip" role="radio" aria-checked="false">Tradução Simples</button>
               <button type="button" class="s07-chip" role="radio" aria-checked="false">Apostilamento de Haia</button>
-              <button type="button" class="s07-chip" role="radio" aria-checked="false">Os dois</button>
+              <!-- Opções da tradução (opcionais, não contam entre os 4 campos que destacam o canhoto): ficam NA MESMA FILEIRA do "Apostilamento de Haia" (desenho dela), começando na altura do botão da
+                   Tradução Técnica; aparecem juntos e só na Tradução Simples e na Tradução Técnica (ver secao07.js, atualizarExtras/alinharExtras) -->
+              <button type="button" class="s07-chip" role="checkbox" aria-checked="false" data-extra="layout" hidden>Reproduzir o layout original</button>
+              <button type="button" class="s07-chip" role="checkbox" aria-checked="false" data-extra="glossario" hidden>Enviar glossário próprio</button>
             </div>
           </div>
-          <div class="s07-field" data-key="prazo">
-            <div class="s07-lbl"><i></i>Prazo</div>
-            <div class="s07-chips" role="radiogroup" aria-label="Prazo">
-              <button type="button" class="s07-chip" role="radio" aria-checked="false">Normal</button>
-              <button type="button" class="s07-chip" role="radio" aria-checked="false">Urgente</button>
+          <!-- Layout pedido por ela: PLANO à esquerda e DOCUMENTOS à direita, na mesma linha, abaixo do Serviço (deixa o bilhete menos comprido). No celular os dois empilham. -->
+          <div class="s07-row2">
+            <div class="s07-field" data-key="plano">
+              <div class="s07-lbl"><i></i>Plano</div>
+              <div class="s07-chips" role="radiogroup" aria-label="Plano">
+                <span class="s07-pl"><button type="button" class="s07-chip" role="radio" aria-checked="false">izi</button><small>3 dias <br>úteis</small></span>
+                <span class="s07-pl"><button type="button" class="s07-chip" role="radio" aria-checked="false">izi+</button><small>2 dias <br>úteis</small></span>
+                <span class="s07-pl"><button type="button" class="s07-chip" role="radio" aria-checked="false">izi pro</button><small>1 dia <br>útil</small></span>
+              </div>
+            </div>
+            <!-- Caixa de envio dos documentos (opcional). Por enquanto só na tela: o cliente escolhe/arrasta os arquivos, vê a lista e pode remover; os arquivos NÃO são enviados a lugar nenhum
+                 (site estático; o destino do envio ainda será definido). Formatos PDF, JPG e PNG, até 10 MB cada, no máximo 10 arquivos (ver secao07.js). -->
+            <div class="s07-field s07-docs" data-key="docs">
+              <div class="s07-lbl"><i></i>Documentos</div>
+              <div class="s07-drop">
+                <span class="s07-drop-t">Solte-os aqui</span>
+                <label class="s07-drop-btn">Escolher<input class="s07-file" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"></label>
+              </div>
+              <p class="s07-drop-info">Tamanho máximo de upload: <b>10 MB</b> por arquivo (PDF, JPG ou PNG), até 10 arquivos.</p>
+              <ul class="s07-files"></ul>
+              <p class="s07-drop-msg" role="status" hidden></p>
             </div>
           </div>
+          <!-- CONTATO do cliente (4 campos OBRIGATÓRIOS, 2x2, por último no bilhete). Por enquanto só na tela: o site é estático e nada é enviado (destino a definir). Validações em secao07.js. -->
+          <div class="s07-contato" role="group" aria-label="Contato">
+            <div class="s07-contato-grid">
+              <div class="s07-field s07-tx" data-key="nome">
+                <div class="s07-lbl"><i></i>Nome completo</div>
+                <input class="s07-in" type="text" autocomplete="name" maxlength="80" placeholder="Seu nome e sobrenome" aria-label="Nome completo" aria-required="true" required>
+                <p class="s07-in-msg" role="status" hidden>Informe nome e sobrenome.</p>
+              </div>
+              <div class="s07-field s07-tx" data-key="whatsapp">
+                <div class="s07-lbl"><i></i>WhatsApp</div>
+                <input class="s07-in" type="tel" inputmode="tel" autocomplete="tel-national" maxlength="15" placeholder="(11) 91234-5678" aria-label="WhatsApp com DDD" aria-required="true" required>
+                <p class="s07-in-msg" role="status" hidden>Informe o DDD e o número com 9 dígitos.</p>
+              </div>
+              <div class="s07-field s07-tx" data-key="email">
+                <div class="s07-lbl"><i></i>E-mail</div>
+                <input class="s07-in" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="seuemail@exemplo.com" aria-label="E-mail" aria-required="true" required>
+                <p class="s07-in-msg" role="status" hidden>Informe um e-mail válido.</p>
+              </div>
+              <div class="s07-field s07-tx" data-key="estado">
+                <div class="s07-lbl"><i></i>Estado de residência</div>
+                <select class="s07-in s07-sel" autocomplete="address-level1" aria-label="Estado de residência (opcional)">
+                  <option value="" selected>Opcional</option>
+                  <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option>
+                  <option value="BA">Bahia</option><option value="CE">Ceará</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option>
+                  <option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option>
+                  <option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option><option value="PR">Paraná</option>
+                  <option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option>
+                  <option value="RS">Rio Grande do Sul</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option>
+                  <option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- rodapé do bilhete (pedido dela): aviso de privacidade no canto inferior direito, embaixo de tudo. Sem link ainda (a página da Política não existe no projeto). -->
+          <p class="s07-priv">Trataremos seus dados conforme nossa <b>Política de Privacidade</b>.</p>
         </div>
 
         <div class="s07-part s07-stub">
           <div class="s07-no"><span>Canhoto</span><span>Nº 0001</span></div>
           <ul class="s07-sum">
-            <li data-k="doc"><span>Documento</span><b>—</b></li>
-            <li data-k="idioma"><span>Idioma</span><b>—</b></li>
-            <li data-k="servico"><span>Serviço</span><b>—</b></li>
-            <li data-k="prazo"><span>Prazo</span><b>—</b></li>
+            <li data-k="doc"><span>Documento</span><b>…</b></li>
+            <li data-k="idioma"><span>Idioma</span><b>…</b></li>
+            <li data-k="servico"><span>Serviço</span><b>…</b></li>
+            <li data-k="plano"><span>Plano</span><b>…</b></li>
+            <li data-k="nome"><span>Nome</span><b>…</b></li>
+            <li data-k="whatsapp"><span>WhatsApp</span><b>…</b></li>
+            <li data-k="email"><span>E-mail</span><b>…</b></li>
+            <li class="s07-xtra" data-k="extras"><span>Opções</span><b></b></li>
+            <li class="s07-xtra" data-k="docs"><span>Arquivos</span><b></b></li>
           </ul>
-          <div class="s07-prog" aria-hidden="true"><u></u><u></u><u></u><u></u></div>
-          <p class="s07-eta">Preencha os 4 campos para destacar o canhoto.</p>
+          <div class="s07-prog" aria-hidden="true"><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div>
+          <p class="s07-eta">Preencha os 7 campos para destacar o canhoto.</p>
+          <div class="s07-bar s07-bar-stub" aria-hidden="true"></div>
         </div>
       </div>
+     </div>
     </div>
 
     <div class="s07-cta-wrap">
-      <a class="s07-cta" href="#orcamento">Pedir orçamento →</a>
+      <a class="s07-cta" href="#orcamento">Enviar<svg class="s07-cta-tri" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 3.5c0-1.2 1.3-1.9 2.3-1.3l13 8.5c.9.6.9 1.9 0 2.5l-13 8.5c-1 .6-2.3-.1-2.3-1.3z"/></svg></a>
       <p class="s07-msg"></p>
       <button class="s07-again" type="button">Refazer o bilhete</button>
     </div>
@@ -618,14 +698,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/CustomEase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/DrawSVGPlugin.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/MotionPathPlugin.min.js"></script>
-<script src="assets/js/solucao-mobile.js?v=31"></script>
+<script src="assets/js/solucao-mobile.js?v=32"></script>
 <script src="assets/js/solucao-orbital.js?v=59"></script>
 <script src="assets/js/site.js?v=200"></script>
 <script src="assets/js/secao04.js?v=130"></script>
 <script type="module" src="assets/js/secao04-fundo-1a1.js?v=52"></script>
 <script src="assets/js/secao05.js?v=25"></script>
 <script src="assets/js/secao06.js?v=3"></script>
-<script src="assets/js/secao07.js?v=1"></script>
+<script src="assets/js/secao07.js?v=36"></script>
 <script type="module" src="assets/js/solucao-nodes.js?v=19"></script>
 </body>
 </html>
