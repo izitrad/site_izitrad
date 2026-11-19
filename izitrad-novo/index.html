@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="assets/css/secao04.css?v=156">
 <link rel="stylesheet" href="assets/css/secao05.css?v=64">
 <link rel="stylesheet" href="assets/css/secao06.css?v=13">
-<link rel="stylesheet" href="assets/css/secao07.css?v=48">
+<link rel="stylesheet" href="assets/css/secao07.css?v=65">
 </head>
 <body class="pre-anim">
 
@@ -543,18 +543,12 @@
      <div class="s07-escala"><!-- recebe a escala proporcional do bilhete no desktop (secao07.js, escalarBilhete); no celular não faz nada -->
       <div class="s07-ticket">
         <div class="s07-part s07-body">
-          <!-- Elementos das OPÇÕES DE DESENHO do bilhete (?bilhete=1|2|3, só desktop; ver secao07.css). Sem o parâmetro ficam todos display:none e o bilhete é o de sempre. -->
-          <div class="s07-band" aria-hidden="true"><span>Bilhete de orçamento</span><span>Nº 0001</span></div>
+          <!-- Faixa rosa e mapa-múndi do topo do bilhete (só desktop, ver secao07.css). No celular ficam escondidos. -->
+          <div class="s07-band" aria-hidden="true"><img class="s07-band-logo" src="assets/img/logo-izitrad-faixa.svg?v=3" alt="" draggable="false"><span>Bilhete de orçamento</span><span>Nº 0001</span></div>
           <div class="s07-map" aria-hidden="true"></div>
-          <div class="s07-strip" aria-hidden="true"><svg class="s07-strip-tri" viewBox="0 0 24 24"><path d="M5 3.5c0-1.2 1.3-1.9 2.3-1.3l13 8.5c.9.6.9 1.9 0 2.5l-13 8.5c-1 .6-2.3-.1-2.3-1.3z"/></svg><div class="s07-strip-bar s07-bar" data-vertical="1"></div></div>
           <div class="s07-head">
             <div class="s07-brand"><img src="assets/img/logo-principal.svg?v=1" alt="iziTrad" draggable="false"></div>
             <div class="s07-tag">Bilhete de orçamento<small>Nº 0001</small></div>
-          </div>
-          <div class="s07-route" aria-hidden="true">
-            <div class="s07-rt"><small>De</small><b>PT</b><span>Português</span></div>
-            <div class="s07-rline"><svg viewBox="0 0 24 24"><path d="M5 3.5c0-1.2 1.3-1.9 2.3-1.3l13 8.5c.9.6.9 1.9 0 2.5l-13 8.5c-1 .6-2.3-.1-2.3-1.3z"/></svg></div>
-            <div class="s07-rt s07-rt-to"><small>Para</small><b>…</b><span>Idioma</span></div>
           </div>
 
           <div class="s07-field" data-key="doc">
@@ -671,7 +665,6 @@
           </ul>
           <div class="s07-prog" aria-hidden="true"><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div>
           <p class="s07-eta">Preencha os 7 campos para destacar o canhoto.</p>
-          <div class="s07-bar s07-bar-stub" aria-hidden="true"></div>
         </div>
       </div>
      </div>
@@ -705,7 +698,7 @@
 <script type="module" src="assets/js/secao04-fundo-1a1.js?v=52"></script>
 <script src="assets/js/secao05.js?v=25"></script>
 <script src="assets/js/secao06.js?v=3"></script>
-<script src="assets/js/secao07.js?v=37"></script>
+<script src="assets/js/secao07.js?v=38"></script>
 <script type="module" src="assets/js/solucao-nodes.js?v=19"></script>
 </body>
 </html>

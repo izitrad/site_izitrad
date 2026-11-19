@@ -52,44 +52,7 @@ if(window.ResizeObserver && escala && palco){
   }).observe(escala);
 }
 
-/* OPÇÕES DE DESENHO DO BILHETE (pedido dela, inspiradas em cartões de embarque; só DESKTOP, só por URL): ?bilhete=1 (faixa rosa + rota gigante + mapa + canhoto com código de barras),
-   ?bilhete=2 (lateral rosa com código de barras vertical + rota central), ?bilhete=3 (preto e branco, moldura escura, rosa só no triângulo). Sem o parâmetro (ou no celular) o bilhete é
-   o de sempre: os elementos novos do HTML (.s07-band/.s07-map/.s07-strip/.s07-route/.s07-bar) ficam display:none (ver secao07.css). A "rota" é Português -> idioma escolhido (como origem -> destino). */
-const VARIANTE=(m=>m?+m[1]:0)(/[?&]bilhete=([1-5])(?:&|#|$)/.exec(location.search));
-if(VARIANTE && !mobile()) root.classList.add('s07-v'+VARIANTE);
 if(/[?&]prazo=1(?:&|#|$)/.test(location.search)) root.classList.add('s07-prazo1');   // só pra comparar: prazo dos planos em 1 linha
-/* código de barras decorativo (barras pseudo-aleatórias a partir de um texto: o mesmo pedido gera as mesmas barras) */
-function barras(seed,vertical){
-  let s=0; for(const c of String(seed)) s=(s*31+c.charCodeAt(0))>>>0;
-  const rnd=()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; };
-  let p=0, out=''; const L=200, T=60;
-  while(p<L){ const w=1+Math.floor(rnd()*4), gap=1+Math.floor(rnd()*3);
-    out+=vertical?'<rect x="0" y="'+p+'" width="'+T+'" height="'+w+'"/>':'<rect x="'+p+'" y="0" width="'+w+'" height="'+T+'"/>'; p+=w+gap; }
-  return '<svg viewBox="0 0 '+(vertical?T:L)+' '+(vertical?L:T)+'" preserveAspectRatio="none" aria-hidden="true">'+out+'</svg>';
-}
-/* QR code decorativo (opção 5): grade 21x21 com os 3 quadrados-guia e o resto pseudo-aleatório a partir do texto */
-function qr(seed){
-  let s=0; for(const c of String(seed)) s=(s*31+c.charCodeAt(0))>>>0;
-  const rnd=()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; };
-  const N=21, g=[]; for(let y=0;y<N;y++){ g.push([]); for(let x=0;x<N;x++) g[y].push(rnd()>.52); }
-  const guia=(ox,oy)=>{ for(let k=-1;k<=7;k++){ [[ox+k,oy-1],[ox+k,oy+7],[ox-1,oy+k],[ox+7,oy+k]].forEach(([x,y])=>{ if(x>=0&&y>=0&&x<N&&y<N) g[y][x]=false; }); }
-    for(let y=0;y<7;y++) for(let x=0;x<7;x++){ const borda=x===0||y===0||x===6||y===6, miolo=x>=2&&x<=4&&y>=2&&y<=4; g[oy+y][ox+x]=borda||miolo; } };
-  guia(0,0); guia(N-7,0); guia(0,N-7);
-  let out=''; for(let y=0;y<N;y++) for(let x=0;x<N;x++) if(g[y][x]) out+='<rect x="'+x+'" y="'+y+'" width="1.02" height="1.02"/>';
-  return '<svg viewBox="0 0 '+N+' '+N+'" aria-hidden="true">'+out+'</svg>';
-}
-const pintarBarras=seed=>$$('.s07-bar').forEach(el=>{ el.innerHTML=VARIANTE===5?qr(seed):barras(seed,el.hasAttribute('data-vertical')); });
-pintarBarras('izitrad-0001');
-const rotaPara=$('.s07-rt-to');
-const IDIOMAS={'Inglês':['EN','Inglês'],'Italiano':['IT','Italiano'],'Espanhol':['ES','Espanhol'],'Francês':['FR','Francês']};
-/* idioma digitado em "Outro": a sigla é as 2 primeiras letras em maiúsculas (ex.: Alemão -> AL) */
-function setRota(nome){
-  if(!rotaPara) return;
-  let v=IDIOMAS[nome];
-  if(!v && nome){ const cod=nome.replace(/[^A-Za-zÀ-ÿ]/g,'').slice(0,2).toUpperCase(); v=[cod||'??',nome]; }
-  v=v||['…','Idioma'];
-  $('b',rotaPara).textContent=v[0]; $('span',rotaPara).textContent=v[1]; rotaPara.classList.toggle('on',v[0]!=='…');
-}
 
 /* Rótulo do capítulo — mesmo mecanismo da 05/06 (tempo real, toca ao entrar,
    reverte ao voltar; x:0 explícito evita o xPercent duplicado). */
@@ -122,7 +85,6 @@ function aplicarIdiomaDigitado(){
   const v=outroIn.value.trim(), nome=v?v.charAt(0).toUpperCase()+v.slice(1):'';
   if(nome){ choice.idioma=nome; campo.classList.add('done'); b.textContent=nome; li.classList.add('on'); }
   else{ delete choice.idioma; campo.classList.remove('done'); b.textContent='…'; li.classList.remove('on'); }
-  setRota(nome);
 }
 if(outroIn) outroIn.addEventListener('input',()=>{ aplicarIdiomaDigitado(); update(); atualizarMsg(); });
 
@@ -142,7 +104,6 @@ fields.forEach(f=>{
       f.classList.add('done');
       const li=$('.s07-sum li[data-k="'+key+'"]'), b=$('b',li);
       b.textContent=choice[key]; li.classList.add('on');
-      if(key==='idioma') setRota(choice[key]);
       if(key==='servico') atualizarExtras();
       if(!reduce) gsap.fromTo(b,{y:8,opacity:0},{y:0,opacity:1,duration:.3,ease:'power2.out'});
       update(); atualizarMsg();   // depois de pronto, trocar uma escolha também atualiza a prévia da mensagem
@@ -308,7 +269,6 @@ function atualizarMsg(){
 /* DESTACAR: o canhoto se rasga na picote, gira pra frente e fica rosa */
 function tear(){
   ready=true;
-  pintarBarras(JSON.stringify(choice));   // o código de barras passa a ser do pedido montado
   eta.textContent='Resposta em até 2 horas, dentro do horário comercial.';
   msg.innerHTML='Prévia da mensagem: <code>“'+message()+'”</code>';
   const m=mobile();
@@ -330,7 +290,7 @@ function tear(){
 }
 
 again.addEventListener('click',()=>{
-  choice={}; ready=false; setRota(''); pintarBarras('izitrad-0001');
+  choice={}; ready=false;
   if(outroBox){ outroBox.hidden=true; outroIn.value=''; }
   contato.forEach(c=>c.reset());
   arquivos=[]; avisoArq(''); desenharArq();

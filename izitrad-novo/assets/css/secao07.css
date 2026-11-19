@@ -80,7 +80,6 @@
   .s07-ticket.ready .s07-stub .s07-no,.s07-ticket.ready .s07-stub .s07-sum span,.s07-ticket.ready .s07-eta{color:rgba(255,255,255,.78)}
   .s07-ticket.ready .s07-stub .s07-sum li{border-color:rgba(255,255,255,.28)}
   .s07-ticket.ready .s07-stub .s07-sum span{color:#0e0e12}   /* rótulos do canhoto destacado (DOCUMENTO, IDIOMA...) em preto, pedido dela; os valores continuam brancos */
-  .s07-v3 .s07-ticket.ready .s07-stub .s07-sum span{color:rgba(255,255,255,.78)}   /* na opção 3 (?bilhete=3) o canhoto é preto: mantém claro */
   .s07-ticket.ready .s07-sum b,.s07-ticket.ready .s07-sum li.on b{color:#fff}
   .s07-ticket.ready .s07-prog u{background:rgba(255,255,255,.35)}
   .s07-ticket.ready .s07-prog u.on{background:#fff}
@@ -118,138 +117,8 @@
   }
   @media(prefers-reduced-motion:reduce){.s07 *{transition:none!important}}
 
-/* ======================================================================================
-   OPÇÕES DE DESENHO DO BILHETE (pedido dela; inspiradas em cartões de embarque) — SÓ DESKTOP (>=761px) e SÓ POR URL: ?bilhete=1|2|3.
-   O JS (secao07.js) põe .s07-v1/2/3 no <section>. Sem o parâmetro os elementos novos do HTML ficam escondidos e o bilhete é o de sempre.
-   1 = faixa rosa no topo + rota gigante (PT -> idioma) + mapa de pontos + canhoto com código de barras e picote de bolinhas
-   2 = lateral rosa com código de barras vertical + rota central + canhoto simples
-   3 = preto e branco (moldura escura, faixa preta em itálico), rosa só no triângulo e nos detalhes
-   ====================================================================================== */
-.s07-band,.s07-map,.s07-strip,.s07-route,.s07-bar{display:none}
-.s07-bar svg{display:block;width:100%;height:100%;fill:var(--ink)}
-@media(min-width:761px){
-  .s07-v1 .s07-body,.s07-v2 .s07-body,.s07-v3 .s07-body{display:grid;grid-template-columns:1fr 1fr;column-gap:30px;align-content:start}
-  .s07-v1 .s07-head,.s07-v2 .s07-head,.s07-v3 .s07-head,.s07-v1 .s07-band,.s07-v3 .s07-band{grid-column:1/-1}
-  .s07-v1 .s07-body>*:not(.s07-map):not(.s07-strip),.s07-v2 .s07-body>*:not(.s07-map):not(.s07-strip),.s07-v3 .s07-body>*:not(.s07-map):not(.s07-strip){position:relative;z-index:1}
-  .s07-v1 .s07-map,.s07-v2 .s07-map,.s07-v3 .s07-map{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.075;background:url(../img/bilhete-mapa.svg) 55% 60%/96% auto no-repeat}
-  .s07-v1 .s07-field,.s07-v2 .s07-field,.s07-v3 .s07-field{margin-bottom:12px}
-  .s07-v1 .s07-chip,.s07-v2 .s07-chip,.s07-v3 .s07-chip{padding:8px 11px;font-size:12px}
-  /* rota (Português -> idioma escolhido) */
-  .s07-v1 .s07-route,.s07-v2 .s07-route,.s07-v3 .s07-route{display:flex;align-items:center;gap:22px;grid-column:1/-1;margin:0 0 16px}
-  .s07-rt small{display:block;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-  .s07-rt b{display:block;font:800 64px/1 'Outfit',sans-serif;letter-spacing:-.02em;color:var(--ink)}
-  .s07-rt span{display:block;font:500 16px 'DM Sans',sans-serif;color:var(--ink);margin-top:3px}
-  .s07-rt-to b{color:#d0cdd8;transition:color .3s}
-  .s07-rt-to.on b{color:var(--ink)}
-  .s07-rline{flex:1;position:relative;height:0;border-top:3px dashed rgba(255,0,153,.5);margin-top:-6px}
-  .s07-rline svg{position:absolute;left:50%;top:-17px;width:34px;height:34px;transform:translateX(-50%);fill:var(--pink);background:#fff;padding:0 7px;box-sizing:content-box}
-  .s07-v1 .s07-bar,.s07-v2 .s07-strip-bar{display:block}
+.s07-band,.s07-map{display:none}   /* a faixa rosa e o mapa só existem no desktop (secao07.css, mais abaixo); no celular ficam escondidos */
 
-  /* ---- OPÇÃO 1: faixa rosa + rota gigante + mapa + canhoto com código de barras ---- */
-  .s07-v1 .s07-ticket{min-height:0}
-  .s07-v1 .s07-body{padding:0 38px 26px}
-  .s07-v1 .s07-band{display:flex;justify-content:space-between;align-items:center;margin:0 -38px 14px;padding:0 38px;height:56px;background:var(--pink);color:#fff;
-    font:800 19px/1 'Outfit',sans-serif;letter-spacing:.16em;text-transform:uppercase;border-radius:26px 0 0 0}
-  .s07-v1 .s07-band span:last-child{font:700 13px 'DM Sans',sans-serif;letter-spacing:.14em;opacity:.9}
-  .s07-v1 .s07-tag{display:none}
-  .s07-v1 .s07-head{margin-bottom:4px}
-  .s07-v1 .s07-stub{padding-top:0}
-  .s07-v1 .s07-stub .s07-no{margin:0 -26px 16px;padding:0 26px;height:56px;align-items:center;background:var(--pink);color:#fff;border-radius:0 26px 0 0}
-  .s07-v1 .s07-stub::before{border-left:4px dotted rgba(14,14,18,.3)}
-  .s07-v1 .s07-bar-stub{height:58px;margin-top:14px}
-  .s07-v1 .s07-ticket.ready .s07-stub .s07-no{background:rgba(255,255,255,.2)}
-  .s07-v1 .s07-ticket.ready .s07-bar svg{fill:#fff}
-
-  /* ---- OPÇÃO 2: lateral rosa com código de barras vertical + rota central ---- */
-  .s07-v2 .s07-ticket{min-height:0}
-  .s07-v2 .s07-body{padding:28px 36px 24px 156px}
-  .s07-v2 .s07-strip{display:flex;flex-direction:column;align-items:center;position:absolute;left:0;top:0;bottom:0;width:118px;z-index:2;background:var(--pink);border-radius:26px 0 0 26px;padding:26px 14px 22px}
-  .s07-v2 .s07-strip-tri{width:46px;height:46px;fill:#fff;margin-bottom:22px;flex:none}
-  .s07-v2 .s07-strip-bar{flex:1;width:100%;min-height:0;background:#fff;border-radius:8px;padding:12px}
-  .s07-v2 .s07-tag{display:none}
-  .s07-v2 .s07-head{justify-content:flex-start;gap:18px}
-  .s07-v2 .s07-head::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--pink),rgba(255,0,153,0))}
-  .s07-v2 .s07-route{justify-content:center;gap:34px}
-  .s07-v2 .s07-rline{flex:0 0 120px}
-  .s07-v2 .s07-stub::before{border-left:4px dotted rgba(14,14,18,.3)}
-
-  /* ---- OPÇÃO 3: preto e branco, moldura escura ---- */
-  .s07-v3 .s07-ticket{min-height:0;padding:10px;background:#1b1b20;border-radius:22px;filter:drop-shadow(0 30px 50px rgba(0,0,0,.5))}
-  .s07-v3 .s07-body{padding:0 34px 24px;border-radius:12px 0 0 12px}
-  .s07-v3 .s07-band{display:flex;justify-content:space-between;align-items:center;margin:0 -34px 14px;padding:0 34px;height:52px;background:#0e0e12;color:#fff;
-    font:italic 900 21px/1 'Outfit',sans-serif;letter-spacing:.04em;text-transform:uppercase;border-radius:12px 0 0 0}
-  .s07-v3 .s07-band span:last-child{font:700 12px 'DM Sans',sans-serif;font-style:normal;letter-spacing:.16em;color:var(--pink)}
-  .s07-v3 .s07-tag{display:none}
-  .s07-v3 .s07-head{margin-bottom:4px}
-  .s07-v3 .s07-lbl{color:#0e0e12}
-  .s07-v3 .s07-chip{border-radius:6px;border:1.5px solid #0e0e12;font-weight:600;color:#0e0e12}
-  .s07-v3 .s07-chip:hover{border-color:var(--pink)}
-  .s07-v3 .s07-chip[aria-checked="true"]{background:#0e0e12;border-color:#0e0e12;color:#fff;box-shadow:none}
-  .s07-v3 .s07-rline{border-top:2px dashed #0e0e12}
-  .s07-v3 .s07-rline::before,.s07-v3 .s07-rline::after{content:"";position:absolute;top:-8px;width:10px;height:10px;border:3px solid #0e0e12;border-radius:50%;background:#fff}
-  .s07-v3 .s07-rline::before{left:0}
-  .s07-v3 .s07-rline::after{right:0}
-  .s07-v3 .s07-stub{padding-top:0;border-radius:0 12px 12px 0}
-  .s07-v3 .s07-stub .s07-no{margin:0 -26px 16px;padding:0 26px;height:52px;align-items:center;background:#0e0e12;color:#fff;border-radius:0 12px 0 0}
-  .s07-v3 .s07-stub::before{border-left:2px dashed #0e0e12}
-  .s07-v3 .s07-bar-stub{display:block;height:64px;margin-top:14px}
-  .s07-v3 .s07-ticket.ready .s07-stub{background:#0e0e12;color:#fff}
-  .s07-v3 .s07-ticket.ready .s07-stub .s07-no{background:var(--pink)}
-  .s07-v3 .s07-ticket.ready .s07-bar svg{fill:#fff}
-}
-
-/* ---- OPÇÕES 4 e 5 (acrescentadas a pedido dela: "se quiser montar mais opções, pode montar") — só desktop, só por URL ---- */
-@media(min-width:761px){
-  /* base compartilhada (a mesma das opções 1-3) */
-  .s07-v4 .s07-body,.s07-v5 .s07-body{display:grid;grid-template-columns:1fr 1fr;column-gap:30px;align-content:start}
-  .s07-v4 .s07-head,.s07-v5 .s07-head,.s07-v4 .s07-band,.s07-v5 .s07-band{grid-column:1/-1}
-  .s07-v4 .s07-body>*:not(.s07-map),.s07-v5 .s07-body>*:not(.s07-map){position:relative;z-index:1}
-  .s07-v4 .s07-map,.s07-v5 .s07-map{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.075;background:url(../img/bilhete-mapa.svg) 55% 60%/96% auto no-repeat}
-  .s07-v4 .s07-field,.s07-v5 .s07-field{margin-bottom:12px}
-  .s07-v4 .s07-chip,.s07-v5 .s07-chip{padding:8px 11px;font-size:12px}
-  .s07-v4 .s07-route,.s07-v5 .s07-route{display:flex;align-items:center;gap:22px;grid-column:1/-1;margin:0 0 16px}
-  .s07-v4 .s07-ticket,.s07-v5 .s07-ticket{min-height:0}
-
-  /* ---- OPÇÃO 4: faixas rosa em cima E embaixo (como as referências azuis) + triângulo grande de marca d'água + códigos rosa ---- */
-  .s07-v4 .s07-part{background:linear-gradient(var(--pink),var(--pink)) top/100% 54px no-repeat,linear-gradient(var(--pink),var(--pink)) bottom/100% 22px no-repeat,linear-gradient(160deg,#fff,var(--paper))}
-  .s07-v4 .s07-body{padding:0 38px 46px}
-  .s07-v4 .s07-band{display:flex;justify-content:space-between;align-items:center;margin:0 -38px 14px;padding:0 38px;height:54px;color:#fff;
-    font:800 18px/1 'Outfit',sans-serif;letter-spacing:.16em;text-transform:uppercase}
-  .s07-v4 .s07-band span:last-child{font:700 13px 'DM Sans',sans-serif;letter-spacing:.14em;opacity:.9}
-  .s07-v4 .s07-tag{display:none}
-  .s07-v4 .s07-head{margin-bottom:4px}
-  .s07-v4 .s07-map{opacity:.06;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230e0e12' d='M5 3.5c0-1.2 1.3-1.9 2.3-1.3l13 8.5c.9.6.9 1.9 0 2.5l-13 8.5c-1 .6-2.3-.1-2.3-1.3z'/%3E%3C/svg%3E") 62% 62%/58% auto no-repeat}
-  .s07-v4 .s07-rt b{color:var(--pink)}
-  .s07-v4 .s07-rt-to b{color:#f3c2dd}
-  .s07-v4 .s07-rt-to.on b{color:var(--pink)}
-  .s07-v4 .s07-stub{padding:0 26px 44px}
-  .s07-v4 .s07-stub .s07-no{margin:0 -26px 16px;padding:0 26px;height:54px;align-items:center;color:#fff}
-  .s07-v4 .s07-stub::before{border-left:2px dashed rgba(14,14,18,.35)}
-  .s07-v4 .s07-bar-stub{display:block;height:50px;margin-top:12px}
-  .s07-v4 .s07-ticket.ready .s07-stub{background:linear-gradient(150deg,#ff2aa8,var(--pink) 55%,#d4007f)}
-  .s07-v4 .s07-ticket.ready .s07-bar svg{fill:#fff}
-
-  /* ---- OPÇÃO 5: rota com ARCO tracejado, códigos rosa, QR code e contorno fino interno (como a referência amarela) ---- */
-  .s07-v5 .s07-body{padding:30px 40px 28px}
-  .s07-v5 .s07-body::after,.s07-v5 .s07-stub::after{content:"";position:absolute;inset:9px;border:1.5px solid #0e0e12;pointer-events:none;z-index:2}
-  .s07-v5 .s07-body::after{border-right:0;border-radius:20px 0 0 20px}
-  .s07-v5 .s07-stub::after{border-left:0;border-radius:0 20px 20px 0}
-  .s07-v5 .s07-band{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px;font:900 21px/1 'Outfit',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
-  .s07-v5 .s07-band span:last-child{font:700 12px 'DM Sans',sans-serif;letter-spacing:.16em;color:var(--pink)}
-  .s07-v5 .s07-tag{display:none}
-  .s07-v5 .s07-head{margin-bottom:6px}
-  .s07-v5 .s07-rt b{color:var(--pink)}
-  .s07-v5 .s07-rt-to b{color:#f3c2dd}
-  .s07-v5 .s07-rt-to.on b{color:var(--pink)}
-  .s07-v5 .s07-rline{border-top:2px dashed #0e0e12;border-radius:50% 50% 0 0/100% 100% 0 0;height:30px;margin-top:-30px}
-  .s07-v5 .s07-rline svg{top:-20px;width:30px;height:30px;transform:translateX(-50%) rotate(-90deg)}
-  .s07-v5 .s07-stub{padding-top:30px}
-  .s07-v5 .s07-stub::before{border-left:2px dashed #0e0e12}
-  .s07-v5 .s07-bar-stub{display:block;height:84px;width:84px;margin-top:12px}
-  .s07-v5 .s07-ticket.ready .s07-stub{background:linear-gradient(150deg,#ff2aa8,var(--pink) 55%,#d4007f)}
-  .s07-v5 .s07-ticket.ready .s07-bar svg{fill:#fff}
-  .s07-v5 .s07-ticket.ready .s07-stub::after{border-color:rgba(255,255,255,.7)}
-}
 
 /* ---- OPÇÕES DA TRADUÇÃO (layout original / glossário próprio): opcionais; o glossário só aparece na Tradução Técnica ---- */
 .s07 [hidden]{display:none!important}
@@ -257,9 +126,6 @@
 .s07-sum li.s07-xtra.show{display:block}
 .s07-sum li.s07-xtra b{color:var(--ink);font-size:14px}
 .s07-ticket.ready .s07-sum li.s07-xtra b{color:#fff}
-@media(min-width:761px){
-  .s07-v1 .s07-extras,.s07-v2 .s07-extras,.s07-v3 .s07-extras,.s07-v4 .s07-extras,.s07-v5 .s07-extras{grid-column:1/-1}
-}
 
 /* ---- BILHETE MAIS LARGO NO DESKTOP (pedido dela: "alargue ele e aumente proporcionalmente os botões e os textos") ----
    A largura máxima do palco passa de 960 px para 1400 px (até 90% da tela, tamanho "médio" escolhido por ela) e o bilhete INTEIRO escala junto (zoom calculado em secao07.js, escalarBilhete: largura do palco / 960,
@@ -276,7 +142,6 @@
 .s07-outro-in{display:block;width:100%;height:100%;box-sizing:border-box;font:500 13px 'DM Sans',sans-serif;padding:0 16px;border-radius:999px;border:1.5px solid var(--pink);background:#fff;color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(255,0,153,.10),0 0 14px 4px rgba(255,0,153,.26)}   /* contorno de fora ESFUMAÇADO (pedido dela): anel suave + brilho difuso, em vez do anel liso de 4px */
 .s07-outro-in::placeholder{color:var(--muted)}
 .s07-outro-in:focus{box-shadow:0 0 0 3px rgba(255,0,153,.16),0 0 18px 6px rgba(255,0,153,.36)}
-.s07-v3 .s07-outro-in{border-radius:6px;border-color:#0e0e12;box-shadow:none}
 
 /* ---- prazos dos planos ao lado dos botões (fonte menor e light, pedido dela) ---- */
 .s07-pl{display:inline-flex;align-items:center;gap:8px}
@@ -304,8 +169,6 @@
 .s07-drop-priv{margin-top:1px}
 .s07-files:empty{display:none}
 .s07-drop-info b,.s07-drop-priv b{font-weight:700;color:#3a3a46}
-.s07-v3 .s07-docs .s07-drop{border-radius:6px;border-color:#0e0e12;background:#fff}
-.s07-v3 .s07-drop-btn{background:#0e0e12;box-shadow:none;border-radius:6px}
 @media(min-width:761px){
   /* (a caixa de Documentos agora fica dentro de .s07-row2, ao lado do Plano: não ocupa a linha toda nas opções de desenho) */
 }
@@ -320,8 +183,6 @@
   .s07-row2{grid-template-columns:1fr;row-gap:16px}
 }
 @media(min-width:761px){
-  .s07-v1 .s07-row2,.s07-v2 .s07-row2,.s07-v3 .s07-row2,.s07-v4 .s07-row2,.s07-v5 .s07-row2{grid-column:1/-1}
-  .s07-v1 .s07-body>.s07-row2,.s07-v2 .s07-body>.s07-row2,.s07-v3 .s07-body>.s07-row2,.s07-v4 .s07-body>.s07-row2,.s07-v5 .s07-body>.s07-row2{position:relative;z-index:1}
   .s07-cta-wrap{margin-top:74px}   /* era 34px (40px abaixo, pedido dela): o botão Enviar encostava na borda de baixo do bilhete inclinado e no aviso de privacidade (só desktop) */
 }
 
@@ -346,7 +207,6 @@
 .s07-sel{appearance:none;-webkit-appearance:none;padding-right:38px;cursor:pointer;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23FF0099' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 16px center}
 .s07-sel:invalid{color:var(--muted)}
 .s07-in-msg{position:absolute;left:4px;top:100%;margin:2px 0 0;white-space:nowrap;font:500 11px/1.2 'DM Sans',sans-serif;color:#d12a2a}
-.s07-v3 .s07-in{border-radius:6px;border-color:#0e0e12}
 .s07-sum li[data-k="nome"] b,.s07-sum li[data-k="email"] b,.s07-sum li[data-k="whatsapp"] b,.s07-sum li[data-k="estado"] b{font-size:14px;overflow-wrap:anywhere}
 .s07-priv{margin:10px 0 0;text-align:right;font:400 10px/1.4 'DM Sans',sans-serif;color:#6b6b78}
 .s07-priv b{font-weight:700;color:#3a3a46}
@@ -374,4 +234,60 @@
   .s07-in{height:42px;font-size:16px}
   .s07-in-msg{position:static;margin:4px 0 0 4px}
   .s07-priv{text-align:left}
+}
+
+/* ---- MARCA D'ÁGUA DO MAPA-MÚNDI NO BILHETE PADRÃO (desktop; pedido dela, pra ajustar à mão) ----
+   Mexa só nas 3 variáveis abaixo:
+   --mapa-cor       : cor dos pontinhos (rosa da marca #FF0099; qualquer cor funciona)
+   --mapa-opacidade : quão forte aparece (0 = some; .12 = rosa bem leve)
+   --mapa-posicao   : posição do mapa no corpo do bilhete (horizontal vertical; 50% 50% = centro)
+   --mapa-tamanho   : largura do mapa (96% auto = quase a largura toda; menor = mapa menor)
+   O mapa é o arquivo assets/img/bilhete-mapa.svg (pontinhos), usado como máscara pra poder trocar a cor. As opções ?bilhete=1 a 5 têm o próprio ajuste e não usam estas variáveis. */
+@media(min-width:761px){
+  .s07{--mapa-cor:#FF0099;--mapa-opacidade:.12;--mapa-posicao:55% 60%;--mapa-tamanho:96% auto}
+  .s07 .s07-map{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;opacity:var(--mapa-opacidade);background:var(--mapa-cor);
+    -webkit-mask:url(../img/bilhete-mapa.svg) var(--mapa-posicao)/var(--mapa-tamanho) no-repeat;mask:url(../img/bilhete-mapa.svg) var(--mapa-posicao)/var(--mapa-tamanho) no-repeat}
+  .s07-body>*:not(.s07-map){position:relative;z-index:1}
+}
+
+/* ---- FAIXA ROSA NO TOPO DO BILHETE PADRÃO (desktop; pedido dela, tamanho parecido com o da referência de cartão de embarque) ----
+   Faixa de 70px sobre o corpo e o canhoto: logo em branco + "BILHETE DE ORÇAMENTO / Nº 0001" no corpo, "CANHOTO / Nº 0001" no canhoto. A faixa (70px) + o espaço abaixo dela (24px)
+   somam 94px, que é exatamente o que o topo antigo (margem 34 + logo 36 + espaço 24) ocupava: o bilhete NÃO muda de altura. Ajuste só --faixa-h (altura) e --faixa-gap (espaço até o 1º campo),
+   mantendo a soma em 94px se quiser a mesma altura. As opções ?bilhete=1 a 5 têm a própria faixa e não são afetadas. */
+.s07-band-logo{display:none}
+@media(min-width:761px){
+  .s07{--faixa-h:70px;--faixa-gap:24px}
+  .s07 .s07-body{padding-top:0}
+  .s07 .s07-band{display:flex;align-items:center;gap:18px;margin:0 -38px var(--faixa-gap);padding:0 38px;height:var(--faixa-h);background:var(--pink);color:#fff;border-radius:26px 0 0 0;
+    font:400 23px/1 'Outfit',sans-serif;letter-spacing:.16em;text-transform:uppercase}
+  .s07 .s07-band-logo{display:block;height:42px;width:auto}   /* logo branca com o "z" e o triângulo em verde (assets/img/logo-izitrad-faixa.svg) */
+  .s07 .s07-band span:first-of-type{margin-left:auto}
+  .s07 .s07-band span:last-child{font:700 13px 'DM Sans',sans-serif;letter-spacing:.14em;opacity:.9}
+  .s07 .s07-head{display:none}
+  .s07 .s07-stub{padding-top:0}
+  .s07 .s07-stub .s07-no{margin:0 -26px var(--faixa-gap);padding:0 26px;height:var(--faixa-h);align-items:center;background:var(--pink);color:#fff;border-radius:0 26px 0 0;font-size:13px}
+  .s07 .s07-ticket.ready .s07-stub .s07-no{background:rgba(255,255,255,.2);color:#fff}
+}
+
+/* ---- PICOTE DE BOLINHAS PRETAS (desktop; pedido dela, no lugar do tracejado rosa): fileira de furos CENTRADA na linha de divisão entre o bilhete e o canhoto, como na referência.
+   As bolinhas são desenhadas por cima do bilhete inteiro (o canhoto corta o que passa da borda dele), centradas na divisão; ficam entre os recortes de cima e de baixo.
+   Ajuste: --furo-d (diâmetro do furo), --furo-passo (distância entre os centros), --furo-cor (cor do furo). Quando o canhoto se destaca a fileira some (como o tracejado antigo). ---- */
+@media(min-width:761px){
+  .s07{--furo-d:7px;--furo-passo:14px;--furo-cor:#000}
+  .s07-stub::before{display:none}   /* some o tracejado rosa antigo */
+  .s07-ticket::after{content:"";position:absolute;z-index:3;pointer-events:none;right:clamp(230px,28%,270px);transform:translateX(50%);
+    top:calc(var(--notch) + 6px);bottom:calc(var(--notch) + 6px);width:var(--furo-d);transition:opacity .3s;
+    background:radial-gradient(circle at 50% 50%,var(--furo-cor) calc(var(--furo-d)/2 - .5px),#0000 calc(var(--furo-d)/2 + .5px)) 0 0/100% var(--furo-passo) repeat-y}
+  .s07-ticket.ready::after{opacity:0}
+}
+
+/* ---- PICOTE DEPOIS DE DESTACAR (desktop; pedido dela): ao se destacar, o canhoto e o bilhete ficam cada um com MEIAS bolinhas na borda do corte, como um picote rasgado de verdade.
+   A fileira inteira do bilhete some (acima) e entram as meias bolinhas: a metade direita na borda esquerda do canhoto, a metade esquerda na borda direita do bilhete. ---- */
+@media(min-width:761px){
+  .s07-body::after{content:"";position:absolute;z-index:3;pointer-events:none;right:0;width:var(--furo-d);opacity:0;transition:opacity .3s;
+    top:calc(var(--notch) + 6px);bottom:calc(var(--notch) + 6px);
+    background:radial-gradient(circle at 50% 50%,var(--furo-cor) calc(var(--furo-d)/2 - .5px),#0000 calc(var(--furo-d)/2 + .5px)) calc(var(--furo-d)/2) 0/100% var(--furo-passo) repeat-y}
+  .s07-ticket.ready .s07-body::after{opacity:1}
+  .s07-ticket.ready .s07-stub::before{display:block;opacity:1;border-left:0;left:0;width:var(--furo-d);
+    background:radial-gradient(circle at 50% 50%,var(--furo-cor) calc(var(--furo-d)/2 - .5px),#0000 calc(var(--furo-d)/2 + .5px)) calc(var(--furo-d)/-2) 0/100% var(--furo-passo) repeat-y}
 }
