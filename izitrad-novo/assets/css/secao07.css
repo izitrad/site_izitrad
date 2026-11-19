@@ -209,7 +209,9 @@
 .s07-in-msg{position:absolute;left:4px;top:100%;margin:2px 0 0;white-space:nowrap;font:500 11px/1.2 'DM Sans',sans-serif;color:#d12a2a}
 .s07-sum li[data-k="nome"] b,.s07-sum li[data-k="email"] b,.s07-sum li[data-k="whatsapp"] b,.s07-sum li[data-k="estado"] b{font-size:14px;overflow-wrap:anywhere}
 .s07-priv{margin:10px 0 0;text-align:right;font:400 10px/1.4 'DM Sans',sans-serif;color:#6b6b78}
-.s07-priv b{font-weight:700;color:#3a3a46}
+.s07-priv b,.s07-priv a{font-weight:700;color:#3a3a46}
+.s07-priv a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(58,58,70,.45);transition:color .2s}
+.s07-priv a:hover,.s07-priv a:focus-visible{color:var(--pink);text-decoration-color:var(--pink)}
 .s07-contato:has(.s07-in-msg:not([hidden])) + .s07-priv{opacity:0}   /* enquanto um aviso de erro aparece embaixo do campo, o rodapé espera (senão os dois se sobrepõem) */
 @media(min-width:761px){
   .s07-field{margin-bottom:12px}
