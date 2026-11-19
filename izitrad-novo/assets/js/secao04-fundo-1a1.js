@@ -182,11 +182,11 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
   // a leitura do texto branco de lá (reportado pela usuária).
   const STATE_B_RESTORE = {...STATE_B, color1:PREV.color1, color2:PREV.color2, color3:PREV.color3};
   // 2º estágio: verde #006633 -> #CCFFCC (mais claro, era #99FFCC) -> #FF9999.
-  /* CELULAR (pedido dela): a base da 05 deixa de ser o salmão #FF9999. ?base=a|b|c|d escolhe a nova cor (sem parâmetro = c, ESCOLHIDA POR ELA: rosa da logo); ?base=s volta ao salmão pra comparar.
+  /* PADRÃO (celular E desktop; pedido dela): a base da 05 deixa de ser o salmão #FF9999 e vira o ROSA DA LOGO #FF0099. ?base=a|b|c|d escolhe outra cor pra comparar (sem parâmetro = c, ESCOLHIDA POR ELA); ?base=s volta ao salmão.
      a = rosa claro #FFC2E6 (o mesmo rosa do "meio" da transição 05->06, opção 1) | b = rosa vivo #FF66C4 | c = rosa da logo #FF0099 | d = verde muito claro #E0F5E8 (sem rosa na 05).
-     Desktop: continua #FF9999 (nada muda). */
+     Antes o desktop continuava no salmão #FF9999; ela mandou padronizar com o celular (19/11). */
   const BASES05 = {a:'#FFC2E6', b:'#FF66C4', c:'#FF0099', d:'#E0F5E8', s:'#FF9999'};
-  const BASE05 = innerWidth <= 600 ? (BASES05[(/[?&]base=([a-ds])(?:&|#|$)/i.exec(location.search)||[])[1]?.toLowerCase()] || BASES05.c) : BASES05.s;
+  const BASE05 = BASES05[(/[?&]base=([a-ds])(?:&|#|$)/i.exec(location.search)||[])[1]?.toLowerCase()] || BASES05.c;
   const STATE_SUBTLE = {...STATE_B, color1:'#006633', color2:'#CCFFCC', color3:BASE05, colorWeightFactor:.5, applyNoise:.1};
   // Seção 06 (avaliações): claro (topo da tela) -> rosa da logo #FF0099
   // (meio, onde ficam os depoimentos) -> preto (embaixo). Geometria = STATE_B
@@ -271,12 +271,12 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     if(!techWrapEl) return;
     techWrapEl.classList.toggle('tech-on-dark', idx < 1);
   }
-  /* CELULAR (pedido dela; ?trans=0 volta à transição de antes pra comparar): transição 05 -> 06 LIGADA À ROLAGEM, passando pelo rosa da logo.
+  /* CELULAR (pedido dela; ?trans=0 volta à transição de antes pra comparar; AGORA PADRÃO TAMBÉM NO DESKTOP): transição 05 -> 06 LIGADA À ROLAGEM, passando pelo rosa da logo.
      Antes: ao cruzar o gatilho da 06 as cores iam do salmão/verde da 05 pro rosa claro/preto da 06 numa troca de .3 s (quase um corte seco, por tempo e não pela rolagem).
      Agora: entre z6.top-1,15 tela e z6.top-0,15 tela, o fundo é calculado direto da posição da rolagem (ida e volta iguais): 05 (verde / verde claro / salmão) ->
      etapa do meio (verde claro / rosa claro / ROSA DA LOGO #FF0099 na base: "o rosa sobe de baixo") -> 06 (rosa quase branco / rosa / preto). Os dois extremos são EXATAMENTE
-     os estados de antes (STATE_SUBTLE e STATE_06), só o caminho entre eles muda. Desktop: nada muda. */
-  /* OPÇÕES (?trans=N, só celular; sem parâmetro = 1): 0 = transição antiga (troca por tempo); 1 = APROVADA/salva como "opção 1" (rosa sobe de baixo; tag git transicao-05-06-opcao-1);
+     os estados de antes (STATE_SUBTLE e STATE_06), só o caminho entre eles muda. */
+  /* OPÇÕES (?trans=N; sem parâmetro = 1): 0 = transição antiga (troca por tempo); 1 = APROVADA/salva como "opção 1" (rosa sobe de baixo; tag git transicao-05-06-opcao-1);
      2 = rosa forte mais cedo; 3 = "horizonte": só a base vira rosa primeiro, o topo e o meio ficam verde claro até o fim; 4 = passa por um tom quase branco (respiro) e o rosa cresce depois.
      Cada opção = faixa de rolagem (ini/len em telas antes do topo da 06) + estados-chave [posição 0..1, cores]; entre eles é interpolação linear. Os extremos são sempre STATE_SUBTLE e STATE_06. */
   const TRANS_ID = (m => m ? +m[1] : 1)(/[?&]trans=(\d)(?:&|#|$)/.exec(location.search));
@@ -288,7 +288,7 @@ const FS = 'precision highp float;\n\nuniform float uTime;\nuniform vec2 uResolu
     4:{ini:1.15,len:1.0,fr:[[0,STATE_SUBTLE],[.5,mkEst('#FFF4F9','#FFE9F4','#FFB3DC')],[1,STATE_06]]}
   };
   const TRANS_OPT = TRANS_OPTS[TRANS_ID] || (TRANS_ID === 0 ? null : TRANS_OPTS[1]);
-  const TRANS_MOB = innerWidth <= 600 && !!TRANS_OPT;
+  const TRANS_MOB = !!TRANS_OPT;   // PADRÃO em qualquer largura (celular E desktop; ela mandou padronizar em 19/11). ?trans=0 continua voltando à transição antiga por tempo.
   const mixHex = (a,b,t) => { const pa=[1,3,5].map(i=>parseInt(a.substr(i,2),16)), pb=[1,3,5].map(i=>parseInt(b.substr(i,2),16)); return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t).toString(16).padStart(2,'0')).join(''); };
   const mixState = (A,B,t) => { const o={}; for(const k of ['color1','color2','color3']) o[k]=mixHex(A[k],B[k],t); for(const k of ['colorWeightFactor','applyNoise']) o[k]=A[k]+(B[k]-A[k])*t; return o; };
   let linkedTrans = false;
