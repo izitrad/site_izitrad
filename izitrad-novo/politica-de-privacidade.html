@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Política de Privacidade | iziTrad</title>
+<meta name="description" content="Como a iziTrad coleta, usa e protege os seus dados pessoais.">
+<!-- RASCUNHO: não indexar enquanto não for aprovado e revisado pelo jurídico. Quando for ao ar, trocar por index,follow. -->
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="assets/img/logo-izitrad-faixa.svg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--pink:#FF0099;--green:#00FF66;--bg:#0e0007;--ink:#fff;--soft:rgba(255,255,255,.72);--line:rgba(255,255,255,.12)}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.7 'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(900px 500px at 50% -10%,rgba(255,0,153,.22),transparent 70%)}
+  a{color:var(--pink)}
+  a:hover{color:#ff4db8}
+  .topo{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1120px;margin:0 auto;padding:28px 24px 0}
+  .topo img{height:34px;width:auto;display:block}
+  /* CABEÇALHO DO SITE (estado "compacto" da página inicial): logo à esquerda e o botão de menu em triângulo rosa, fixo no canto direito, abrindo o mesmo dropdown. Visual copiado de assets/css/site.css; sem carregar o código pesado da página inicial. */
+  .site-header{position:fixed;top:0;right:0;z-index:1000;width:max-content;pointer-events:none}
+  .site-header .header-inner{display:flex;align-items:center;justify-content:flex-end;height:112px;padding:0}
+  .site-header .menu-toggle{position:relative;display:block;background:none;border:none;cursor:pointer;padding:0;width:66px;height:75px;margin-right:34px;pointer-events:auto}
+  .site-header .menu-toggle__tri{position:absolute;inset:0;width:100%;height:100%;fill:var(--pink)}
+  .site-header .menu-toggle span{position:absolute;left:calc(50% - 8px);top:50%;display:block;width:20px;height:2px;background:#fff;border-radius:2px;transition:.3s;transform:translate(-50%,-50%)}
+  .site-header .menu-toggle span:nth-of-type(1){margin-top:-6px}
+  .site-header .menu-toggle span:nth-of-type(3){margin-top:6px}
+  .site-header[data-nav-open] .menu-toggle span:nth-of-type(1){transform:translate(-50%,-50%) rotate(45deg);margin-top:0}
+  .site-header[data-nav-open] .menu-toggle span:nth-of-type(2){opacity:0}
+  .site-header[data-nav-open] .menu-toggle span:nth-of-type(3){transform:translate(-50%,-50%) rotate(-45deg);margin-top:0}
+  .site-header .nav-backdrop{position:fixed;inset:0;opacity:0;pointer-events:none;background:rgba(10,10,20,.4);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);transition:opacity .16s ease-in}
+  .site-header[data-nav-open] .nav-backdrop{opacity:1;pointer-events:auto;transition:opacity .3s cubic-bezier(.16,1,.3,1)}
+  .site-header .main-nav{position:absolute;top:100%;right:20px;width:max-content;min-width:168px;display:flex;flex-direction:column;gap:2px;margin:8px 0 0;padding:8px;background:#141416;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(-8px);pointer-events:auto;transition:opacity .16s ease-in,transform .16s ease-in,visibility .16s}
+  .site-header[data-nav-open] .main-nav{opacity:1;visibility:visible;transform:translateY(0);transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1),visibility .3s}
+  .site-header .main-nav a{display:block;padding:9px 16px;font-size:13px;font-weight:400;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;border-radius:10px;color:#fff;text-decoration:none;opacity:0;transform:translateY(6px);transition:opacity .14s ease,transform .14s ease,background .2s,color .25s}
+  .site-header[data-nav-open] .main-nav a{opacity:1;transform:translateY(0);transition:opacity .18s ease-out,transform .18s ease-out,background .2s,color .25s}
+  .site-header .main-nav a:hover{background:rgba(255,0,153,.18);color:#fff}
+  /* RODAPÉ DO SITE */
+  .site-footer{background:#0b0b0f;color:#fff;text-align:center;padding:80px 6vw 60px}
+  .site-footer .foot-brand img{display:block;height:37px;width:auto;margin:0 auto 5px}
+  .site-footer p{margin:14px auto 0;max-width:520px;color:rgba(255,255,255,.62);font-weight:300}
+  .site-footer small{display:block;margin-top:32px;color:rgba(255,255,255,.32);font-size:12px;letter-spacing:.04em}
+  .pagina{max-width:1120px;margin:0 auto;padding:36px 24px 96px;display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
+  .texto{min-width:0;max-width:760px}
+  .rascunho{background:rgba(255,0,153,.14);border:1px solid rgba(255,0,153,.55);border-radius:14px;padding:14px 18px;font-size:15px;line-height:1.55;margin:0 0 36px}
+  .rascunho b{color:var(--green)}
+  h1{font:800 clamp(34px,6vw,56px)/1.05 'Outfit',sans-serif;letter-spacing:-.02em;margin:0 0 10px}
+  h1 em{font-style:normal;color:var(--pink)}
+  .atualizado{color:var(--soft);font-size:15px;margin:0 0 20px}
+  h2{font:600 clamp(24px,3.6vw,30px)/1.2 'Outfit',sans-serif;margin:52px 0 12px;scroll-margin-top:24px}
+  h3{font:600 19px/1.3 'Outfit',sans-serif;margin:26px 0 8px;color:#fff;scroll-margin-top:24px}
+  p,li{color:var(--soft)}
+  p{margin:0 0 14px}
+  ul{margin:0 0 14px;padding-left:22px}
+  li{margin:4px 0}
+  strong{color:#fff;font-weight:700}
+  /* partes que dependem de confirmação: em destaque pra não passarem despercebidas */
+  mark.falta{background:var(--green);color:#0e0007;font-weight:700;border-radius:6px;padding:1px 7px;white-space:normal}
+  .caixa{border:1px solid var(--line);border-radius:14px;padding:16px 20px;background:rgba(255,255,255,.03);margin:0 0 14px}
+  .caixa p:last-child,.caixa ul:last-child{margin-bottom:0}
+
+  /* SUMÁRIO: no celular é um bloco recolhível no topo; no computador fica FIXO na coluna da direita e destaca a seção que está sendo lida */
+  .lateral{min-width:0}
+  .sumario{border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.03)}
+  .sumario summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .sumario summary::-webkit-details-marker{display:none}
+  .sumario summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--pink);border-bottom:2px solid var(--pink);transform:rotate(45deg);transition:transform .2s;margin-top:-4px}
+  .sumario[open] summary::after{transform:rotate(-135deg);margin-top:4px}
+  .sumario ol{list-style:none;margin:0;padding:0 8px 10px}
+  .sumario li{margin:0}
+  .sumario a{display:block;color:var(--soft);text-decoration:none;padding:9px 12px;border-radius:10px;border-left:3px solid transparent;font-size:16px;line-height:1.35}
+  .sumario a:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .sumario a.ativo{color:#fff;font-weight:700;border-left-color:var(--pink);background:rgba(255,0,153,.12)}
+
+  @media(min-width:960px){
+    .pagina{grid-template-columns:minmax(0,1fr) 270px;gap:56px;align-items:start}
+    .lateral{order:2;position:sticky;top:112px}   /* abaixo da área do botão de menu fixo */
+    .texto{order:1}
+    .sumario summary{cursor:default;pointer-events:none;padding-bottom:6px}
+    .sumario summary::after{display:none}
+  }
+  @media(max-width:640px){body{font-size:16px}.topo{padding-top:20px}.pagina{padding-top:24px}}
+</style>
+</head>
+<body>
+<div class="topo">
+  <a href="index.html" aria-label="iziTrad, voltar ao início"><img src="assets/logo-izitrad-rodape.svg" alt="iziTrad"></a>
+</div>
+
+<!-- Menu do site: mesmo botão em triângulo e mesmos itens da página inicial (os links levam às seções da home) -->
+<header class="site-header" data-header>
+  <div class="nav-backdrop" data-nav-backdrop aria-hidden="true"></div>
+  <div class="header-inner">
+    <nav id="site-nav" class="main-nav" aria-label="Navegação principal">
+      <a href="index.html#hero">Início</a>
+      <a href="index.html#caminho">O Caminho</a>
+      <a href="index.html#solucao">A Solução</a>
+      <a href="index.html#como">Como funciona</a>
+      <a href="index.html#destino">Confiança</a>
+      <a href="index.html#confianca">Avaliações</a>
+      <a href="index.html#orcamento">Orçamento</a>
+    </nav>
+    <button class="menu-toggle" data-nav-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Abrir menu">
+      <svg class="menu-toggle__tri" viewBox="528 138 412 475" aria-hidden="true"><path d="M912.63,344.18l-326.98-188.78c-24.29-14.02-54.65,3.51-54.65,31.55v377.56c0,28.05,30.36,45.58,54.65,31.55l326.98-188.78c24.29-14.02,24.29-49.08,0-63.11Z"/></svg>
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="pagina">
+  <aside class="lateral">
+    <details class="sumario" id="sumario" open>
+      <summary>Nesta página</summary>
+      <nav aria-label="Sumário">
+        <ol>
+          <li><a href="#introducao">Introdução</a></li>
+          <li><a href="#tratamento">Tratamento de dados pessoais</a></li>
+          <li><a href="#seguranca">Segurança</a></li>
+          <li><a href="#direitos">Direitos dos titulares de dados</a></li>
+          <li><a href="#cookies">Cookies</a></li>
+          <li><a href="#consideracoes">Considerações finais</a></li>
+        </ol>
+      </nav>
+    </details>
+  </aside>
+
+  <main class="texto">
+    <div class="rascunho" role="note">
+      <b>RASCUNHO, não publicar ainda.</b> Os trechos em <mark class="falta">verde</mark> dependem de informações da iziTrad e precisam ser preenchidos e confirmados. O texto inteiro deve ser revisado por quem cuida da parte jurídica antes de ir ao ar. Quando estiver aprovado, esta faixa é removida.
+    </div>
+
+    <h1>Política de <em>Privacidade</em></h1>
+    <p class="atualizado">Última atualização: <mark class="falta">[DATA]</mark></p>
+
+    <section id="introducao">
+      <h2>Introdução</h2>
+      <p>Esta política explica como a <strong>iziTrad</strong> trata os dados pessoais de quem usa o nosso site e pede um orçamento de tradução juramentada, tradução técnica, tradução simples, tradução certificada ou apostilamento de Haia.</p>
+      <div class="caixa">
+        <p><strong>Controladora dos dados:</strong> <mark class="falta">[RAZÃO SOCIAL]</mark>, CNPJ <mark class="falta">[CNPJ]</mark>, com sede em <mark class="falta">[ENDEREÇO COMPLETO]</mark>.</p>
+        <p><strong>Contato para assuntos de privacidade:</strong> <mark class="falta">[E-MAIL DE CONTATO]</mark></p>
+      </div>
+      <p>Tratamos os dados de acordo com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018, a LGPD). Ao enviar o formulário de orçamento, você declara ter lido esta política.</p>
+    </section>
+
+    <section id="tratamento">
+      <h2>Tratamento de dados pessoais</h2>
+
+      <h3 id="dados">Quais dados coletamos</h3>
+      <p>Coletamos apenas o que você informa no formulário de orçamento do site:</p>
+      <ul>
+        <li><strong>Dados de contato:</strong> nome completo, WhatsApp e e-mail.</li>
+        <li><strong>Estado de residência:</strong> campo opcional.</li>
+        <li><strong>Dados do pedido:</strong> tipo de documento, idioma de destino, serviço escolhido, plano (izi, izi+ ou izi pro) e as opções da tradução (por exemplo, reproduzir o layout original ou enviar glossário próprio).</li>
+        <li><strong>Arquivos dos documentos:</strong> os arquivos que você envia (PDF, JPG ou PNG) para que possamos avaliar e fazer o serviço.</li>
+      </ul>
+      <p>Os documentos que você envia podem conter dados pessoais, como números de documentos de identificação, filiação, endereços e informações de certidões. Tratamos esses arquivos apenas para o fim do seu pedido.</p>
+      <p><mark class="falta">[CONFIRMAR: o site coleta outros dados automaticamente, como endereço IP, tipo de navegador ou estatísticas de uso? Se sim, listar aqui.]</mark></p>
+
+      <h3 id="uso">Para que usamos os seus dados</h3>
+      <ul>
+        <li>Responder ao seu pedido de orçamento e entrar em contato pelo WhatsApp ou e-mail informados.</li>
+        <li>Avaliar os documentos enviados e prestar o serviço contratado.</li>
+        <li>Cumprir obrigações legais e regulatórias ligadas à tradução e ao apostilamento.</li>
+        <li>Atender pedidos e dúvidas sobre os seus dados.</li>
+      </ul>
+      <p><mark class="falta">[CONFIRMAR as bases legais usadas, por exemplo: execução de contrato ou de procedimentos preliminares a pedido do titular, cumprimento de obrigação legal, legítimo interesse. Confirmar também se há envio de novidades ou ofertas, que exigiria consentimento próprio.]</mark></p>
+      <p>Não vendemos os seus dados pessoais.</p>
+
+      <h3 id="compartilhamento">Com quem compartilhamos</h3>
+      <p>Compartilhamos dados somente quando é necessário para realizar o serviço ou para cumprir a lei:</p>
+      <ul>
+        <li><strong>Tradutores e revisores</strong> envolvidos no seu pedido, que recebem apenas o que precisam para trabalhar.</li>
+        <li><strong>Cartórios e órgãos competentes</strong>, quando o serviço exige, como no apostilamento.</li>
+        <li><strong>Fornecedores de tecnologia</strong> que nos ajudam a receber e guardar as informações: <mark class="falta">[CONFIRMAR quais: serviço de e-mail, armazenamento em nuvem dos arquivos, WhatsApp Business, hospedagem do site, ferramentas de análise]</mark>.</li>
+        <li><strong>Autoridades</strong>, quando houver ordem legal.</li>
+      </ul>
+      <p><mark class="falta">[CONFIRMAR se algum fornecedor guarda dados fora do Brasil. Se sim, informar o país e as garantias adotadas.]</mark></p>
+
+      <h3 id="guarda">Por quanto tempo guardamos</h3>
+      <p>Guardamos os seus dados pelo tempo necessário para atender o pedido e cumprir obrigações legais: <mark class="falta">[PRAZO DE GUARDA, por exemplo, por quanto tempo ficam os orçamentos sem contratação e os arquivos dos serviços concluídos]</mark>. Depois disso, eliminamos ou tornamos anônimos os dados, salvo quando a lei exigir que continuemos a guardá-los.</p>
+    </section>
+
+    <section id="seguranca">
+      <h2>Segurança</h2>
+      <p>Adotamos medidas técnicas e de organização para proteger os dados contra acesso indevido, perda e alteração: <mark class="falta">[CONFIRMAR as medidas realmente adotadas, por exemplo, conexão segura, controle de acesso aos arquivos, armazenamento protegido]</mark>.</p>
+      <p>Se ocorrer um incidente de segurança que possa trazer risco ou dano relevante a você, avisaremos você e a Autoridade Nacional de Proteção de Dados (ANPD), conforme a lei.</p>
+    </section>
+
+    <section id="direitos">
+      <h2>Direitos dos titulares de dados</h2>
+      <h3>Quais são os seus direitos</h3>
+      <p>A LGPD garante a você, entre outros, os direitos de:</p>
+      <ul>
+        <li>confirmar que tratamos dados seus e ter acesso a eles;</li>
+        <li>corrigir dados incompletos, errados ou desatualizados;</li>
+        <li>pedir a anonimização, o bloqueio ou a eliminação de dados desnecessários ou tratados fora da lei;</li>
+        <li>pedir a portabilidade dos dados;</li>
+        <li>saber com quem compartilhamos os seus dados;</li>
+        <li>retirar o seu consentimento, quando ele for a base do tratamento;</li>
+        <li>reclamar à Autoridade Nacional de Proteção de Dados (ANPD).</li>
+      </ul>
+
+      <h3 id="exclusao">Como pedir a exclusão dos seus dados</h3>
+      <div class="caixa">
+        <p><strong>Canal:</strong> escreva para <mark class="falta">[E-MAIL DE CONTATO]</mark>.</p>
+        <p><strong>O que incluir no pedido:</strong></p>
+        <ul>
+          <li>seu nome completo;</li>
+          <li>o e-mail e o WhatsApp que você usou no formulário;</li>
+          <li>o que você deseja: acessar, corrigir ou excluir dados;</li>
+          <li>se possível, a data aproximada do seu pedido de orçamento.</li>
+        </ul>
+        <p><strong>Prazo de resposta:</strong> <mark class="falta">[PRAZO]</mark>.</p>
+      </div>
+      <p>Para a sua segurança, podemos pedir uma confirmação de identidade antes de atender o pedido. Alguns dados podem precisar ser mantidos mesmo depois do pedido de exclusão, quando a lei nos obrigar a guardá-los. Nesse caso, explicamos o motivo.</p>
+    </section>
+
+    <section id="cookies">
+      <h2>Cookies</h2>
+      <p><mark class="falta">[CONFIRMAR o que o site usa. Se houver cookies ou ferramentas de análise, descrever quais, para que servem e como o visitante pode recusá-los. Se não houver, dizer que o site não usa cookies de rastreamento.]</mark></p>
+    </section>
+
+    <section id="consideracoes">
+      <h2>Considerações finais</h2>
+      <p>Podemos atualizar esta política. A data da última atualização fica no topo da página. Quando houver mudança importante, avisaremos de forma clara no site.</p>
+      <p>Dúvidas sobre esta política ou sobre os seus dados: <mark class="falta">[E-MAIL DE CONTATO]</mark>.</p>
+      <p><mark class="falta">[CONFIRMAR se há um encarregado de dados (DPO) e, se houver, colocar o nome e o canal aqui.]</mark></p>
+    </section>
+  </main>
+</div>
+
+<footer class="site-footer">
+  <div class="foot-brand"><img src="assets/logo-izitrad-rodape.svg?v=2" alt="izitrad"></div>
+  <p>Apostilamento de Haia e tradução juramentada, sem sair de casa.</p>
+  <small>© 2026 IZITRAD</small>
+</footer>
+
+<script>
+/* Menu do site: abre e fecha o dropdown (botão, clique fora, Esc e clique num item) */
+(function(){
+  var h=document.querySelector('[data-header]'), t=document.querySelector('[data-nav-toggle]'), bd=document.querySelector('[data-nav-backdrop]');
+  function set(v){ h.toggleAttribute('data-nav-open',v); t.setAttribute('aria-expanded',v?'true':'false'); t.setAttribute('aria-label',v?'Fechar menu':'Abrir menu'); }
+  t.addEventListener('click',function(){ set(!h.hasAttribute('data-nav-open')); });
+  bd.addEventListener('click',function(){ set(false); });
+  addEventListener('keydown',function(e){ if(e.key==='Escape') set(false); });
+  [].forEach.call(h.querySelectorAll('.main-nav a'),function(a){ a.addEventListener('click',function(){ set(false); }); });
+})();
+</script>
+
+<script>
+/* Sumário: no computador fica aberto e fixo na direita; no celular começa recolhido (botão "Nesta página"). Destaca a seção que está sendo lida. */
+(function(){
+  var det=document.getElementById('sumario'), mq=window.matchMedia('(min-width:960px)');
+  function ajustar(){ det.open=mq.matches; }
+  ajustar(); (mq.addEventListener?mq.addEventListener('change',ajustar):mq.addListener(ajustar));
+  var links=[].slice.call(document.querySelectorAll('.sumario a')), secs=links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var travado=-1, timer=0;   // ao clicar num item, ele fica destacado até a rolagem suave terminar (as seções do fim são curtas e podem não chegar ao topo)
+  function marcar(){
+    var y=140, atual=0;
+    secs.forEach(function(s,i){ if(s && s.getBoundingClientRect().top<=y) atual=i; });
+    if(travado>=0) atual=travado;
+    else if(innerHeight+scrollY>=document.documentElement.scrollHeight-4) atual=secs.length-1;   // no fim da página, a última seção
+    links.forEach(function(a,i){ a.classList.toggle('ativo',i===atual); });
+  }
+  addEventListener('scroll',marcar,{passive:true}); addEventListener('resize',marcar); marcar();
+  links.forEach(function(a,i){ a.addEventListener('click',function(){
+    travado=i; marcar(); clearTimeout(timer); timer=setTimeout(function(){ travado=-1; },1400);
+    if(!mq.matches) det.open=false;
+  }); });
+  addEventListener('wheel',function(){ travado=-1; },{passive:true}); addEventListener('touchmove',function(){ travado=-1; },{passive:true});   // o leitor voltou a rolar: o destaque volta a seguir a leitura
+})();
+</script>
+</body>
+</html>
